@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 
 public interface ReservaService {
 
@@ -11,9 +12,9 @@ public interface ReservaService {
 
     List<Reserva> listByHotel(Long id);
 
-    Reserva agregar (Reserva reserv);
+    Reserva agregar (ReservaDTO reserv, Long id);
     
-    Reserva modificar (Reserva reserv);
+    Reserva modificar (ReservaDTO reserv, Long id);
 
     Reserva cambiarEstado(EstadoReservaDTO estado);
 }

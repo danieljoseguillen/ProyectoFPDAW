@@ -2,22 +2,29 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
+import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 
 public interface HotelService {
 
     List<Hotel> listAllHotel();
 
-    List<Hotel> listSortedHotel();
+    List<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto);
 
-    List<Hotel> listHotelByCorpo();
+    List<Hotel> listHotelByCorpo(Long id);
 
     Hotel getById(Long id);
 
-    Hotel agregar(Hotel hotel);
+    Hotel agregar(HotelDTO hotel, MultipartFile file);
 
-    Hotel modificar(Hotel hotel);
+    Hotel modificar(HotelDTO hotel, Long hotelid, MultipartFile file);
 
-    Hotel DesabilitarPorId(Long id);
+    Hotel cambiarEstadoPorId(Long id, boolean estado);
+
+    void verificarHotel(Hotel hotel);
 
 }

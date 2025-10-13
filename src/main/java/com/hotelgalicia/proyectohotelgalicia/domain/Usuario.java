@@ -13,6 +13,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,6 +40,8 @@ public class Usuario {
     @NotBlank(message = "El correo es obligatorio.")
     private String correo;
 
+    @NotBlank(message = "La contraseña es obligatoria.")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres.")
     private String contraseña;
 
     private Roles rol;

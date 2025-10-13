@@ -7,32 +7,30 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"habitacion", "reserva"})
-@IdClass(DetalleReservaId.class)
-public class DetalleReserva {
+@IdClass(ValoracionID.class)
+public class Valoracion {
+
     @Id
     @ManyToOne
-    @OnDelete(action = OnDeleteAction.RESTRICT)
-    private Habitacion habitacion;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Hotel hotel;
     @Id
     @ManyToOne
-    @OnDelete(action = OnDeleteAction.RESTRICT)
-    private Reserva reserva;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Cliente cliente;
 
-    @Min(value = 1, message = "Debe haber al menos una habitación reservada.")
-    private Integer cantidad;
-
-    private String nombre;
-
-    private Double precio;
+    @Min(value = 0, message = "La valoración minima es 0.")
+    @Max(value = 10,message = "La valoración maxima es de 10.")
+    private Integer puntaje;
+    private String comentario;
 }

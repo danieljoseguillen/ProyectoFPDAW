@@ -6,14 +6,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
 
 public interface HabitacionService {
 
     List<Habitacion> listHabitacionByHotelId(Long id);
+    
+    List<Habitacion> listHabitacionByHotelIdEmpresa(Long id);
+    
+    Habitacion getById(Long id);
 
-    Habitacion agregar(Habitacion habitacion, MultipartFile file);
+    Habitacion agregar(HabitacionDTO habitacion, Long hotelId, MultipartFile file);
 
-    Habitacion modificar(Habitacion habitacion, MultipartFile file);
+    Habitacion modificar(HabitacionDTO habitacion, Long habId, MultipartFile file);
 
     Habitacion cambiarEstado(EstadoHabitacionDTO estado);
 

@@ -3,21 +3,27 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 import java.util.List;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 
 public interface ClienteService {
 
     List<Cliente> listAll();
 
-    List<Cliente> listSorted(String val);
+    List<Cliente> listByNameOrSurname(String val);
+
+    List<Cliente> listByCorreo(String correo);
 
     Cliente getById(Long id);
 
     Cliente getByCorreo(String correo);
 
-    Cliente agregar(Cliente user);
+    Cliente agregar(ClienteDTO cliente);
 
-    Cliente modificar(Cliente user);
+    Cliente modificar(ClienteDTO user, Long id);
 
-    Boolean DeshabilitarPorId(Long id);
+    Boolean cambiarEstadoPorId(Long id, boolean estado);
+
+    Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto);
 
 }

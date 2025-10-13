@@ -6,7 +6,6 @@ import java.util.List;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 
 import jakarta.persistence.Column;
@@ -58,12 +57,23 @@ public class Hotel {
 
     private Boolean estado;
 
+    private double puntaje;
+
     @ManyToOne
     @OnDelete(action = OnDeleteAction.RESTRICT)
     private Empresa empresa;
 
-    @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "hotel")
     private List<Habitacion> habitaciones = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "hotel")
+    private List<Reserva> reservas = new ArrayList<>();
+
+    @ToString.Exclude
+    //EAGER Para hacer la carga con datos iniciales (Da problemas en el borrado)
+    // @OneToMany(mappedBy = "libro",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "hotel")
+    private List<Valoracion> valoracion = new ArrayList<>();
 }

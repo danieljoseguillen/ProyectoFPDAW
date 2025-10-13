@@ -6,6 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
+
+import javax.imageio.ImageIO;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -16,21 +20,40 @@ import org.springframework.web.multipart.MultipartFile;
 public class fileStorageService {
     private final Path rootLocation = Paths.get("images");
 
-    public String store(MultipartFile file, String title) throws RuntimeException {
+    public String store(MultipartFile file, String name) throws RuntimeException {
+        // Validaciones
         if (file.isEmpty())
-            throw new RuntimeException("Fichero vacío");
+            throw new RuntimeException("Error al leer la imagen: Fichero vacío");
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
         if (filename.contains("..")) {
-            throw new RuntimeException("Fichero incorrecto");
+            throw new RuntimeException("Error al leer la imagen: Fichero incorrecto");
         }
+        // Valida si el formato es de imagen
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/"))
+            throw new RuntimeException("Error al leer la imagen: Formato incorrecto");
+        // Valida si se puede leer como imagen
+        try {
+            if (ImageIO.read(file.getInputStream()) == null) {
+                throw new RuntimeException("El fichero no es una imagen válida.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error al leer la imagen: " + e.getMessage());
+        }
+        // Codigo. Obtiene y valida la extension
         String extension = StringUtils.getFilenameExtension(filename);
-        String storedFilename = title.replace(" ", "_") + "." + extension;
+        if (extension == null || extension.isBlank()) {
+            throw new RuntimeException("Error al leer la imagen: El fichero no tiene extensión.");
+        }
+        // Cambia los espacios en blanco
+        String storedFilename = name.replaceAll("\\s+", "_") +UUID.randomUUID()+ "." + extension.toLowerCase();
+        // Alamacena la imagen con el nombre
         try (InputStream inputStream = file.getInputStream()) {
             Files.copy(inputStream, this.rootLocation.resolve(storedFilename),
                     StandardCopyOption.REPLACE_EXISTING);
             return storedFilename;
         } catch (IOException ioe) {
-            throw new RuntimeException("Error en escritura");
+            throw new RuntimeException("Error al guardar el fichero: " + ioe.getMessage());
         }
     }
 
