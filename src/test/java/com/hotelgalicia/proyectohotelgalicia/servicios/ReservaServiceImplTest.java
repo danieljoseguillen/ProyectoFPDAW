@@ -70,7 +70,7 @@ class ReservaServiceImplTest {
     void agregarReservaDatosCorrectos() {
         Cliente cliente = new Cliente(); cliente.setId(1L);
         Hotel hotel = new Hotel(); hotel.setId(1L);
-        Habitacion habitacion = new Habitacion(); habitacion.setId(1L); habitacion.setCapacidad(5); habitacion.setNombre("Suite"); habitacion.setPrecio(100.0);
+        Habitacion habitacion = new Habitacion(); habitacion.setId(1L); habitacion.setCantidad(5); habitacion.setNombre("Suite"); habitacion.setPrecio(100.0);
         DetalleReservaDTO detalle = new DetalleReservaDTO(); detalle.setHabitacion(1L); detalle.setCantidad(2);
         ReservaDTO reservaDTO = new ReservaDTO(); reservaDTO.setFechaInicio(LocalDate.now()); reservaDTO.setFechaFin(LocalDate.now().plusDays(1)); reservaDTO.setPersonas(2); reservaDTO.setHabitaciones(List.of(detalle));
         when(cRep.findByCorreoIgnoreCase(anyString())).thenReturn(Optional.of(cliente));
@@ -87,7 +87,7 @@ class ReservaServiceImplTest {
     void agregarReservaMasQueDisponibles() {
         Cliente cliente = new Cliente(); cliente.setId(1L);
         Hotel hotel = new Hotel(); hotel.setId(1L);
-        Habitacion habitacion = new Habitacion(); habitacion.setId(1L); habitacion.setCapacidad(2); habitacion.setNombre("Suite"); habitacion.setPrecio(100.0);
+        Habitacion habitacion = new Habitacion(); habitacion.setId(1L); habitacion.setCantidad(2); habitacion.setNombre("Suite"); habitacion.setPrecio(100.0);
         DetalleReservaDTO detalle = new DetalleReservaDTO(); detalle.setHabitacion(1L); detalle.setCantidad(3);
         ReservaDTO reservaDTO = new ReservaDTO(); reservaDTO.setFechaInicio(LocalDate.now()); reservaDTO.setFechaFin(LocalDate.now().plusDays(1)); reservaDTO.setPersonas(2); reservaDTO.setHabitaciones(List.of(detalle));
         when(cRep.findByCorreoIgnoreCase(anyString())).thenReturn(Optional.of(cliente));

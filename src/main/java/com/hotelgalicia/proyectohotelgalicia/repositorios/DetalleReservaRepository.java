@@ -11,6 +11,7 @@ import com.hotelgalicia.proyectohotelgalicia.domain.DetalleReservaId;
 import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoReserva;
 
 public interface DetalleReservaRepository extends JpaRepository<DetalleReserva, DetalleReservaId> {
-    @Query("SELECT SUM(dr.cantidad) FROM DetalleReserva dr JOIN dr.reserva re WHERE dr.habitacion.id = :id AND  re.estado IN :estados")
-    Integer sumByHabitacionId(@Param("id")Long id,@Param("estados") List<EstadoReserva> estados);
+    @Query("SELECT  COALESCE(SUM(dr.cantidad),0) FROM DetalleReserva dr JOIN dr.reserva re WHERE dr.habitacion.id = :id AND  re.estado IN :estados")
+    Integer sumByHabitacionId(@Param("id") Long id, @Param("estados") List<EstadoReserva> estados);
+
 }

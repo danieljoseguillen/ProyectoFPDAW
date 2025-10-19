@@ -13,8 +13,6 @@ public class SearchResultDTO {
 
     private Double precioMin;
     private Double precioMax;
-
-    private int totalHoteles;
     
     private List<HotelMiniDTO> hoteles;
 }

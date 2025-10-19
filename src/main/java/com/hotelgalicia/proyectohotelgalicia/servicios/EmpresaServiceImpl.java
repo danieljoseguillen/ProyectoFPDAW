@@ -52,12 +52,12 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public Empresa getById(Long id) {
-        return eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        return eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
     }
 
     @Override
     public Empresa getByCorreo(String correo) {
-        return eRep.findByCorreo(correo).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        return eRep.findByCorreo(correo).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
     }
 
     @Override
@@ -85,7 +85,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     @Override
     public Empresa modificar(EmpresaDTO usuario, Long id) {
         Empresa base = eRep.findById(id)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
         verificarpropiedad(base);
         uRep.findByCorreo(usuario.getCorreo().trim().toLowerCase()).ifPresent(user -> {
             if (!user.getId().equals(base.getId())) {
@@ -113,11 +113,11 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public Boolean cambiarEstadoPorId(Long id, boolean estado) {
-        Empresa empresa = eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        Empresa empresa = eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
         // verifica que el usuario sea admin
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
         if (!usuario.getRol().equals(Roles.ADMIN)) {
             throw new PermissionDeniedException("No está autorizado para realizar esta acción.");
         }
@@ -136,13 +136,12 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto) {
-        Empresa empresa = eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        Empresa empresa = eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
         verificarpropiedad(empresa);
         if (!encoder.matches(dto.getClaveActual().trim(), empresa.getContraseña())) {
             throw new BadCredentialsException("Error: Contraseña incorrecta.");
         }
-
-        if (encoder.matches(dto.getClaveActual().trim(), empresa.getContraseña())) {
+        if (encoder.matches(dto.getClaveNueva().trim(), empresa.getContraseña())) {
             throw new BadCredentialsException("Error: La contraseña nueva no puede ser igual a a la anterior.");
         }
         empresa.setContraseña(encoder.encode(dto.getClaveNueva().trim()));
@@ -160,7 +159,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     private void verificarpropiedad(Empresa empresa) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         switch (usuario.getRol()) {
             case ADMIN -> {

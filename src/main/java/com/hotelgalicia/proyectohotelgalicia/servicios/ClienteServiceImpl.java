@@ -52,13 +52,13 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Cliente getById(Long id) {
-        return cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        return cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
     }
 
     @Override
     public Cliente getByCorreo(String correo) {
         return cRep.findByCorreoIgnoreCase(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public Cliente modificar(ClienteDTO cliente, Long id) {
         Cliente base = cRep.findById(id)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
         verificarpropiedad(base);
         uRep.findByCorreo(cliente.getCorreo().trim().toLowerCase()).ifPresent(user -> {
             if (!user.getId().equals(base.getId())) {
@@ -113,11 +113,11 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Boolean cambiarEstadoPorId(Long id, boolean estado) {
-        Cliente cliente = cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        Cliente cliente = cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
         // verifica que el usuario sea admin
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
         if (!usuario.getRol().equals(Roles.ADMIN)) {
             throw new PermissionDeniedException("No está autorizado para realizar esta acción.");
         }
@@ -135,7 +135,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto) {
-        Cliente cliente = cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado"));
+        Cliente cliente = cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
         verificarpropiedad(cliente);
         if (!encoder.matches(dto.getClaveActual().trim(), cliente.getContraseña())) {
             throw new BadCredentialsException("Error: Contraseña incorrecta.");
@@ -159,7 +159,7 @@ public class ClienteServiceImpl implements ClienteService {
     private void verificarpropiedad(Cliente cliente) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         switch (usuario.getRol()) {
             case ADMIN -> {

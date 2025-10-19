@@ -184,7 +184,7 @@ public class ClienteServiceTest {
 //     void modificar_FallaPorNoEncontrado() {
 //         when(cRep.findById(dto.getId())).thenReturn(Optional.empty());
 //         RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto));
-//         assertTrue(ex.getMessage().contains("Usuario no encontrado"));
+//         assertTrue(ex.getMessage().contains("No se pudieron recuperar los datos del usuario"));
 //     }
 
 //     @Test

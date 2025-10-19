@@ -7,10 +7,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 
 public interface HabitacionService {
 
-    List<Habitacion> listHabitacionByHotelId(Long id);
+    List<HabitacionListDTO> listHabitacionByHotelId(Long id);
     
     List<Habitacion> listHabitacionByHotelIdEmpresa(Long id);
     

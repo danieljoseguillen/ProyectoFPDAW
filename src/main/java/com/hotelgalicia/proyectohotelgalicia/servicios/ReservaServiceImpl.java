@@ -62,7 +62,7 @@ public class ReservaServiceImpl implements ReservaService {
     public Reserva agregar(ReservaDTO reserv, Long hotelId) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Cliente cliente = cRep.findByCorreoIgnoreCase(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         Hotel hotel = hoRep.findById(hotelId).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
 
@@ -132,14 +132,14 @@ public class ReservaServiceImpl implements ReservaService {
     public void verificarReserva(Reserva reserva) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         switch (usuario.getRol()) {
             case ADMIN -> {
             }
             case USER -> {
                 Cliente cliente = cRep.findById(usuario.getId())
-                        .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                        .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
                 if (!reserva.getCliente().getId().equals(cliente.getId())) {
                     throw new RuntimeException("No posee permisos para modificar la reserva.");
                 }
@@ -154,7 +154,7 @@ public class ReservaServiceImpl implements ReservaService {
         if (cantReserv == null) {
             cantReserv = 0;
         }
-        int disponible = habitacion.getCapacidad() - cantReserv;
+        int disponible = habitacion.getCantidad() - cantReserv;
         if(!(disponible >= cantSoli)){
             throw new RoomFullException(habitacion.getNombre(), disponible, cantSoli);
         }

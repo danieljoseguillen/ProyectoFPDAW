@@ -19,7 +19,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findFullUsuarioByCorreo(correo)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado!"));
+                .orElseThrow(() -> new UsernameNotFoundException("No se pudieron recuperar los datos del usuario!"));
         String nombre = "";
         switch (usuario.getRol()) {
             case USER -> {

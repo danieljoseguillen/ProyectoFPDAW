@@ -2,24 +2,27 @@ package com.hotelgalicia.proyectohotelgalicia.dto;
 
 import java.time.LocalDate;
 
+import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class HotelSearchDTO {
 
     @NotNull
     private String nombre;
 
     private Municipios municipio;
-    
+
     @NotNull
     private String direccion;
 
@@ -27,7 +30,8 @@ public class HotelSearchDTO {
     private int personas;
 
     @Min(value = 1, message = "Debe haber al menos una habitación en la busqueda.")
-    private int habitaciones;
+    private int cantHabi;
+
     @NotNull(message = "Debe ingresar una fecha de inicio.")
     @FutureOrPresent(message = "La fecha de inicio de la reserva debe ser la fecha actual o posterior.")
     private LocalDate fechaInicio;
@@ -40,4 +44,28 @@ public class HotelSearchDTO {
     private int presupuestoMin;
     @Min(value = 5)
     private int presupuestoMax;
+
+    private FiltroBusqueda filtro;
+
+    // @PrePersist
+    // public void prePersist() {
+    //     if (nombre == null) {
+    //         this.nombre = "";
+    //     }
+    //     if (personas == null) {
+    //         this.personas = 1;
+    //     }
+    //     if (cantHabi == null) {
+    //         this.cantHabi = 1;
+    //     }
+    //     if (fechaInicio == null) {
+    //         this.fechaInicio = LocalDate.now();
+    //     }
+    //     if (fechaFin == null) {
+    //         this.fechaFin = LocalDate.now().plusDays(1);
+    //     }
+    //     if () {
+            
+    //     }
+    // }
 }

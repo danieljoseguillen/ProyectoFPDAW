@@ -20,6 +20,9 @@ public class HabitacionDTO {
     private String descripcion;
 
     @Min(value = 1, message = "Debe haber por lo menos una habitación de ese tipo")
+    private Integer cantidad;
+
+    @Min(value = 1, message = "La habitacion debe poder alojar por lo menos a una persona.")
     private Integer capacidad;
 
     @Min(value = 0, message = "Precio fuera de rango.")

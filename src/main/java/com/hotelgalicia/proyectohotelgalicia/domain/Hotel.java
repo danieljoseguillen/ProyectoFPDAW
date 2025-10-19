@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Builder
 public class Hotel {
 
     @Id
@@ -65,15 +67,18 @@ public class Hotel {
 
     @ToString.Exclude
     @OneToMany(mappedBy = "hotel")
+    @Builder.Default
     private List<Habitacion> habitaciones = new ArrayList<>();
 
     @ToString.Exclude
     @OneToMany(mappedBy = "hotel")
+    @Builder.Default
     private List<Reserva> reservas = new ArrayList<>();
 
     @ToString.Exclude
-    //EAGER Para hacer la carga con datos iniciales (Da problemas en el borrado)
+    // EAGER Para hacer la carga con datos iniciales (Da problemas en el borrado)
     // @OneToMany(mappedBy = "libro",fetch = FetchType.EAGER)
     @OneToMany(mappedBy = "hotel")
+    @Builder.Default
     private List<Valoracion> valoracion = new ArrayList<>();
 }

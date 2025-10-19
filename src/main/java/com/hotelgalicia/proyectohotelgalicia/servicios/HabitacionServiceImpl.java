@@ -11,8 +11,11 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
 import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoHabitacion;
+import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoReserva;
+import com.hotelgalicia.proyectohotelgalicia.repositorios.DetalleReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HabitacionRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 
@@ -29,11 +32,31 @@ public class HabitacionServiceImpl implements HabitacionService {
     private HabitacionRepository haRep;
 
     @Autowired
+    private DetalleReservaRepository drRep;
+
+    @Autowired
     public fileStorageService fileserv;
 
     @Override
-    public List<Habitacion> listHabitacionByHotelId(Long id) {
-        return haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE);
+    public List<HabitacionListDTO> listHabitacionByHotelId(Long id) {
+        List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE);
+        List<HabitacionListDTO> listado = habitaciones.stream().map(hab -> {
+            HabitacionListDTO dto = new HabitacionListDTO();
+            dto.setId(hab.getId());
+            dto.setNombre(hab.getNombre());
+            dto.setDescripcion(hab.getDescripcion());
+            dto.setCapacidad(hab.getCapacidad());
+            dto.setPrecio(hab.getPrecio());
+            dto.setImagen(hab.getImagen());
+            Integer cantReserv = drRep.sumByHabitacionId(hab.getId(),
+                    List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
+            if (cantReserv == null) {
+                cantReserv = 0;
+            }
+            dto.setDisponibles(hab.getCantidad() - cantReserv);
+            return dto;
+        }).toList();
+        return listado;
     }
 
     @Override
@@ -52,7 +75,7 @@ public class HabitacionServiceImpl implements HabitacionService {
     public Habitacion agregar(HabitacionDTO habi, Long hotelId, MultipartFile file) {
         Hotel hotel = hoRep.findById(hotelId).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
         Habitacion habFinal = new Habitacion(null, habi.getNombre(),
-                habi.getDescripcion(), habi.getCapacidad(),
+                habi.getDescripcion(), habi.getCantidad(), habi.getCapacidad(),
                 habi.getPrecio(), null, EstadoHabitacion.DISPONIBLE, hotel);
         if (!file.isEmpty()) {
             String nombreImagen = fileserv.store(file, hotel.getNombre() + "_hab");
@@ -74,7 +97,7 @@ public class HabitacionServiceImpl implements HabitacionService {
         hoServ.verificarHotel(habFinal.getHotel());
         habFinal.setNombre(habi.getNombre());
         habFinal.setDescripcion(habi.getDescripcion());
-        habFinal.setCapacidad(habi.getCapacidad());
+        habFinal.setCantidad(habi.getCantidad());
         habFinal.setPrecio(habi.getPrecio());
         if (file != null && !file.isEmpty()) {
             try {

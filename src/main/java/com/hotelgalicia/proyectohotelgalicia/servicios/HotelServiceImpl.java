@@ -2,6 +2,8 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +21,19 @@ import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
+import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.PermissionDeniedException;
-import com.hotelgalicia.proyectohotelgalicia.excepciones.RoomFullException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
+import com.hotelgalicia.proyectohotelgalicia.modelos.ComparaPrecio;
+import com.hotelgalicia.proyectohotelgalicia.modelos.ComparaPrecioValo;
 import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoReserva;
+import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.DetalleReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
-import com.hotelgalicia.proyectohotelgalicia.repositorios.HabitacionRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class HotelServiceImpl implements HotelService {
@@ -36,9 +42,6 @@ public class HotelServiceImpl implements HotelService {
 
     @Autowired
     private HotelRepository hoRep;
-
-    @Autowired
-    private HabitacionRepository haRep;
 
     @Autowired
     private EmpresaRepository eRep;
@@ -56,18 +59,16 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public List<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto) {
-        if (dto.getNombre().isBlank()) {
+        if (dto.getNombre().isBlank())
             dto.setNombre("");
-        }
-        if (dto.getDireccion().isBlank()) {
+        if (dto.getDireccion().isBlank())
             dto.setDireccion("");
-        }
 
         if (dto.getPresupuestoMin() > dto.getPresupuestoMax()) {
             throw new IllegalArgumentException("El presupuesto minimo no puede ser superior al maximo.");
         }
         List<Hotel> hoteles;
-        if (dto.getMunicipio() != null) {
+        if (dto.getMunicipio() != null && dto.getMunicipio() != Municipios.TODOS) {
             hoteles = hoRep
                     .findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCaseAndEstado(
                             dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), true);
@@ -75,32 +76,46 @@ public class HotelServiceImpl implements HotelService {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(
                     dto.getNombre(), dto.getDireccion(), true);
         }
+
         Long dias = ChronoUnit.DAYS.between(dto.getFechaInicio(), dto.getFechaFin());
+
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
+
         for (Hotel hotel : hoteles) {
+            Habitacion habit = hotel.getHabitaciones().stream()
+                    .filter(h -> h.getPrecio() * dias >= dto.getPresupuestoMin()
+                            && h.getPrecio() * dias <= dto.getPresupuestoMax()
+                            && h.getCapacidad() >= dto.getPersonas()
+                            && verificarDisponibilidad(h, dto.getCantHabi()))
+                    .findFirst().orElse(null);
 
-
+            if (habit != null) {
+                HotelMiniDTO hoteldto = ConvertHotelToDTO(hotel);
+                hoteldto.setHabitacion(ConvertHabToDTO(habit, dias));
+                hotelesdto.add(hoteldto);
+            }
         }
         if (hotelesdto.isEmpty()) {
-            List<Hotel> hotelesfull = hoRep.findByEstado(true);
-
-            // Double maximo =
-            // Collections.max(haRep.findByEstado(EstadoHabitacion.DISPONIBLE),
-            // Comparator.comparingDouble(Habitacion::getPrecio)).getPrecio();
-            // Double minimo =
-            // Collections.min(haRep.findByEstado(EstadoHabitacion.DISPONIBLE),
-            // Comparator.comparingDouble(Habitacion::getPrecio)).getPrecio();
-            for (Hotel hotel : hotelesfull) {
-                hotelesdto.add(ConvertHotelToDTO(hotel));
-            }
-            return hotelesdto;
+            throw new EmptyListException("No se encontraron hoteles que coincidieran con los filtros de busqueda.");
         }
-        // Double maximo = Collections.max(hotelesdto,
-        // Comparator.comparingDouble(HotelMiniDTO::getCosto)).getCosto();
-        // Double minimo = Collections.min(hotelesdto,
-        // Comparator.comparingDouble(HotelMiniDTO::getCosto)).getCosto();
-        // SearchResultDTO resultado = new SearchResultDTO(minimo, maximo,
-        // hotelesdto.size(), hotelesdto);
+        switch (dto.getFiltro()) {
+            case PRECIO_DESCENDENTE ->
+                Collections.sort(hotelesdto, new ComparaPrecio().reversed());
+            case PRECIO_ASCENDENTE ->
+                Collections.sort(hotelesdto, new ComparaPrecio());
+            case VALORACION_DESCENDENTE ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje).reversed());
+            case VALORACION_ASCENDENTE ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje));
+            case VALORACION_PRECIO_ASCENDENTE ->
+                Collections.sort(hotelesdto, new ComparaPrecioValo());
+            case MAS_VALORADOS ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje).reversed());
+
+            default -> {
+            }
+
+        }
         return hotelesdto;
     }
 
@@ -110,6 +125,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @Transactional // para cargar las habitaciones.
     public Hotel getById(Long id) {
         return hoRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
     }
@@ -124,7 +140,7 @@ public class HotelServiceImpl implements HotelService {
                 hotel.getDireccion().trim(),
                 hotel.getTelefono().trim(), null, true, 5d,
                 eRep.findByCorreo(authentication.getName())
-                        .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado.")),
+                        .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario.")),
                 null, null, null);
         if (!file.isEmpty()) {
             String nombreImagen = fileserv.store(file, hotel.getNombre());
@@ -189,7 +205,7 @@ public class HotelServiceImpl implements HotelService {
     public void verificarHotel(Hotel hotel) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         switch (usuario.getRol()) {
             case ADMIN -> {
@@ -214,7 +230,7 @@ public class HotelServiceImpl implements HotelService {
 
     private HabitacionMiniDTO ConvertHabToDTO(Habitacion habitacion, Long dias) {
         HabitacionMiniDTO habitacionfinal = new HabitacionMiniDTO(habitacion.getNombre(),
-                habitacion.getCapacidad(), habitacion.getPrecio() * dias);
+                habitacion.getCantidad(), habitacion.getPrecio() * dias);
         return habitacionfinal;
     }
 
@@ -224,7 +240,7 @@ public class HotelServiceImpl implements HotelService {
         if (cantReserv == null) {
             cantReserv = 0;
         }
-        int disponible = habitacion.getCapacidad() - cantReserv;
+        int disponible = habitacion.getCantidad() - cantReserv;
         if (disponible >= cantSoli) {
             return true;
         }

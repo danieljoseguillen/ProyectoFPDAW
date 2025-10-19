@@ -52,7 +52,7 @@ public class ValoracionServiceImpl implements ValoracionService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Valoracion valor = new Valoracion();
         valor.setCliente(cRep.findByCorreoIgnoreCase(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado.")));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario.")));
         valor.setHotel(hoRep.findById(val.getHotel()).orElseThrow(() -> new RuntimeException("Hotel no encontrado.")));
         valor.setPuntaje(val.getPuntaje());
         valor.setComentario(val.getComentario());
@@ -78,7 +78,7 @@ public class ValoracionServiceImpl implements ValoracionService {
     private void verificarpropiedad(Long id) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         switch (usuario.getRol()) {
             case ADMIN -> {
