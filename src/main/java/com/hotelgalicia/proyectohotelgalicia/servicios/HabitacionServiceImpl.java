@@ -35,7 +35,7 @@ public class HabitacionServiceImpl implements HabitacionService {
     private DetalleReservaRepository drRep;
 
     @Autowired
-    public fileStorageService fileserv;
+    public FileStorageService fileserv;
 
     @Override
     public List<HabitacionListDTO> listHabitacionByHotelId(Long id) {
@@ -74,6 +74,7 @@ public class HabitacionServiceImpl implements HabitacionService {
     @Override
     public Habitacion agregar(HabitacionDTO habi, Long hotelId, MultipartFile file) {
         Hotel hotel = hoRep.findById(hotelId).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
+        hoServ.verificarHotel(hotel);
         Habitacion habFinal = new Habitacion(null, habi.getNombre(),
                 habi.getDescripcion(), habi.getCantidad(), habi.getCapacidad(),
                 habi.getPrecio(), null, EstadoHabitacion.DISPONIBLE, hotel);

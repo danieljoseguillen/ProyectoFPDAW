@@ -33,7 +33,7 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HotelServiceImpl implements HotelService {
@@ -47,7 +47,7 @@ public class HotelServiceImpl implements HotelService {
     private EmpresaRepository eRep;
 
     @Autowired
-    public fileStorageService fileserv;
+    private FileStorageService fileserv;
 
     @Autowired
     private DetalleReservaRepository drRep;
@@ -78,7 +78,9 @@ public class HotelServiceImpl implements HotelService {
         }
 
         Long dias = ChronoUnit.DAYS.between(dto.getFechaInicio(), dto.getFechaFin());
-
+        if (dias <= 0) {
+            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio.");
+        }
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
 
         for (Hotel hotel : hoteles) {
@@ -110,7 +112,7 @@ public class HotelServiceImpl implements HotelService {
             case VALORACION_PRECIO_ASCENDENTE ->
                 Collections.sort(hotelesdto, new ComparaPrecioValo());
             case MAS_VALORADOS ->
-                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje).reversed());
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getValoraciones).reversed());
 
             default -> {
             }
@@ -125,7 +127,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    @Transactional // para cargar las habitaciones.
+    @Transactional(readOnly = true) // para cargar las habitaciones.
     public Hotel getById(Long id) {
         return hoRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
     }
@@ -140,7 +142,8 @@ public class HotelServiceImpl implements HotelService {
                 hotel.getDireccion().trim(),
                 hotel.getTelefono().trim(), null, true, 5d,
                 eRep.findByCorreo(authentication.getName())
-                        .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario.")),
+                        .orElseThrow(
+                                () -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario.")),
                 null, null, null);
         if (!file.isEmpty()) {
             String nombreImagen = fileserv.store(file, hotel.getNombre());
@@ -222,7 +225,8 @@ public class HotelServiceImpl implements HotelService {
         }
     }
 
-    private HotelMiniDTO ConvertHotelToDTO(Hotel hotel) {
+    @Transactional(readOnly = true)
+    public HotelMiniDTO ConvertHotelToDTO(Hotel hotel) {
         HotelMiniDTO hotelfinal = new HotelMiniDTO(hotel.getId(), hotel.getNombre(), hotel.getMunicipio(),
                 hotel.getDireccion(), hotel.getImagen(), hotel.getPuntaje(), hotel.getValoracion().size(), null);
         return hotelfinal;

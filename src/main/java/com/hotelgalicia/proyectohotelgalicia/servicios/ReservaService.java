@@ -11,10 +11,17 @@ public interface ReservaService {
     List<Reserva> listByCliente(Long id);
 
     List<Reserva> listByHotel(Long id);
+    
+    Reserva getById(Long id);
 
     Reserva agregar (ReservaDTO reserv, Long id);
     
     Reserva modificar (ReservaDTO reserv, Long id);
 
     Reserva cambiarEstado(EstadoReservaDTO estado);
+
+    Boolean cancelarPorId (Long id);
+
+    void verificarReserva(Reserva reserva);
+
 }

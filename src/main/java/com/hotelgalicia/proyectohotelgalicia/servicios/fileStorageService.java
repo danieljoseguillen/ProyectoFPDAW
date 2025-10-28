@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class fileStorageService {
+public class FileStorageService {
     private final Path rootLocation = Paths.get("images");
 
     public String store(MultipartFile file, String name) throws RuntimeException {

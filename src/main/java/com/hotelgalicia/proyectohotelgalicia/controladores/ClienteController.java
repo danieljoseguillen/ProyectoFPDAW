@@ -1,5 +1,201 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
+import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
+import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
+import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
+
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+@RequestMapping("/user")
 public class ClienteController {
+
+    @Autowired
+    private ClienteService cServ;
+
+    @Autowired
+    private ReservaService reServ;
+
+    @Autowired
+    private ValoracionService vaServ;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    private String formatBindingErrors(BindingResult bindingResult) {
+        return bindingResult.getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(" | "));
+    }
+
+    private Long retornarId(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return cServ.getByCorreo(authentication.getName()).getId();
+    }
+
+    // profile get
+    @GetMapping("/profile")
+    public String getProfile(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Cliente cli = cServ.getByCorreo(authentication.getName());
+        model.addAttribute("cliente", cli);
+        List<Reserva> reservas = reServ.listByCliente(cli.getId());
+        model.addAttribute("reservas", reservas);
+        return "cliente/userProfileView";
+    }
+
+    // edit profile get
+    @GetMapping("/editprofile")
+    public String getedit(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            model.addAttribute("cliente",
+                    modelMapper.map(cServ.getByCorreo(authentication.getName()), ClienteDTO.class));
+            return "cliente/userEditView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/user/profile";
+        }
+    }
+
+    // edit profile post
+    @PostMapping("/editprofile/submit")
+    public String postedit(@Valid ClienteDTO cliente, BindingResult bindingResult, Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            redirectAttributes.addFlashAttribute("cliente", cliente);
+            return "redirect:/user/editprofile";
+        }
+        try {
+            cServ.modificar(cliente, retornarId());
+            redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/user/profile";
+    }
+
+    @GetMapping("/password")
+    public String getPasswordChange(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("formulario", new ClaveDTO(null, null));
+            return "cliente/changePasswordView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/user/profile";
+        }
+    }
+
+    @PostMapping("/password/submit")
+    public String postPasswordChange(@Valid ClaveDTO formulario, BindingResult bindingResult, Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            return "redirect:/user/password";
+        }
+        try {
+            cServ.cambiarContraseñaPorId(retornarId(), formulario);
+            redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/user/profile";
+    }
+
+    @GetMapping("/valorations")
+    public String getValorationUser(Model model, Principal principal, RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("valoraciones", vaServ.listByUserMail(principal.getName()));
+            return "cliente/valoraView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/index";
+    }
+
+    @PostMapping("/valoraciones/delete")
+    public String postValorationDelete(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            vaServ.borrarPorId(retornarId(), id);
+            redirectAttributes.addFlashAttribute("message", "Reseña eliminada con exito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/user/valorations";
+    }
+
+    @GetMapping("/reserves")
+    public String getReserves(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            model.addAttribute("reservas", reServ.listByCliente(cServ.getByCorreo(authentication.getName()).getId()));
+            return "cliente/reservasView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/index";
+    }
+
+        @GetMapping("/reserves/{id}")
+    public String getReserveDetails(@PathVariable Long id, Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Reserva reserva = reServ.getById(id);
+            reServ.verificarReserva(reserva);
+            model.addAttribute("reserva", reserva);
+            model.addAttribute("detalles", reserva.getHabitaciones());
+            return "cliente/reserveDetailsView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/user/reserves";
+        }
+    }
+
+    @PostMapping("/reserves/cancel")
+    public String postCancelReserve(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            reServ.cancelarPorId(id);
+            redirectAttributes.addFlashAttribute("message", "Reserva cancelada con exito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/reserves";
+    }
+
+    @GetMapping("/reserves/{id}/edit")
+    public String getEditReserve(@RequestParam String param) {
+        return new String();
+    }
+
+    @PostMapping("/reserves/{id}/edit/submit")
+    public String postEditReserve(@RequestBody String entity) {
+        // TODO: process POST request
+
+        return entity;
+    }
 
 }

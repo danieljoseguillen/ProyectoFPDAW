@@ -1,5 +1,6 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +60,11 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
+    public Reserva getById(Long id) {
+        return reRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Reserva no encontrada."));
+    }
+
+    @Override
     public Reserva agregar(ReservaDTO reserv, Long hotelId) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Cliente cliente = cRep.findByCorreoIgnoreCase(correo)
@@ -66,14 +72,14 @@ public class ReservaServiceImpl implements ReservaService {
 
         Hotel hotel = hoRep.findById(hotelId).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
 
-    Reserva reservaFinal = new Reserva(null, reserv.getFechaInicio(),
-        reserv.getFechaFin(), reserv.getPersonas(), EstadoReserva.REALIZADA, cliente, hotel, new ArrayList<>());
+        Reserva reservaFinal = new Reserva(null, reserv.getFechaInicio(),
+                reserv.getFechaFin(), reserv.getPersonas(), EstadoReserva.REALIZADA, cliente, hotel, new ArrayList<>());
 
         // Agregar detalles de reserva
         for (DetalleReservaDTO detalle : reserv.getHabitaciones()) {
             Habitacion habi = haRep.findById(detalle.getHabitacion())
                     .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
-                    verificarDisponibilidad(habi, detalle.getCantidad());
+            verificarDisponibilidad(habi, detalle.getCantidad());
             DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
                     habi.getNombre(), habi.getPrecio());
             reservaFinal.getHabitaciones().add(detFinal);
@@ -129,6 +135,25 @@ public class ReservaServiceImpl implements ReservaService {
         }
     }
 
+    @Override
+    public Boolean cancelarPorId(Long id) {
+        Reserva reserva = reRep.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada."));
+        verificarReserva(reserva);
+        if (!reserva.getFechaInicio().isAfter(LocalDate.now().plusDays(1))) {
+            throw new RuntimeException("Solo pueden cancelarse reservas con más de 1 día de antelación.");
+        }
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        try {
+            reRep.save(reserva);
+            return true;
+        } catch (DataIntegrityViolationException e) {
+            throw new SaveFailedException("Error al cancelar la reserva: " + e.getMostSpecificCause().getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al cancelar la reserva: " + e.getMessage());
+        }
+    }
+
     public void verificarReserva(Reserva reserva) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreo(correo)
@@ -139,23 +164,29 @@ public class ReservaServiceImpl implements ReservaService {
             }
             case USER -> {
                 Cliente cliente = cRep.findById(usuario.getId())
-                        .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
+                        .orElseThrow(
+                                () -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
                 if (!reserva.getCliente().getId().equals(cliente.getId())) {
                     throw new RuntimeException("No posee permisos para modificar la reserva.");
                 }
             }
-            case CORPORATION -> throw new RuntimeException("No está autorizado para realizar la acción.");
+            case CORPORATION -> {
+                Hotel hotel = reserva.getHotel();
+                if (!hotel.getEmpresa().getId().equals(usuario.getId()))
+                    throw new RuntimeException("No posee permisos para realizar dicha acción.");
+            }
             default -> throw new RuntimeException("Error al verificar permisos de usuario.");
         }
     }
 
     private void verificarDisponibilidad(Habitacion habitacion, int cantSoli) {
-        Integer cantReserv = drRep.sumByHabitacionId(habitacion.getId(), List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
+        Integer cantReserv = drRep.sumByHabitacionId(habitacion.getId(),
+                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
         if (cantReserv == null) {
             cantReserv = 0;
         }
         int disponible = habitacion.getCantidad() - cantReserv;
-        if(!(disponible >= cantSoli)){
+        if (!(disponible >= cantSoli)) {
             throw new RoomFullException(habitacion.getNombre(), disponible, cantSoli);
         }
     }

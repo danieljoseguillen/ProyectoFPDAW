@@ -77,7 +77,7 @@ public class Hotel {
 
     @ToString.Exclude
     // EAGER Para hacer la carga con datos iniciales (Da problemas en el borrado)
-    // @OneToMany(mappedBy = "libro",fetch = FetchType.EAGER)
+    // @OneToMany(mappedBy = "hotel",fetch = FetchType.EAGER)
     @OneToMany(mappedBy = "hotel")
     @Builder.Default
     private List<Valoracion> valoracion = new ArrayList<>();

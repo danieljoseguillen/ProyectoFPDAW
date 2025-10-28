@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,13 +22,17 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
+import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ClienteRepository;
@@ -34,183 +41,228 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 @SpringBootTest
 @TestInstance(Lifecycle.PER_CLASS)
 public class ClienteServiceTest {
-    private static final Logger log = LoggerFactory.getLogger(ClienteServiceTest.class);
-    @Autowired
-    private PasswordEncoder encoder;
-    
-    @InjectMocks
-    private ClienteServiceImpl cServ;
 
     @Mock
     private ClienteRepository cRep;
+
     @Mock
     private UsuarioRepository uRep;
-    private List<Cliente> mockList;
-    private ClienteDTO clientesinid;
-    private Cliente clienteconid;
 
-    private Cliente base;
+    @Mock
+    private PasswordEncoder encoder;
+
+    @InjectMocks
+    private ClienteServiceImpl cServ;
+
+    private Cliente cliente;
     private ClienteDTO dto;
-    private Cliente modificado;
+    private Usuario admin;
+    private Usuario user;
 
     @BeforeAll
-    public void init() {
-        mockList = List.of(
-                Cliente.builder().id(1l)
-                        .correo("carlos.perez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Carlos").apellido("Pérez").telefono("612345678").build(),
-                Cliente.builder().id(2l)
-                        .correo("maria.lopez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("María").apellido("López").telefono("622345678").build(),
-                Cliente.builder().id(3l)
-                        .correo("juan.gonzalez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Juan").apellido("González").telefono("632345678").build(),
-                Cliente.builder().id(4l)
-                        .correo("ana.martinez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Ana").apellido("Martínez").telefono("642345678").build(),
-                Cliente.builder().id(5l)
-                        .correo("pedro.ramirez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Pedro").apellido("Ramírez").telefono("652345678").build(),
-                Cliente.builder().id(6l)
-                        .correo("laura.fernandez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Laura").apellido("Fernández").telefono("662345678").build(),
-                Cliente.builder().id(7l)
-                        .correo("david.sanchez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("David").apellido("Sánchez").telefono("672345678").build(),
-                Cliente.builder().id(8l)
-                        .correo("sofia.castro@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Sofía").apellido("Castro").telefono("682345678").build(),
-                Cliente.builder().id(9l)
-                        .correo("elena.mendez@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                        .nombre("Elena").apellido("Méndez").telefono("602345678").build());
-        clienteconid = Cliente.builder().id(10l)
-                .correo("ricardo.herrera@example.com").contraseña(encoder.encode("Clave12345")).rol(Roles.USER).estado(true)
-                .nombre("Ricardo").apellido("Herrera").telefono("692345678").build();
-        clientesinid = new ClienteDTO();
-        clientesinid.setCorreo("ricardo.herrera@example.com");
-        clientesinid.setContraseña(encoder.encode("Clave12345"));
-        clientesinid.setNombre("Ricardo");
-        clientesinid.setApellido("Herrera");
-        clientesinid.setTelefono("692345678");
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        cliente = Cliente.builder()
+                .id(1L)
+                .correo("test@example.com")
+                .contraseña("encodedpass")
+                .rol(Roles.USER)
+                .estado(true)
+                .nombre("Test")
+                .apellido("User")
+                .telefono("600000000")
+                .build();
 
-        base = mockList.get(0);
         dto = new ClienteDTO();
-        // dto.setId(base.getId());
-        dto.setCorreo("carlos.nuevo@example.com");
-        dto.setContraseña(base.getContraseña());
-        dto.setNombre("Carlos Nuevo");
-        dto.setApellido("Perez Nuevo");
+        dto.setCorreo("new@example.com");
+        dto.setContraseña("Clave123");
+        dto.setNombre("Nuevo");
+        dto.setApellido("Usuario");
         dto.setTelefono("699999999");
 
-        modificado = Cliente.builder()
-                .id(base.getId())
-                .correo(dto.getCorreo())
-                .contraseña(base.getContraseña())
-                .rol(base.getRol())
-                .estado(base.getEstado())
-                .nombre(dto.getNombre())
-                .apellido(dto.getApellido())
-                .telefono(dto.getTelefono())
-                .build();
+        admin = Usuario.builder().id(99L).correo("admin@example.com").rol(Roles.ADMIN).build();
+        user = Usuario.builder().id(1L).correo("test@example.com").rol(Roles.USER).build();
     }
 
+    // -------------------------------
+    // Métodos de lectura
+    // -------------------------------
     @Test
-    public void listAllTest() {
-        when(cRep.findAll()).thenReturn(mockList);
-        List<Cliente> clist = cServ.listAll();
-        assertEquals(9, clist.size());
-        assertEquals("maria.lopez@example.com", clist.get(1).getCorreo());
-        log.info("Clientes {}", clist);
+    void listAll_OK() {
+        when(cRep.findAll()).thenReturn(List.of(cliente));
+        var result = cServ.listAll();
+        assertEquals(1, result.size());
         verify(cRep, times(1)).findAll();
     }
 
     @Test
-    public void agregarOk() {
-        when(uRep.findByCorreo(clientesinid.getCorreo())).thenReturn(Optional.empty());
-
-        when(cRep.save(any(Cliente.class))).thenReturn(clienteconid);
-
-        Cliente agregado = cServ.agregar(clientesinid);
-
-        assertEquals(10L, agregado.getId());
-        assertEquals("ricardo.herrera@example.com", agregado.getCorreo());
-        assertEquals("Ricardo", agregado.getNombre());
-        assertEquals("Herrera", agregado.getApellido());
-        verify(cRep, times(1)).save(any(Cliente.class));
-        verify(uRep, times(1)).findByCorreo(clientesinid.getCorreo());
+    void getById_OK() {
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        Cliente found = cServ.getById(1L);
+        assertEquals("test@example.com", found.getCorreo());
     }
 
     @Test
-    public void agregarFail1() {
-        when(uRep.findByCorreo(clientesinid.getCorreo())).thenReturn(Optional.of(clienteconid));
+    void getById_NotFound() {
+        when(cRep.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> cServ.getById(99L));
+    }
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> cServ.agregar(clientesinid));
+    @Test
+    void getByCorreo_OK() {
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
+        Cliente found = cServ.getByCorreo("test@example.com");
+        assertEquals("test@example.com", found.getCorreo());
+    }
 
-        assertEquals("El correo ingresado ya está en uso.", ex.getMessage());
-        verify(uRep, times(1)).findByCorreo(clientesinid.getCorreo());
+    @Test
+    void getByCorreo_NotFound() {
+        when(cRep.findByCorreoIgnoreCase("nope@example.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> cServ.getByCorreo("nope@example.com"));
+    }
+
+    // -------------------------------
+    // Agregar
+    // -------------------------------
+    @Test
+    void agregar_OK() {
+        when(uRep.findByCorreo(dto.getCorreo())).thenReturn(Optional.empty());
+        when(encoder.encode(anyString())).thenReturn("encodedpass");
+        when(cRep.save(any(Cliente.class))).thenReturn(cliente);
+
+        Cliente added = cServ.agregar(dto);
+        assertNotNull(added);
+        verify(cRep).save(any(Cliente.class));
+    }
+
+    @Test
+    void agregar_CorreoEnUso() {
+        when(uRep.findByCorreo(dto.getCorreo())).thenReturn(Optional.of(cliente));
+        assertThrows(RuntimeException.class, () -> cServ.agregar(dto));
         verify(cRep, never()).save(any());
     }
 
     @Test
-    public void agregarFail2() {
-        when(uRep.findByCorreo(clientesinid.getCorreo()))
-                .thenReturn(Optional.empty());
-
-        when(cRep.save(any(Cliente.class)))
-                .thenThrow(new RuntimeException("Error en BD"));
-
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> cServ.agregar(clientesinid));
-
-        assertTrue(ex.getMessage().contains("Error al agregar al usuario: "));
-        verify(cRep, times(1)).save(any(Cliente.class));
+    void agregar_ErrorEnSave() {
+        when(uRep.findByCorreo(dto.getCorreo())).thenReturn(Optional.empty());
+        when(encoder.encode(anyString())).thenReturn("encodedpass");
+        when(cRep.save(any())).thenThrow(new RuntimeException("Error en BD"));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.agregar(dto));
+        assertTrue(ex.getMessage().contains("Error inesperado al agregar"));
     }
 
-//     @Test
-//     void modificar_OK() {
-//         when(cRep.findById(dto.getId())).thenReturn(Optional.of(base));
-//         when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
-//         when(cRep.save(any(Cliente.class))).thenReturn(modificado);
+    // -------------------------------
+    // Modificar
+    // -------------------------------
+    @Test
+    void modificar_OK() {
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
+        when(encoder.matches(anyString(), anyString())).thenReturn(true);
+        when(cRep.save(any(Cliente.class))).thenReturn(cliente);
 
-//         Cliente resultado = cServ.modificar(dto);
+        // Mockear contexto de seguridad
+        mockAuth("test@example.com", user);
 
-//         assertNotNull(resultado);
-//         assertEquals("carlos.nuevo@example.com", resultado.getCorreo());
-//         verify(cRep, times(1)).save(any(Cliente.class));
-//     }
+        Cliente modificado = cServ.modificar(dto, 1L);
+        assertNotNull(modificado);
+        verify(cRep, times(1)).save(any());
+    }
 
-//     @Test
-//     void modificar_FallaPorNoEncontrado() {
-//         when(cRep.findById(dto.getId())).thenReturn(Optional.empty());
-//         RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto));
-//         assertTrue(ex.getMessage().contains("No se pudieron recuperar los datos del usuario"));
-//     }
+    @Test
+    void modificar_ContraseñaIncorrecta() {
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
+        when(encoder.matches(anyString(), anyString())).thenReturn(false);
+        mockAuth("test@example.com", user);
 
-//     @Test
-//     void modificar_FallaPorCorreoEnUso() {
-//         Cliente otro = Cliente.builder().id(2L).correo("carlos.nuevo@example.com").build();
-//         when(cRep.findById(dto.getId())).thenReturn(Optional.of(base));
-//         when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.of(otro));
-//         RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto));
-//         assertTrue(ex.getMessage().contains("ya está en uso"));
-//     }
+        assertThrows(BadCredentialsException.class, () -> cServ.modificar(dto, 1L));
+    }
 
-//     @Test
-//     void modificar_FallaPorContraseñaIncorrecta() {
-//         dto.setContraseña("99999");
-//         when(cRep.findById(dto.getId())).thenReturn(Optional.of(base));
-//         when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
-//         RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto));
-//         assertTrue(ex.getMessage().contains("Contraseña incorrecta"));
-//     }
+    @Test
+    void modificar_ErrorEnSave() {
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(uRep.findByCorreo(anyString())).thenReturn(Optional.empty());
+        when(encoder.matches(anyString(), anyString())).thenReturn(true);
+        when(cRep.save(any())).thenThrow(new RuntimeException("DB error"));
+        mockAuth("test@example.com", user);
 
-//     @Test
-//     void modificar_FallaPorErrorEnSave() {
-//         when(cRep.findById(dto.getId())).thenReturn(Optional.of(base));
-//         when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
-//         when(cRep.save(any(Cliente.class))).thenThrow(new RuntimeException("Error en BD"));
-//         RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto));
-//         assertTrue(ex.getMessage().contains("Error al modificar datos del usuario"));
-//     }
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto, 1L));
+        assertTrue(ex.getMessage().contains("Error inesperado al modificar"));
+    }
+
+    // -------------------------------
+    // Cambiar estado
+    // -------------------------------
+    @Test
+    void cambiarEstado_OK_Admin() {
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(uRep.findByCorreo("admin@example.com")).thenReturn(Optional.of(admin));
+        mockAuth("admin@example.com", admin);
+
+        Boolean result = cServ.cambiarEstadoPorId(1L, false);
+        assertTrue(result);
+        verify(cRep).save(any());
+    }
+
+    @Test
+    void cambiarEstado_SinPermiso() {
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(uRep.findByCorreo("test@example.com")).thenReturn(Optional.of(user));
+        mockAuth("test@example.com", user);
+
+        assertThrows(RuntimeException.class, () -> cServ.cambiarEstadoPorId(1L, false));
+    }
+
+    // -------------------------------
+    // Cambiar contraseña
+    // -------------------------------
+    @Test
+    void cambiarContraseña_OK() {
+        ClaveDTO clave = new ClaveDTO("oldpass", "newpass");
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
+        when(encoder.matches(eq("newpass"), anyString())).thenReturn(false);
+        when(encoder.encode("newpass")).thenReturn("encodedNew");
+        mockAuth("test@example.com", user);
+
+        Boolean result = cServ.cambiarContraseñaPorId(1L, clave);
+        assertTrue(result);
+        verify(cRep).save(any());
+    }
+
+    @Test
+    void cambiarContraseña_Incorrecta() {
+        ClaveDTO clave = new ClaveDTO("badpass", "newpass");
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(encoder.matches(eq("badpass"), anyString())).thenReturn(false);
+        mockAuth("test@example.com", user);
+
+        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseñaPorId(1L, clave));
+    }
+
+    @Test
+    void cambiarContraseña_MismaQueActual() {
+        ClaveDTO clave = new ClaveDTO("oldpass","oldpass");
+        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
+        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
+        mockAuth("test@example.com", user);
+
+        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseñaPorId(1L, clave));
+    }
+
+    // -------------------------------
+    // Helper
+    // -------------------------------
+    private void mockAuth(String correo, Usuario usuario) {
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn(correo);
+
+        SecurityContext ctx = mock(SecurityContext.class);
+        when(ctx.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(ctx);
+
+        when(uRep.findByCorreo(correo)).thenReturn(Optional.of(usuario));
+    }
 }

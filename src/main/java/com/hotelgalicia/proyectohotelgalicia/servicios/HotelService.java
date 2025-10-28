@@ -27,4 +27,6 @@ public interface HotelService {
 
     void verificarHotel(Hotel hotel);
 
+    HotelMiniDTO ConvertHotelToDTO(Hotel hotel);
+
 }

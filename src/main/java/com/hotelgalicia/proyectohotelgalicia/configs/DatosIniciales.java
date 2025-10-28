@@ -24,6 +24,7 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.ReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
 
 @Configuration
 public class DatosIniciales {
@@ -34,8 +35,9 @@ public class DatosIniciales {
         @Bean
         CommandLineRunner initData(
                         ClienteRepository cRep,
-                        EmpresaRepository eRep, ClienteService cServ, EmpresaService eServ, HotelRepository hoRep,
-                        HabitacionRepository haRep, ReservaRepository reRep,DetalleReservaRepository drRep,HabitacionService haServ) {
+                        EmpresaRepository eRep, HotelRepository hoRep,
+                        HabitacionRepository haRep, ReservaRepository reRep, DetalleReservaRepository drRep,
+                        ClienteService cServ, EmpresaService eServ, HabitacionService haServ, HotelService hoServ) {
                 return args -> {
 
                         // Clientes
@@ -101,21 +103,6 @@ public class DatosIniciales {
                                                         .nombre("Elena").apellido("Méndez").telefono("602345678")
                                                         .build());
 
-                        // List<ClienteDTO> clientesDTO = clientes.stream()
-                        // .map(c -> {
-                        // ClienteDTO dto = new ClienteDTO();
-                        // dto.setCorreo(c.getCorreo());
-                        // dto.setContraseña(c.getContraseña());
-                        // dto.setNombre(c.getNombre());
-                        // dto.setApellido(c.getApellido());
-                        // dto.setTelefono(c.getTelefono());
-                        // return dto;
-                        // })
-                        // .collect(Collectors.toList());
-                        // for (ClienteDTO c : clientesDTO) {
-                        // cServ.agregar(c);
-                        // }
-
                         // Empresas
                         List<Empresa> empresas = List.of(
                                         Empresa.builder()
@@ -145,18 +132,6 @@ public class DatosIniciales {
                                                         .estado(true)
                                                         .razonSocial("Galicia Luxury Hotels S.L.").cif("B56789012")
                                                         .build());
-                        // List<EmpresaDTO> empresasDTO = empresas.stream(
-                        // ).map(e -> {
-                        // EmpresaDTO dto = new EmpresaDTO();
-                        // dto.setCorreo(e.getCorreo());
-                        // dto.setContraseña(e.getContraseña());
-                        // dto.setRazon(e.getRazonSocial());
-                        // dto.setCif(e.getCif());
-                        // return dto;
-                        // }).collect(Collectors.toList());
-                        // for (EmpresaDTO e : empresasDTO) {
-                        // eServ.agregar(e);
-                        // }
 
                         // Hoteles
                         List<Hotel> hoteles = List.of(
