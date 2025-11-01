@@ -85,9 +85,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Cliente modificar(ClienteDTO cliente, Long id) {
-        Cliente base = cRep.findById(id)
-                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
+    public Cliente modificar(ClienteDTO cliente) {
+        Cliente base = retornarCliente();
         verificarpropiedad(base);
         uRep.findByCorreo(cliente.getCorreo().trim().toLowerCase()).ifPresent(user -> {
             if (!user.getId().equals(base.getId())) {
@@ -112,31 +111,8 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Boolean cambiarEstadoPorId(Long id, boolean estado) {
-        Cliente cliente = cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
-        // verifica que el usuario sea admin
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
-        if (!usuario.getRol().equals(Roles.ADMIN)) {
-            throw new PermissionDeniedException("No está autorizado para realizar esta acción.");
-        }
-        cliente.setEstado(estado);
-        try {
-            cRep.save(cliente);
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            throw new SaveFailedException(
-                    "Ocurrió un error al realizar la operación: " + e.getMostSpecificCause().getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("Ocurrió un error inesperado  al realizar la operación:" + e.getMessage());
-        }
-    }
-
-    @Override
-    public Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto) {
-        Cliente cliente = cRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
-        verificarpropiedad(cliente);
+    public Boolean cambiarContraseña(ClaveDTO dto) {
+        Cliente cliente = retornarCliente();
         if (!encoder.matches(dto.getClaveActual().trim(), cliente.getContraseña())) {
             throw new BadCredentialsException("Error: Contraseña incorrecta.");
         }
@@ -154,6 +130,13 @@ public class ClienteServiceImpl implements ClienteService {
         } catch (Exception e) {
             throw new RuntimeException("Ocurrió un error inesperado  al realizar la operación:" + e.getMessage());
         }
+    }
+
+    private Cliente retornarCliente(){
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+        Cliente cliente = cRep.findByCorreoIgnoreCase(correo)
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
+        return cliente;
     }
 
     private void verificarpropiedad(Cliente cliente) {

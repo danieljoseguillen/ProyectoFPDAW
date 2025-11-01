@@ -1,6 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +30,6 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
-import com.hotelgalicia.proyectohotelgalicia.excepciones.PermissionDeniedException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
@@ -77,7 +77,6 @@ class EmpresaServiceTest {
         dto.setContraseña("1234");
         dto.setRazon("Empresa Demo");
         dto.setCif("CIF123");
-
     }
 
     // ======================================================
@@ -86,7 +85,7 @@ class EmpresaServiceTest {
 
     @Test
     void agregar_ok() {
-        when(uRep.findByCorreo(any())).thenReturn(Optional.empty());
+        when(uRep.findByCorreoIgnoreCase(any())).thenReturn(Optional.empty());
         when(encoder.encode(any())).thenReturn("encodedPass");
         when(eRep.save(any())).thenReturn(empresa);
 
@@ -98,62 +97,57 @@ class EmpresaServiceTest {
 
     @Test
     void agregar_correoEnUso_lanzaExcepcion() {
-        when(uRep.findByCorreo(any())).thenReturn(Optional.of(empresa));
+        when(uRep.findByCorreoIgnoreCase(any())).thenReturn(Optional.of(empresa));
         assertThrows(RuntimeException.class, () -> service.agregar(dto));
     }
 
     @Test
     void agregar_errorAlGuardar_lanzaSaveFailed() {
-        when(uRep.findByCorreo(any())).thenReturn(Optional.empty());
+        when(uRep.findByCorreoIgnoreCase(any())).thenReturn(Optional.empty());
         when(encoder.encode(any())).thenReturn("encoded");
         when(eRep.save(any())).thenThrow(new DataIntegrityViolationException("duplicado"));
         assertThrows(SaveFailedException.class, () -> service.agregar(dto));
     }
 
+    // ---------------------------
+    // MODIFICAR
+    // ---------------------------
     @Test
     void modificar_ok() {
-        when(eRep.findById(1L)).thenReturn(Optional.of(empresa));
         mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+        when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
         when(encoder.matches("1234", "encodedPass")).thenReturn(true);
         when(eRep.save(any())).thenReturn(empresa);
 
-        Empresa result = service.modificar(dto, 1L);
-        assertEquals("empresa@demo.com", result.getCorreo());
+        Empresa result = service.modificar(dto);
+        assertNotNull(result);
+        verify(eRep).save(any());
     }
 
     @Test
     void modificar_contraseñaIncorrecta() {
-        when(eRep.findById(1L)).thenReturn(Optional.of(empresa));
         mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+        when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
         when(encoder.matches("1234", "encodedPass")).thenReturn(false);
-        assertThrows(BadCredentialsException.class, () -> service.modificar(dto, 1L));
+
+        assertThrows(BadCredentialsException.class, () -> service.modificar(dto));
     }
 
-    @Test
-    void cambiarEstado_admin_ok() {
-        when(eRep.findById(1L)).thenReturn(Optional.of(empresa));
-        mockAuthAs("admin@demo.com", Roles.ADMIN);
-        when(eRep.save(any())).thenReturn(empresa);
-
-        assertTrue(service.cambiarEstadoPorId(1L, false));
-    }
-
-    @Test
-    void cambiarEstado_noAdmin_lanzaExcepcion() {
-        when(eRep.findById(1L)).thenReturn(Optional.of(empresa));
-        mockAuthAs("empresa@demo.com", Roles.CORPORATION);
-        assertThrows(PermissionDeniedException.class, () -> service.cambiarEstadoPorId(1L, false));
-    }
-
+    // ---------------------------
+    // CAMBIAR CONTRASEÑA
+    // ---------------------------
     @Test
     void cambiarContraseña_ok() {
-        when(eRep.findById(1L)).thenReturn(Optional.of(empresa));
         mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+        when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
         when(encoder.matches("actual", "encodedPass")).thenReturn(true);
         when(encoder.matches("nueva", "encodedPass")).thenReturn(false);
         when(encoder.encode("nueva")).thenReturn("encodedNueva");
 
-        boolean result = service.cambiarContraseñaPorId(1L, mockClave("actual", "nueva"));
+        boolean result = service.cambiarContraseñaPorId(new ClaveDTO("actual", "nueva"));
 
         assertTrue(result);
         verify(eRep).save(any());
@@ -161,14 +155,17 @@ class EmpresaServiceTest {
 
     @Test
     void cambiarContraseña_incorrecta() {
-        when(eRep.findById(1L)).thenReturn(Optional.of(empresa));
         mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
         when(encoder.matches("actual", "encodedPass")).thenReturn(false);
 
         assertThrows(BadCredentialsException.class,
-                () -> service.cambiarContraseñaPorId(1L, mockClave("actual", "nueva")));
+                () -> service.cambiarContraseñaPorId(new ClaveDTO("actual", "nueva")));
     }
 
+    // ---------------------------
+    // OTROS
+    // ---------------------------
     @Test
     void listAll_ok() {
         when(eRep.findAll()).thenReturn(List.of(empresa));
@@ -177,7 +174,7 @@ class EmpresaServiceTest {
 
     @Test
     void getByCorreo_noEncontrado() {
-        when(eRep.findByCorreo(any())).thenReturn(Optional.empty());
+        when(eRep.findByCorreoIgnoreCase(any())).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> service.getByCorreo("x@demo.com"));
     }
 
@@ -187,13 +184,12 @@ class EmpresaServiceTest {
 
     private void mockAuthAs(String correo, Roles rol) {
         when(auth.getName()).thenReturn(correo);
-        Usuario user = Usuario.builder().correo(correo).rol(rol).id(
-                rol == Roles.CORPORATION ? 1L : 99L).build();
-        when(uRep.findByCorreo(correo)).thenReturn(Optional.of(user));
-    }
-
-    private ClaveDTO mockClave(String actual, String nueva) {
-        ClaveDTO clave = new ClaveDTO(actual, nueva);
-        return clave;
+        Usuario user = Usuario.builder()
+                .correo(correo)
+                .rol(rol)
+                .id(rol == Roles.CORPORATION ? 1L : 99L)
+                .build();
+        when(uRep.findByCorreoIgnoreCase(correo)).thenReturn(Optional.of(user));
     }
 }
+

@@ -12,6 +12,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByCorreo(String correo);
 
+    Optional<Usuario> findByCorreoIgnoreCase(String correo);
+
     Boolean existsByCorreo(String correo);
 
     @Query("SELECT u FROM Usuario u LEFT JOIN Cliente c ON u.id = c.id LEFT JOIN Empresa e ON u.id = e.id WHERE u.correo = :correo")

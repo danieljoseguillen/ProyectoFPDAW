@@ -20,10 +20,8 @@ public interface ClienteService {
 
     Cliente agregar(ClienteDTO cliente);
 
-    Cliente modificar(ClienteDTO user, Long id);
+    Cliente modificar(ClienteDTO user);
 
-    Boolean cambiarEstadoPorId(Long id, boolean estado);
-
-    Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto);
+    Boolean cambiarContraseña(ClaveDTO dto);
 
 }

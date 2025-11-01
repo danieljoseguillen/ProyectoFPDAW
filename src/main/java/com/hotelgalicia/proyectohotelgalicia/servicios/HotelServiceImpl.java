@@ -210,6 +210,9 @@ public class HotelServiceImpl implements HotelService {
         Usuario usuario = uRep.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
+        if (usuario.getRol() == null)
+            throw new PermissionDeniedException("Error: Tipo de usuario no encontrado.");
+
         switch (usuario.getRol()) {
             case ADMIN -> {
             }

@@ -58,10 +58,14 @@ public class CorpoController {
     @Autowired
     private ModelMapper modelMapper;
 
-    private Long retornarId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return eServ.getByCorreo(authentication.getName()).getId();
-    }
+    // Retorna la id del usuario.
+    // private Long retornarId() {
+    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //     if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+    //         return null;
+    //     }
+    //     return eServ.getByCorreo(authentication.getName()).getId();
+    // }
 
     private String formatBindingErrors(BindingResult bindingResult) {
         return bindingResult.getFieldErrors().stream()
@@ -104,7 +108,7 @@ public class CorpoController {
             return "redirect:/enterprise/editprofile";
         }
         try {
-            eServ.modificar(empresa, retornarId());
+            eServ.modificar(empresa);
             redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -131,7 +135,7 @@ public class CorpoController {
             return "redirect:/enterprise/password";
         }
         try {
-            eServ.cambiarContraseñaPorId(retornarId(), formulario);
+            eServ.cambiarContraseñaPorId(formulario);
             redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -141,11 +145,12 @@ public class CorpoController {
 
     // ver hotel get
     @GetMapping("/hotels/{id}")
-    public String getHotel(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String getHotel(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
         try {
             Hotel hotel = hoServ.getById(id);
             hoServ.verificarHotel(hotel);
             model.addAttribute("hotel", hotel);
+            model.addAttribute("hotelId", id);
             model.addAttribute("habitaciones", hotel.getHabitaciones());
             model.addAttribute("valoraciones", hotel.getValoracion());
         } catch (Exception e) {
@@ -239,11 +244,10 @@ public class CorpoController {
             RedirectAttributes redirectAttributes, @PathVariable Long id) {
         try {
             Hotel hotel = hoServ.getById(id);
-            model.addAttribute("hotelId", id);
             hoServ.verificarHotel(hotel);
             HotelDTO dto = modelMapper.map(hotel, HotelDTO.class);
             model.addAttribute("formulario", dto);
-            return "enterprise/hotelNewView";
+            return "enterprise/hotelEditView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/enterprise/profile";
@@ -293,7 +297,6 @@ public class CorpoController {
     // nueva habitacion get
     @GetMapping("/hotels/{id}/habitacion/new")
     public String getNewHab(Model model, @ModelAttribute("formulario") HabitacionDTO dto, @PathVariable Long id) {
-        model.addAttribute("hotelId", id);
         model.addAttribute("formulario", dto);
         return "enterprise/habitacionNewView";
     }

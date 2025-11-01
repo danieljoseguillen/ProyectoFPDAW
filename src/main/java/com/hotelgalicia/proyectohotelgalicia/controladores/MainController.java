@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
@@ -25,7 +24,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
@@ -38,12 +39,13 @@ import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.FileStorageService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
 
 import jakarta.validation.Valid;
 
 @Controller
-@SessionAttributes({"reserva","hotelId"})
+@SessionAttributes({ "reserva", "hotelId" })
 public class MainController {
     @Autowired
     public FileStorageService fileserv;
@@ -63,9 +65,16 @@ public class MainController {
     @Autowired
     private ValoracionService vaServ;
 
+    @Autowired
+    private ReservaService reServ;
+
     // Retorna la id del usuario.
     private Long retornarId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
         return cServ.getByCorreo(authentication.getName()).getId();
     }
 
@@ -86,7 +95,7 @@ public class MainController {
     // Controlador principal, verifica listas vacías
     @GetMapping({ "/", "/home", "/index" })
     public String showHome(Model model, @ModelAttribute("searchform") HotelSearchDTO dto,
-            @ModelAttribute List<HotelMiniDTO> listado) {
+            @ModelAttribute("listado") List<HotelMiniDTO> listado) {
         if (dto == null || dto.getMunicipio() == null) {
             dto = defaultSearchDTO();
         }
@@ -124,13 +133,24 @@ public class MainController {
     public String getHotel(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
             Principal principal, SessionStatus status) {
         try {
-            status.setComplete();
+            // Hotel y habitaciones
             Hotel hotel = hoServ.getById(id);
-            model.addAttribute("hotelId", hotel.getId());
+            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelId(id);
+
+            // Completa el formulario de estár vacío.
+            if (model.getAttribute("hotelId") == null || !model.getAttribute("hotelId").equals(id)) {
+                status.setComplete();
+                ReservaDTO reserva = new ReservaDTO();
+                List<DetalleReservaDTO> detalles = habitaciones.stream()
+                        .map(h -> new DetalleReservaDTO(h.getId(), 0))
+                        .toList();
+                reserva.setHabitaciones(detalles);
+                model.addAttribute("hotelId", hotel.getId());
+                model.addAttribute("reserva", reserva);
+            }
             model.addAttribute("hotel", hotel);
-            model.addAttribute("habitaciones", haServ.listHabitacionByHotelId(id));
+            model.addAttribute("habitaciones", habitaciones);
             model.addAttribute("valoraciones", vaServ.listByHotelId(id));
-            model.addAttribute("formulario", new ReservaDTO());
             model.addAttribute("valoracion", new ValoracionDTO());
             model.addAttribute("myval", vaServ.getByIds(retornarId(), id));
         } catch (Exception e) {
@@ -141,29 +161,38 @@ public class MainController {
     }
 
     @PostMapping("/hotel/{id}/reserve")
-    public String postHotelReserve(@Valid ReservaDTO formulario, BindingResult bindingResult, @PathVariable Long id,
+    public String postHotelReserve(@Valid @ModelAttribute("reserva") ReservaDTO reserva, BindingResult bindingResult,
+            @PathVariable Long id,
             Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
+        model.addAttribute("reserva", reserva);
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+        } else if (!reServ.verificarCantidad(reserva)) {
+            redirectAttributes.addFlashAttribute("error", "Debe reservar al menos una habitación.");
         } else {
             try {
                 model.addAttribute("hotel", hoServ.ConvertHotelToDTO(hoServ.getById(id)));
-                model.addAttribute("reserva", formulario);
                 return "cliente/ReservaConfirmView";
             } catch (Exception e) {
+                status.setComplete();
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
             }
         }
-        status.setComplete();
         return "redirect:/hotel/" + id;
-
     }
 
     @PostMapping("/hotel/{id}/reserve/submit")
-    public String postHotelReserveSubmit(@RequestBody String entity) {
-        // TODO: process POST request
-
-        return entity;
+    public String postHotelReserveSubmit(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
+            @ModelAttribute("reserva") ReservaDTO reserva, SessionStatus status) {
+        try {
+            reServ.agregar(reserva, id);
+            redirectAttributes.addFlashAttribute("message", "Reserva realizada con exito.");
+            status.setComplete();
+            return "redirect:/index";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/hotel/" + id;
+        }
     }
 
     @PostMapping("/hotel/{id}/valoration")
@@ -199,7 +228,7 @@ public class MainController {
     // Zona Registro
     @GetMapping("/register")
     public String getReg(Model model) {
-        return "/ChoiceView";
+        return "ChoiceView";
     }
 
     // Registro por tipo
@@ -218,7 +247,7 @@ public class MainController {
                 return "redirect:/register";
             }
         }
-        return "/registerView";
+        return "registerView";
     }
 
     // Registro Usuario
@@ -229,7 +258,7 @@ public class MainController {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
             model.addAttribute("tipo", "usuario");
             model.addAttribute("fusuario", formulario);
-            return "/registerView";
+            return "registerView";
         }
         try {
             cServ.agregar(formulario);
@@ -237,7 +266,7 @@ public class MainController {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("fusuario", formulario);
             model.addAttribute("tipo", "usuario");
-            return "public/registerView";
+            return "registerView";
         }
         redirectAttributes.addFlashAttribute("message", "Usuario registrado con éxito.");
         return "redirect:/";
@@ -251,7 +280,7 @@ public class MainController {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
             model.addAttribute("tipo", "empresa");
             model.addAttribute("fempresa", formulario);
-            return "/registerView";
+            return "registerView";
         }
         try {
             eServ.agregar(formulario);
@@ -259,7 +288,7 @@ public class MainController {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("fempresa", formulario);
             model.addAttribute("tipo", "empresa");
-            return "public/registerView";
+            return "registerView";
         }
         redirectAttributes.addFlashAttribute("message", "Usuario registrado con éxito.");
         return "redirect:/";

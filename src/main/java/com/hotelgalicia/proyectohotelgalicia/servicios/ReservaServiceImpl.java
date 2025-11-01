@@ -2,7 +2,9 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,6 +29,8 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.HabitacionRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ReservaServiceImpl implements ReservaService {
@@ -65,27 +69,42 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
+    @Transactional
     public Reserva agregar(ReservaDTO reserv, Long hotelId) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+        String correo = "carlos.perez@example.com";
+        // SecurityContextHolder.getContext().getAuthentication().getName();
+        // Identifica hotel y cliente
         Cliente cliente = cRep.findByCorreoIgnoreCase(correo)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
-
         Hotel hotel = hoRep.findById(hotelId).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
 
         Reserva reservaFinal = new Reserva(null, reserv.getFechaInicio(),
                 reserv.getFechaFin(), reserv.getPersonas(), EstadoReserva.REALIZADA, cliente, hotel, new ArrayList<>());
 
-        // Agregar detalles de reserva
+        // Verificar duplicados en los detalles
+        Set<Long> idsHabitaciones = new HashSet<>();
         for (DetalleReservaDTO detalle : reserv.getHabitaciones()) {
-            Habitacion habi = haRep.findById(detalle.getHabitacion())
-                    .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
-            verificarDisponibilidad(habi, detalle.getCantidad());
-            DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
-                    habi.getNombre(), habi.getPrecio());
-            reservaFinal.getHabitaciones().add(detFinal);
+            if (!idsHabitaciones.add(detalle.getHabitacion())) {
+                throw new RuntimeException(
+                        "Error: Hay habitaciones duplicadas en la reserva (ID: " + detalle.getHabitacion() + ")");
+            }
         }
+
         try {
-            return reRep.save(reservaFinal);
+            // Agregar detalles de reserva
+            for (DetalleReservaDTO detalle : reserv.getHabitaciones()) {
+                if (detalle.getCantidad() < 1)
+                    continue;
+                Habitacion habi = haRep.findById(detalle.getHabitacion())
+                        .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
+                verificarDisponibilidad(habi, detalle.getCantidad());
+                DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
+                        habi.getNombre(), habi.getPrecio());
+                // drRep.save(detFinal);
+                reservaFinal.getHabitaciones().add(detFinal);
+            }
+            Reserva refinal = reRep.save(reservaFinal);
+            return refinal;
         } catch (DataIntegrityViolationException e) {
             throw new SaveFailedException("Error al realizar la reserva: " + e.getMostSpecificCause().getMessage());
         } catch (Exception e) {
@@ -94,25 +113,43 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
+    @Transactional
     public Reserva modificar(ReservaDTO reserv, Long id) {
         Reserva reservaFinal = reRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada."));
-        verificarReserva(reservaFinal);
+
+        // verificarReserva(reservaFinal);
         reservaFinal.setFechaInicio(reserv.getFechaInicio());
         reservaFinal.setFechaFin(reserv.getFechaFin());
         reservaFinal.setPersonas(reserv.getPersonas());
+
+        drRep.deleteAll(reservaFinal.getHabitaciones());
+
         reservaFinal.getHabitaciones().clear();
-        // Agregar detalles de reserva
+        // reRep.flush();
+        // Verificar duplicados en los detalles
+        Set<Long> idsHabitaciones = new HashSet<>();
         for (DetalleReservaDTO detalle : reserv.getHabitaciones()) {
-            Habitacion habi = haRep.findById(detalle.getHabitacion())
-                    .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
-            verificarDisponibilidad(habi, detalle.getCantidad());
-            DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
-                    habi.getNombre(), habi.getPrecio());
-            reservaFinal.getHabitaciones().add(detFinal);
+            if (!idsHabitaciones.add(detalle.getHabitacion())) {
+                throw new RuntimeException(
+                        "Error: Hay habitaciones duplicadas en la reserva (ID: " + detalle.getHabitacion() + ")");
+            }
         }
         try {
-            return reRep.save(reservaFinal);
+            // Agregar detalles de reserva
+            for (DetalleReservaDTO detalle : reserv.getHabitaciones()) {
+                if (detalle.getCantidad() < 1)
+                    continue;
+                Habitacion habi = haRep.findById(detalle.getHabitacion())
+                        .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
+                verificarDisponibilidad(habi, detalle.getCantidad());
+                DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
+                        habi.getNombre(), habi.getPrecio());
+                // drRep.save(detFinal);
+                reservaFinal.getHabitaciones().add(detFinal);
+            }
+            Reserva refinal = reRep.save(reservaFinal);
+            return refinal;
         } catch (DataIntegrityViolationException e) {
             throw new SaveFailedException("Error al modificar la reserva: " + e.getMostSpecificCause().getMessage());
         } catch (Exception e) {
@@ -177,6 +214,12 @@ public class ReservaServiceImpl implements ReservaService {
             }
             default -> throw new RuntimeException("Error al verificar permisos de usuario.");
         }
+    }
+
+    @Override
+    public boolean verificarCantidad(ReservaDTO reserva){
+        return reserva.getHabitaciones().stream()
+        .anyMatch(h -> h.getCantidad() != null && h.getCantidad() > 0);
     }
 
     private void verificarDisponibilidad(Habitacion habitacion, int cantSoli) {

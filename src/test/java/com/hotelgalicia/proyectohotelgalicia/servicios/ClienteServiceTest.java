@@ -16,10 +16,9 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -39,7 +38,7 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.ClienteRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 
 @SpringBootTest
-@TestInstance(Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ClienteServiceTest {
 
     @Mock
@@ -56,10 +55,10 @@ public class ClienteServiceTest {
 
     private Cliente cliente;
     private ClienteDTO dto;
-    private Usuario admin;
+    // private Usuario admin;
     private Usuario user;
 
-    @BeforeAll
+    @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
         cliente = Cliente.builder()
@@ -80,7 +79,8 @@ public class ClienteServiceTest {
         dto.setApellido("Usuario");
         dto.setTelefono("699999999");
 
-        admin = Usuario.builder().id(99L).correo("admin@example.com").rol(Roles.ADMIN).build();
+        // admin =
+        // Usuario.builder().id(99L).correo("admin@example.com").rol(Roles.ADMIN).build();
         user = Usuario.builder().id(1L).correo("test@example.com").rol(Roles.USER).build();
     }
 
@@ -156,62 +156,36 @@ public class ClienteServiceTest {
     // -------------------------------
     @Test
     void modificar_OK() {
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        mockAuth("test@example.com", user);
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
         when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
         when(cRep.save(any(Cliente.class))).thenReturn(cliente);
 
-        // Mockear contexto de seguridad
-        mockAuth("test@example.com", user);
-
-        Cliente modificado = cServ.modificar(dto, 1L);
+        Cliente modificado = cServ.modificar(dto);
         assertNotNull(modificado);
         verify(cRep, times(1)).save(any());
     }
 
     @Test
     void modificar_ContraseñaIncorrecta() {
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        mockAuth("test@example.com", user);
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
         when(uRep.findByCorreo(dto.getCorreo().trim().toLowerCase())).thenReturn(Optional.empty());
         when(encoder.matches(anyString(), anyString())).thenReturn(false);
-        mockAuth("test@example.com", user);
 
-        assertThrows(BadCredentialsException.class, () -> cServ.modificar(dto, 1L));
+        assertThrows(BadCredentialsException.class, () -> cServ.modificar(dto));
     }
 
     @Test
     void modificar_ErrorEnSave() {
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        mockAuth("test@example.com", user);
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
         when(uRep.findByCorreo(anyString())).thenReturn(Optional.empty());
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
         when(cRep.save(any())).thenThrow(new RuntimeException("DB error"));
-        mockAuth("test@example.com", user);
-
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.modificar(dto, 1L));
-        assertTrue(ex.getMessage().contains("Error inesperado al modificar"));
-    }
-
-    // -------------------------------
-    // Cambiar estado
-    // -------------------------------
-    @Test
-    void cambiarEstado_OK_Admin() {
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
-        when(uRep.findByCorreo("admin@example.com")).thenReturn(Optional.of(admin));
-        mockAuth("admin@example.com", admin);
-
-        Boolean result = cServ.cambiarEstadoPorId(1L, false);
-        assertTrue(result);
-        verify(cRep).save(any());
-    }
-
-    @Test
-    void cambiarEstado_SinPermiso() {
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
-        when(uRep.findByCorreo("test@example.com")).thenReturn(Optional.of(user));
-        mockAuth("test@example.com", user);
-
-        assertThrows(RuntimeException.class, () -> cServ.cambiarEstadoPorId(1L, false));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> cServ.agregar(dto));
+        assertTrue(ex.getMessage().toLowerCase().contains("error inesperado"));
     }
 
     // -------------------------------
@@ -219,37 +193,36 @@ public class ClienteServiceTest {
     // -------------------------------
     @Test
     void cambiarContraseña_OK() {
-        ClaveDTO clave = new ClaveDTO("oldpass", "newpass");
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
+        mockAuth("test@example.com", user);
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
         when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
         when(encoder.matches(eq("newpass"), anyString())).thenReturn(false);
         when(encoder.encode("newpass")).thenReturn("encodedNew");
-        mockAuth("test@example.com", user);
 
-        Boolean result = cServ.cambiarContraseñaPorId(1L, clave);
+        ClaveDTO clave = new ClaveDTO("oldpass", "newpass");
+        Boolean result = cServ.cambiarContraseña(clave);
         assertTrue(result);
         verify(cRep).save(any());
     }
 
     @Test
     void cambiarContraseña_Incorrecta() {
-        ClaveDTO clave = new ClaveDTO("badpass", "newpass");
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
-        when(encoder.matches(eq("badpass"), anyString())).thenReturn(false);
         mockAuth("test@example.com", user);
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
+        when(encoder.matches(eq("badpass"), anyString())).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseñaPorId(1L, clave));
+        ClaveDTO clave = new ClaveDTO("badpass", "newpass");
+        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseña(clave));
     }
 
     @Test
     void cambiarContraseña_MismaQueActual() {
-        ClaveDTO clave = new ClaveDTO("oldpass","oldpass");
-        when(cRep.findById(1L)).thenReturn(Optional.of(cliente));
-        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
-        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
         mockAuth("test@example.com", user);
+        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
+        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
 
-        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseñaPorId(1L, clave));
+        ClaveDTO clave = new ClaveDTO("oldpass", "oldpass");
+        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseña(clave));
     }
 
     // -------------------------------

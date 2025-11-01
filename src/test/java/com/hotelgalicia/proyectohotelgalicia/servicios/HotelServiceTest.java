@@ -33,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
-import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
@@ -41,6 +40,7 @@ import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
 import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
+import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.DetalleReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
@@ -82,6 +82,7 @@ class HotelServiceTest {
         empresa = new Empresa();
         empresa.setId(1L);
         empresa.setCorreo("corp@mail.com");
+        empresa.setRol(Roles.CORPORATION);
 
         habitacion = new Habitacion();
         habitacion.setId(1L);
@@ -163,17 +164,6 @@ class HotelServiceTest {
     void testListSortedHotel_ok() {
         HotelSearchDTO dto = new HotelSearchDTO("", Municipios.TODOS, "", 2, 1, LocalDate.now().plusDays(1),
                 LocalDate.now().plusDays(3), 50, 500, FiltroBusqueda.PRECIO_ASCENDENTE);
-        // dto.setNombre("");
-        // dto.setDireccion("");
-        // dto.setMunicipio(Municipios.TODOS);
-        // dto.setPersonas(2);
-        // dto.setCantHabi(1);
-        // dto.setFechaInicio(LocalDate.now().plusDays(1));
-        // dto.setFechaFin(LocalDate.now().plusDays(3));
-        // dto.setPresupuestoMin(50);
-        // dto.setPresupuestoMax(500);
-        // dto.setFiltro(FiltroBusqueda.PRECIO_ASCENDENTE);
-
         when(hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(any(), any(), eq(true)))
                 .thenReturn(List.of(hotel));
 
@@ -189,17 +179,6 @@ class HotelServiceTest {
     void testListSortedHotel_sinResultados() {
         HotelSearchDTO dto = new HotelSearchDTO("", Municipios.TODOS, "", 2, 1, LocalDate.now().plusDays(1),
                 LocalDate.now().plusDays(3), 1000, 2000, FiltroBusqueda.PRECIO_ASCENDENTE);
-        // dto.setNombre("");
-        // dto.setDireccion("");
-        // dto.setMunicipio(Municipios.TODOS);
-        // dto.setPersonas(2);
-        // dto.setCantHabi(1);
-        // dto.setFechaInicio(LocalDate.now().plusDays(1));
-        // dto.setFechaFin(LocalDate.now().plusDays(3));
-        // dto.setPresupuestoMin(1000);
-        // dto.setPresupuestoMax(2000);
-        // dto.setFiltro(FiltroBusqueda.PRECIO_ASCENDENTE);
-
         when(hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(any(), any(), eq(true)))
                 .thenReturn(List.of(hotel));
 
@@ -209,9 +188,9 @@ class HotelServiceTest {
     @Test
     void testCambiarEstadoPorId_ok() {
         when(hoRep.findById(1L)).thenReturn(Optional.of(hotel));
-        when(uRep.findByCorreo(any())).thenReturn(Optional.of(new Usuario()));
+        when(uRep.findByCorreo(any())).thenReturn(Optional.of(empresa));
         when(hoRep.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
+        when(eRep.findById(empresa.getId())).thenReturn(Optional.of(empresa));
         Hotel actualizado = hotelService.cambiarEstadoPorId(1L, false);
         assertFalse(actualizado.getEstado());
     }

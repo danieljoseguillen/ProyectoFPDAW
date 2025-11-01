@@ -20,9 +20,7 @@ public interface EmpresaService {
 
     Empresa agregar(EmpresaDTO user);
 
-    Empresa modificar(EmpresaDTO user, Long id);
+    Empresa modificar(EmpresaDTO user);
 
-    Boolean cambiarEstadoPorId(Long id, boolean estado);
-
-    Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto);
+    Boolean cambiarContraseñaPorId(ClaveDTO dto);
 }

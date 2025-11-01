@@ -1,5 +1,6 @@
 package com.hotelgalicia.proyectohotelgalicia.configs;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,9 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
+import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
+import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoHabitacion;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
@@ -21,10 +25,12 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HabitacionRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ReservaRepository;
+import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
 
 @Configuration
 public class DatosIniciales {
@@ -34,12 +40,16 @@ public class DatosIniciales {
 
         @Bean
         CommandLineRunner initData(
-                        ClienteRepository cRep,
+                        UsuarioRepository uRep, ClienteRepository cRep,
                         EmpresaRepository eRep, HotelRepository hoRep,
                         HabitacionRepository haRep, ReservaRepository reRep, DetalleReservaRepository drRep,
-                        ClienteService cServ, EmpresaService eServ, HabitacionService haServ, HotelService hoServ) {
+                        ClienteService cServ, EmpresaService eServ, HabitacionService haServ, HotelService hoServ,
+                        ReservaService reServ) {
                 return args -> {
-
+                        Usuario admin = Usuario.builder()
+                                        .correo("admin@example.com")
+                                        .contraseña(encoder.encode(encoder.encode("Clave12345")))
+                                        .rol(Roles.ADMIN).estado(true).build();
                         // Clientes
                         List<Cliente> clientes = List.of(
                                         Cliente.builder()
@@ -654,11 +664,28 @@ public class DatosIniciales {
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(10))
                                                         .build());
-
+                        uRep.save(admin);
                         cRep.saveAll(clientes);
                         eRep.saveAll(empresas);
                         hoRep.saveAll(hoteles);
                         haRep.saveAll(habitaciones);
+
+                        ReservaDTO reservaDTO = new ReservaDTO();
+                        reservaDTO.setFechaInicio(LocalDate.now().plusDays(1));
+                        reservaDTO.setFechaFin(LocalDate.now().plusDays(3));
+                        reservaDTO.setPersonas(2);
+
+                        // Detalles de la reserva
+                        DetalleReservaDTO det1 = new DetalleReservaDTO(1L, 1); // Habitacion ID 1, cantidad 1
+                        DetalleReservaDTO det2 = new DetalleReservaDTO(2L, 1); // Habitacion ID 2, cantidad 1
+                        DetalleReservaDTO det3 = new DetalleReservaDTO(3L, 1); // Habitacion ID 3, cantidad 1
+                        reservaDTO.setHabitaciones(List.of(det1, det2));
+                        System.out.println(reservaDTO.getHabitaciones());
+                        reServ.agregar(reservaDTO, 1L);
+                        reservaDTO.setPersonas(3);
+                        reservaDTO.setHabitaciones(List.of(det1, det2, det3));
+                        System.out.println(reservaDTO.getHabitaciones());
+                        reServ.modificar(reservaDTO, 1L);
                 };
         }
 }

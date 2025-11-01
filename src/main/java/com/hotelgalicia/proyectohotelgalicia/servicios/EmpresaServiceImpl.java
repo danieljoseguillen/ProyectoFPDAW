@@ -52,17 +52,19 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public Empresa getById(Long id) {
-        return eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
+        return eRep.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
     }
 
     @Override
     public Empresa getByCorreo(String correo) {
-        return eRep.findByCorreo(correo).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
+        return eRep.findByCorreoIgnoreCase(correo)
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
     }
 
     @Override
     public Empresa agregar(EmpresaDTO user) {
-        if (uRep.findByCorreo(user.getCorreo()).isPresent()) {
+        if (uRep.findByCorreoIgnoreCase(user.getCorreo()).isPresent()) {
             throw new RuntimeException("El correo ingresado ya está en uso.");
         }
         Empresa empresafinal = Empresa.builder()
@@ -83,11 +85,10 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public Empresa modificar(EmpresaDTO usuario, Long id) {
-        Empresa base = eRep.findById(id)
-                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
+    public Empresa modificar(EmpresaDTO usuario) {
+        Empresa base = retornarEmpresa();
         verificarpropiedad(base);
-        uRep.findByCorreo(usuario.getCorreo().trim().toLowerCase()).ifPresent(user -> {
+        uRep.findByCorreoIgnoreCase(usuario.getCorreo().trim().toLowerCase()).ifPresent(user -> {
             if (!user.getId().equals(base.getId())) {
                 throw new RuntimeException("El correo ingresado ya está en uso.");
             }
@@ -112,31 +113,8 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public Boolean cambiarEstadoPorId(Long id, boolean estado) {
-        Empresa empresa = eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
-        // verifica que el usuario sea admin
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = uRep.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
-        if (!usuario.getRol().equals(Roles.ADMIN)) {
-            throw new PermissionDeniedException("No está autorizado para realizar esta acción.");
-        }
-
-        try {
-            empresa.setEstado(estado);
-            eRep.save(empresa);
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            throw new SaveFailedException(
-                    "Error al cambiar el estado del usuario: " + e.getMostSpecificCause().getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("Ocurrió un error inesperado  al realizar la operación:" + e.getMessage());
-        }
-    }
-
-    @Override
-    public Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto) {
-        Empresa empresa = eRep.findById(id).orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
+    public Boolean cambiarContraseñaPorId(ClaveDTO dto) {
+        Empresa empresa = retornarEmpresa();
         verificarpropiedad(empresa);
         if (!encoder.matches(dto.getClaveActual().trim(), empresa.getContraseña())) {
             throw new BadCredentialsException("Error: Contraseña incorrecta.");
@@ -156,9 +134,16 @@ public class EmpresaServiceImpl implements EmpresaService {
         }
     }
 
+    private Empresa retornarEmpresa() {
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+        Empresa empresa = eRep.findByCorreoIgnoreCase(correo)
+                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
+        return empresa;
+    }
+
     private void verificarpropiedad(Empresa empresa) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = uRep.findByCorreo(correo)
+        Usuario usuario = uRep.findByCorreoIgnoreCase(correo)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
 
         switch (usuario.getRol()) {

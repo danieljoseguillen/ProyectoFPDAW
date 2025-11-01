@@ -24,4 +24,6 @@ public interface ReservaService {
 
     void verificarReserva(Reserva reserva);
 
+    boolean verificarCantidad (ReservaDTO reserva);
+
 }

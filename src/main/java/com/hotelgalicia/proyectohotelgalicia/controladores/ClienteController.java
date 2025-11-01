@@ -2,6 +2,7 @@ package com.hotelgalicia.proyectohotelgalicia.controladores;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -12,29 +13,40 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
+import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/user")
+@SessionAttributes({ "reservaId" })
 public class ClienteController {
 
     @Autowired
     private ClienteService cServ;
+
+    @Autowired
+    private HabitacionService haServ;
 
     @Autowired
     private ReservaService reServ;
@@ -51,8 +63,13 @@ public class ClienteController {
                 .collect(Collectors.joining(" | "));
     }
 
-    private Long retornarId(){
+    // Retorna la id del usuario.
+    private Long retornarId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
         return cServ.getByCorreo(authentication.getName()).getId();
     }
 
@@ -91,7 +108,7 @@ public class ClienteController {
             return "redirect:/user/editprofile";
         }
         try {
-            cServ.modificar(cliente, retornarId());
+            cServ.modificar(cliente);
             redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -118,7 +135,7 @@ public class ClienteController {
             return "redirect:/user/password";
         }
         try {
-            cServ.cambiarContraseñaPorId(retornarId(), formulario);
+            cServ.cambiarContraseña(formulario);
             redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -160,7 +177,7 @@ public class ClienteController {
         return "redirect:/index";
     }
 
-        @GetMapping("/reserves/{id}")
+    @GetMapping("/reserves/{id}")
     public String getReserveDetails(@PathVariable Long id, Model model,
             RedirectAttributes redirectAttributes) {
         try {
@@ -187,15 +204,64 @@ public class ClienteController {
     }
 
     @GetMapping("/reserves/{id}/edit")
-    public String getEditReserve(@RequestParam String param) {
-        return new String();
+    public String getEditReserve(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
+            Principal principal, SessionStatus status) {
+        try {
+            // Reserva, Hotel y habitaciones
+            Reserva reserva = reServ.getById(id);
+            Hotel hotel = reserva.getHotel();
+            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelId(hotel.getId());
+            // Valida reserva
+            reServ.verificarReserva(reserva);
+
+            // Limpia sesión previa
+            status.setComplete();
+
+            // Crea el DTO
+            // ReservaDTO reservaDTO = modelMapper.map(reserva, ReservaDTO.class);
+            ReservaDTO reservaDTO = new ReservaDTO(reserva.getFechaInicio(), reserva.getFechaFin(),
+                    reserva.getPersonas(), null);
+            List<DetalleReservaDTO> detalles = habitaciones.stream()
+                    .map(h -> new DetalleReservaDTO(h.getId(),
+                            reserva.getHabitaciones().stream()
+                                    .filter(r -> Objects.equals(r.getHabitacion().getId(), h.getId()))
+                                    .map(n -> n.getCantidad()).findFirst().orElse(0)))
+                    .toList();
+            reservaDTO.setHabitaciones(detalles);
+            model.addAttribute("reservaId", reserva.getId());
+            model.addAttribute("reserva", reservaDTO);
+
+            // agrega hotel y habitaciones
+            model.addAttribute("hotel", hotel);
+            model.addAttribute("habitaciones", habitaciones);
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/user/reserves";
+        }
+        return "cliente/reservaEditView";
     }
 
-    @PostMapping("/reserves/{id}/edit/submit")
-    public String postEditReserve(@RequestBody String entity) {
-        // TODO: process POST request
+    @PostMapping("/reserves/{hoid}/edit/submit")
+    public String postEditReserve(@Valid @ModelAttribute("reserva") ReservaDTO reserva,
+            BindingResult bindingResult, @ModelAttribute("reservaId") Long reId,
+            Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            redirectAttributes.addFlashAttribute("reserva", reserva);
+        } else {
+            try {
+                reServ.verificarCantidad(reserva);
+                reServ.modificar(reserva, reId);
+                status.setComplete();
+                redirectAttributes.addFlashAttribute("message", "Reserva modificada con exito.");
+                return "redirect:/user/reserves";
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
+            }
+        }
 
-        return entity;
+        return "redirect:/user/reserves/" + reId + "/edit";
     }
 
 }
