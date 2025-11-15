@@ -191,7 +191,7 @@ class HotelServiceTest {
         when(uRep.findByCorreo(any())).thenReturn(Optional.of(empresa));
         when(hoRep.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(eRep.findById(empresa.getId())).thenReturn(Optional.of(empresa));
-        Hotel actualizado = hotelService.cambiarEstadoPorId(1L, false);
+        Hotel actualizado = hotelService.cambiarEstadoPorId(1L);
         assertFalse(actualizado.getEstado());
     }
 }

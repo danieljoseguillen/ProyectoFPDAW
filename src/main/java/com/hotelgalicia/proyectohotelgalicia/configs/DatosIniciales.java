@@ -48,13 +48,13 @@ public class DatosIniciales {
                 return args -> {
                         Usuario admin = Usuario.builder()
                                         .correo("admin@example.com")
-                                        .contraseña(encoder.encode(encoder.encode("Clave12345")))
+                                        .contraseña(encoder.encode("Clave12345"))
                                         .rol(Roles.ADMIN).estado(true).build();
                         // Clientes
                         List<Cliente> clientes = List.of(
                                         Cliente.builder()
                                                         .correo("carlos.perez@example.com")
-                                                        .contraseña(encoder.encode(encoder.encode("Clave12345")))
+                                                        .contraseña(encoder.encode("Clave12345"))
                                                         .rol(Roles.USER).estado(true)
                                                         .nombre("Carlos").apellido("Pérez").telefono("612345678")
                                                         .build(),

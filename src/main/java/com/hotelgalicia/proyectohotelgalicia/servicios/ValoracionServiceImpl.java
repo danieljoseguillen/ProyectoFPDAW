@@ -46,7 +46,10 @@ public class ValoracionServiceImpl implements ValoracionService {
     public List<Valoracion> listByUserMail(String correo) {
         return vaRep.findByClienteCorreo(correo);
     }
-
+    @Override
+    public List<Valoracion> listByUserId(Long id) {
+        return vaRep.findByClienteId(id);
+    }
     @Override
     public Boolean agregar(ValoracionDTO val) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

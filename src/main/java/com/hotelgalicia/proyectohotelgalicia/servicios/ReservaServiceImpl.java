@@ -30,7 +30,7 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReservaServiceImpl implements ReservaService {

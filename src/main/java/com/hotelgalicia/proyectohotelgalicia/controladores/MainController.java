@@ -27,7 +27,6 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ValoracionDTO;
@@ -45,7 +44,7 @@ import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
 import jakarta.validation.Valid;
 
 @Controller
-@SessionAttributes({ "reserva", "hotelId" })
+@SessionAttributes({ "reserva", "hotelId", })
 public class MainController {
     @Autowired
     public FileStorageService fileserv;
@@ -92,17 +91,21 @@ public class MainController {
                 5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
     }
 
+    @ModelAttribute("searchform")
+    public HotelSearchDTO searchForm() {
+        return defaultSearchDTO();
+    }
+
     // Controlador principal, verifica listas vacías
     @GetMapping({ "/", "/home", "/index" })
-    public String showHome(Model model, @ModelAttribute("searchform") HotelSearchDTO dto,
-            @ModelAttribute("listado") List<HotelMiniDTO> listado) {
-        if (dto == null || dto.getMunicipio() == null) {
-            dto = defaultSearchDTO();
-        }
-        model.addAttribute("searchform", dto);
-        if (listado == null || listado.isEmpty()) {
+    public String showHome(Model model,
+            @ModelAttribute("searchform") HotelSearchDTO dto) {
+
+        // Si no hay listado en FlashAttributes se carga uno por defecto
+        if (!model.containsAttribute("listado")) {
             model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
         }
+
         return "indexView";
     }
 

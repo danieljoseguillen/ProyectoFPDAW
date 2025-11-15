@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <head th:insert="~{/fragments.html::cabecera}">
+        <title>Seleccione tipo de cuenta</title>
+    </head>
+
+<body>
+    <main>
+        <a class="btn btn-primary btn-block" th:href="@{/register/usuario}">Usuario</a>
+        <a class="btn btn-primary btn-block" th:href="@{/register/empresa}">Empresa</a>
+    </main>
+        <footer th:replace="~{/fragments.html::pie}"></footer>
+</body>
+
+</html>

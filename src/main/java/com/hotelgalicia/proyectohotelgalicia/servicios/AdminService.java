@@ -1,11 +1,15 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
+import java.util.List;
+
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTOAdmin;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTOAdmin;
+import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTOAdmin;
+import com.hotelgalicia.proyectohotelgalicia.dto.SortDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.UsuarioDTO;
 
 public interface AdminService {
@@ -18,11 +22,16 @@ public interface AdminService {
     Boolean cambiarContraseña(ClaveDTO dto);
 
     //Parte administrativa
-    public Boolean cambiarEstadoPorId(Long id, boolean estado);
 
-    Cliente modificarCliente(ClienteDTO user, Long id);
+    List<Cliente> getSortedClientes (SortDTO formulario);
 
-    Empresa modificarEmpresa(EmpresaDTO user, Long id);
+    List<Empresa> getSortedEmpresa (SortDTO formulario);
 
-    Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto);
+    Boolean cambiarEstadoPorId(Long id, boolean estado);
+
+    Cliente modificarCliente(ClienteDTOAdmin user, Long id);
+
+    Empresa modificarEmpresa(EmpresaDTOAdmin user, Long id);
+
+    Boolean cambiarContraseñaPorId(Long id, ClaveDTOAdmin dto);
 }

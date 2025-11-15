@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hotel Galicia</title>
+</head>
+
+<body>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <div th:if="${error!=null}">
+        <p class="alert alert-danger" th:text="${error}"></p>
+    </div>
+    <main></main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+</body>
+
+</html>

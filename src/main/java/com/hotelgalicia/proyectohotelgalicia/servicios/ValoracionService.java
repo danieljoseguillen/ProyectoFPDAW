@@ -12,6 +12,8 @@ public interface ValoracionService {
 
     List<Valoracion> listByUserMail(String correo);
 
+    List<Valoracion> listByUserId(Long id);
+
     Valoracion getByIds(Long iduser, Long idhotel);
 
     Boolean agregar(ValoracionDTO val);

@@ -190,11 +190,11 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    public Hotel cambiarEstadoPorId(Long id, boolean estado) {
+    public Hotel cambiarEstadoPorId(Long id) {
         Hotel hoteliminar = hoRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
         verificarHotel(hoteliminar);
         try {
-            hoteliminar.setEstado(estado);
+            hoteliminar.setEstado(!hoteliminar.getEstado());
             return hoRep.save(hoteliminar);
         } catch (DataIntegrityViolationException e) {
             throw new SaveFailedException(

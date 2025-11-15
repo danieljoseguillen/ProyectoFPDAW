@@ -11,4 +11,5 @@ public interface ValoracionRepository extends JpaRepository<Valoracion, Valoraci
 
     List<Valoracion> findByHotelId(Long id);
     List<Valoracion> findByClienteCorreo(String correo);
+    List<Valoracion> findByClienteId(Long id);
 }

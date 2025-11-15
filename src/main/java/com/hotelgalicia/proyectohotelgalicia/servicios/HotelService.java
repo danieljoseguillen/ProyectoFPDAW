@@ -23,7 +23,7 @@ public interface HotelService {
 
     Hotel modificar(HotelDTO hotel, Long hotelid, MultipartFile file);
 
-    Hotel cambiarEstadoPorId(Long id, boolean estado);
+    Hotel cambiarEstadoPorId(Long id);
 
     void verificarHotel(Hotel hotel);
 

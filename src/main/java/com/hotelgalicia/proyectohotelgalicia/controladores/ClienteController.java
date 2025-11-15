@@ -155,7 +155,7 @@ public class ClienteController {
     }
 
     @PostMapping("/valoraciones/delete")
-    public String postValorationDelete(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String postValorationDelete(@RequestParam(required = true) Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             vaServ.borrarPorId(retornarId(), id);
             redirectAttributes.addFlashAttribute("message", "Reseña eliminada con exito.");
@@ -168,6 +168,7 @@ public class ClienteController {
     @GetMapping("/reserves")
     public String getReserves(Model model, RedirectAttributes redirectAttributes) {
         try {
+            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             model.addAttribute("reservas", reServ.listByCliente(cServ.getByCorreo(authentication.getName()).getId()));
             return "cliente/reservasView";
@@ -193,14 +194,15 @@ public class ClienteController {
     }
 
     @PostMapping("/reserves/cancel")
-    public String postCancelReserve(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String postCancelReserve(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
         try {
             reServ.cancelarPorId(id);
             redirectAttributes.addFlashAttribute("message", "Reserva cancelada con exito.");
+            status.setComplete();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/reserves";
+        return "redirect:/user/reserves";
     }
 
     @GetMapping("/reserves/{id}/edit")

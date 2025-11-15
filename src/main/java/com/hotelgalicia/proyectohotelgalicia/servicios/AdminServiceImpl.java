@@ -1,17 +1,22 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTOAdmin;
+import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTOAdmin;
+import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTOAdmin;
+import com.hotelgalicia.proyectohotelgalicia.dto.SortDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.UsuarioDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.PermissionDeniedException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
@@ -20,6 +25,7 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.ClienteRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 
+@Service
 public class AdminServiceImpl implements AdminService {
 
     @Autowired
@@ -94,7 +100,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     // Parte administrativa
-        private Usuario retornarUser() {
+    private Usuario retornarUser() {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = uRep.findByCorreoIgnoreCase(correo)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
@@ -109,7 +115,41 @@ public class AdminServiceImpl implements AdminService {
             throw new PermissionDeniedException("No está autorizado para realizar esta acción.");
         }
     }
-    
+
+    @Override
+    public List<Cliente> getSortedClientes(SortDTO formulario) {
+        if (formulario.getSortname() == null)
+            formulario.setSortname("");
+        switch (formulario.getSorttype()) {
+            case "NOMBRE" -> {
+                return cRep.findByNombreContainingIgnoreCase(formulario.getSortname());
+            }
+            case "CORREO" -> {
+                return cRep.findByCorreoContainingIgnoreCase(formulario.getSortname());
+            }
+            default -> {
+                return cRep.findAll();
+            }
+        }
+    }
+
+    @Override
+    public List<Empresa> getSortedEmpresa(SortDTO formulario) {
+        if (formulario.getSortname() == null)
+            formulario.setSortname("");
+        switch (formulario.getSorttype()) {
+            case "RAZON" -> {
+                return eRep.findByRazonSocialContainingIgnoreCase(formulario.getSortname());
+            }
+            case "CORREO" -> {
+                return eRep.findByCorreoContainingIgnoreCase(formulario.getSortname());
+            }
+            default -> {
+                return eRep.findAll();
+            }
+        }
+    }
+
     @Override
     public Boolean cambiarEstadoPorId(Long id, boolean estado) {
         Usuario objetivo = uRep.findById(id)
@@ -130,7 +170,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Cliente modificarCliente(ClienteDTO cliente, Long id) {
+    public Cliente modificarCliente(ClienteDTOAdmin cliente, Long id) {
         Cliente base = cRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
         verificarAdmin();
@@ -140,7 +180,7 @@ public class AdminServiceImpl implements AdminService {
             }
         });
         // if (!encoder.matches(cliente.getContraseña(), base.getContraseña())) {
-        //     throw new BadCredentialsException("Contraseña incorrecta.");
+        // throw new BadCredentialsException("Contraseña incorrecta.");
         // }
         base.setCorreo(cliente.getCorreo().trim());
         base.setNombre(cliente.getNombre().trim());
@@ -157,8 +197,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Empresa modificarEmpresa(EmpresaDTO usuario, Long id) {
-                Empresa base = eRep.findById(id)
+    public Empresa modificarEmpresa(EmpresaDTOAdmin usuario, Long id) {
+        Empresa base = eRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
         verificarAdmin();
         uRep.findByCorreoIgnoreCase(usuario.getCorreo().trim().toLowerCase()).ifPresent(user -> {
@@ -168,7 +208,7 @@ public class AdminServiceImpl implements AdminService {
         });
 
         // if (!encoder.matches(usuario.getContraseña().trim(), base.getContraseña())) {
-        //     throw new BadCredentialsException("Contraseña incorrecta.");
+        // throw new BadCredentialsException("Contraseña incorrecta.");
         // }
 
         base.setCorreo(usuario.getCorreo().trim());
@@ -186,7 +226,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Boolean cambiarContraseñaPorId(Long id, ClaveDTO dto) {
+    public Boolean cambiarContraseñaPorId(Long id, ClaveDTOAdmin dto) {
         Usuario usuario = uRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario"));
         // verifica que el usuario sea admin
