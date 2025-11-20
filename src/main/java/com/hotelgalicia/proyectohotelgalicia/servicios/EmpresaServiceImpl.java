@@ -70,7 +70,7 @@ public class EmpresaServiceImpl implements EmpresaService {
         Empresa empresafinal = Empresa.builder()
                 .correo(user.getCorreo().trim().toLowerCase())
                 .contraseña(encoder.encode(user.getContraseña().trim()))
-                .rol(Roles.USER)
+                .rol(Roles.CORPORATION)
                 .estado(true)
                 .razonSocial(user.getRazon().trim())
                 .cif(user.getCif().trim())

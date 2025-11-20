@@ -101,11 +101,7 @@ public class MainController {
     public String showHome(Model model,
             @ModelAttribute("searchform") HotelSearchDTO dto) {
 
-        // Si no hay listado en FlashAttributes se carga uno por defecto
-        if (!model.containsAttribute("listado")) {
-            model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
-        }
-
+        model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
         return "indexView";
     }
 
@@ -115,19 +111,22 @@ public class MainController {
             BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("searchform", dto);
-            return "redirect:/index";
+            // redirectAttributes.addFlashAttribute("error",
+            // formatBindingErrors(bindingResult));
+            model.addAttribute("searchform", dto);
+            model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+            return "indexView";
         } else {
             try {
-                redirectAttributes.addFlashAttribute("listado", hoServ.listSortedHotel(dto));
+                model.addAttribute("listado", hoServ.listSortedHotel(dto));
             } catch (EmptyListException e) {
-                redirectAttributes.addFlashAttribute("warning", e.getMessage());
+                model.addAttribute("warning", e.getMessage());
+                model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
             } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
+                model.addAttribute("error", e.getMessage());
             }
-            redirectAttributes.addFlashAttribute("searchform", dto);
-            return "redirect:/index";
+            model.addAttribute("searchform", dto);
+            return "indexView";
         }
     }
 
@@ -255,10 +254,10 @@ public class MainController {
 
     // Registro Usuario
     @PostMapping("/register/usuario/submit")
-    public String postRegUser(@Valid ClienteDTO formulario, BindingResult bindingResult, Model model,
+    public String postRegUser(@Valid @ModelAttribute("fusuario") ClienteDTO formulario, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            // model.addAttribute("error", formatBindingErrors(bindingResult));
             model.addAttribute("tipo", "usuario");
             model.addAttribute("fusuario", formulario);
             return "registerView";
@@ -276,11 +275,11 @@ public class MainController {
     }
 
     // Registro Empresa
-    @PostMapping("/register/corp/submit")
-    public String postAdd(@Valid EmpresaDTO formulario, BindingResult bindingResult, Model model,
+    @PostMapping("/register/empresa/submit")
+    public String postAdd(@Valid @ModelAttribute("fempresa") EmpresaDTO formulario, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            // model.addAttribute("error", formatBindingErrors(bindingResult));
             model.addAttribute("tipo", "empresa");
             model.addAttribute("fempresa", formulario);
             return "registerView";

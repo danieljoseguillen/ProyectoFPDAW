@@ -2,15 +2,132 @@
 <html lang="en">
 
 <head th:insert="~{/fragments.html::cabecera}">
-    <title>Hotel Galicia</title>
+    <title>Hoteles Galicia</title>
 </head>
 
 <body>
+    <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <div th:if="${error!=null}">
         <p class="alert alert-danger" th:text="${error}"></p>
     </div>
-    <main></main>
+        <div th:if="${warning!=null}">
+        <p class="warning alert-warning" th:text="${warning}"></p>
+    </div>
+            <div th:if="${message!=null}">
+        <p class="message alert-warning" th:text="${message}"></p>
+    </div>
+    <main id="inicio">
+        <div class="busqueda rounded-3 ms-auto container-sm">
+            <form method="post" action="#" th:action="@{/search}" th:object="${searchform}">
+
+                <h3>Filtros de busqueda:</h3>
+
+                <div class="form-floating mb-2">
+                    <input type="text" th:field="*{nombre}" class="form-control" id="nombre"
+                        placeholder="Nombre del hotel">
+                    <label for="nombre" class="form-label">Nombre del hotel</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="text" th:field="*{direccion}" class="form-control" id="direccion"
+                        placeholder="Dirección">
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}">
+                    </div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <select th:field="*{municipio}" class="form-select" id="municipio">
+                        <option th:each="m : ${T(com.hotelgalicia.proyectohotelgalicia.modelos.Municipios).values()}"
+                            th:value="${m}" th:text="${m.nombre}"></option>
+                    </select>
+                    <label for="municipio" class="form-label">Municipio</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('municipio')}" th:errors="*{municipio}">
+                    </div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="number" th:field="*{personas}" min="1" class="form-control" id="personas">
+                    <label for="personas" class="form-label">Personas</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('personas')}" th:errors="*{personas}"></div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="number" th:field="*{cantHabi}" min="1" class="form-control" id="cantHabi">
+                    <label for="cantHabi" class="form-label">Habitaciones</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('cantHabi')}" th:errors="*{cantHabi}"></div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="date" th:field="*{fechaInicio}" class="form-control" id="fechaInicio">
+                    <label for="fechaInicio" class="form-label">Fecha de inicio</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('fechaInicio')}" th:errors="*{fechaInicio}">
+                    </div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="date" th:field="*{fechaFin}" class="form-control" id="fechaFin">
+                    <label for="fechaFin" class="form-label">Fecha de fin</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('fechaFin')}" th:errors="*{fechaFin}"></div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="number" th:field="*{presupuestoMin}" min="5" class="form-control" id="presupuestoMin">
+                    <label for="presupuestoMin" class="form-label">Presupuesto mínimo</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('presupuestoMin')}"
+                        th:errors="*{presupuestoMin}">
+                    </div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="number" th:field="*{presupuestoMax}" min="5" class="form-control" id="presupuestoMax">
+                    <label for="presupuestoMax" class="form-label">Presupuesto máximo</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('presupuestoMax')}"
+                        th:errors="*{presupuestoMax}">
+                    </div>
+                </div>
+
+                <div class="form-floating md-2">
+                    <select th:field="*{filtro}" class="form-select" id="filtro">
+                        <option
+                            th:each="f : ${T(com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda).values()}"
+                            th:value="${f}" th:text="${f.nombre}"></option>
+                    </select>
+                    <label for="filtro" class="form-label">Ordenar por</label>
+                </div>
+                <br>
+                <div class="col-3">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+
+            </form>
+        </div>
+        <div class="container-md">
+            <div th:each="hotel:${listado}" class="caja container rounded-3">
+                <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
+                <div class="cajamain container">
+                    <h4 th:text="${hotel.nombre}"></h4>
+                    <div>
+                        <p class="parrafo" th:text="${hotel.municipio.nombre}"></p>
+                        <p class="parrafo" th:text="${hotel.direccion}"></p>
+                    </div>
+                    <div class="cajabottom">
+                        <h5 th:text="${hotel.habitacion.nombre}">Habitación: </h5>
+                        <p>Capacidad: <i th:each="i : ${#numbers.sequence(1, hotel.habitacion.capacidad)}"
+                                class="bi bi-person-standing"></i></p>
+                        <p>Precio: <span th:text="${hotel.habitacion.precio}"></span>€/noche </p>
+                    </div>
+                </div>
+                <div class="minicaja container">
+                    <p>Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
+                    <p><span th:text="${hotel.valoraciones}"></span> Reseñas</p>
+
+                </div>
+            </div>
+        </div>
+    </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>
 </body>
 

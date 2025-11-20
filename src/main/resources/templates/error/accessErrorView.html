@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Book Advisor</title>
+</head>
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <div th:if="${error!=null}">
+        <p class="alert alert-danger" th:text="${error}"></p>
+    </div>
+    <main>
+        <h2>Error.</h2>
+        <h4>No tiene permisos suficientes para acceder a la dirección.</h4>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+</body>
+</html>

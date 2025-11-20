@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
 
-    <head th:insert="~{/fragments.html::cabecera}">
-        <title>Seleccione tipo de cuenta</title>
-    </head>
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Seleccione tipo de cuenta</title>
+</head>
 
 <body>
+    <header th:replace="~{/fragments.html::logo}"></header>
     <main>
-        <a class="btn btn-primary btn-block" th:href="@{/register/usuario}">Usuario</a>
-        <a class="btn btn-primary btn-block" th:href="@{/register/empresa}">Empresa</a>
+        <div class="cregister">
+            <h2>Seleccione el tipo de cuenta a crear:</h2>
+            <a class="btn btn-primary btn-block" th:href="@{/register/usuario}">Usuario</a>
+            <a class="btn btn-primary btn-block" th:href="@{/register/empresa}">Empresa</a>
+        </div>
     </main>
-        <footer th:replace="~{/fragments.html::pie}"></footer>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
 </body>
 
 </html>

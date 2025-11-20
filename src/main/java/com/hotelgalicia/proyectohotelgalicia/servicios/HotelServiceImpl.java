@@ -237,7 +237,7 @@ public class HotelServiceImpl implements HotelService {
 
     private HabitacionMiniDTO ConvertHabToDTO(Habitacion habitacion, Long dias) {
         HabitacionMiniDTO habitacionfinal = new HabitacionMiniDTO(habitacion.getNombre(),
-                habitacion.getCantidad(), habitacion.getPrecio() * dias);
+                habitacion.getCapacidad(), habitacion.getPrecio() * dias);
         return habitacionfinal;
     }
 

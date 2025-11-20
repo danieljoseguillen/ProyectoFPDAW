@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Error: 500</title>
+</head>
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <h2>Error.</h2>
+        <h4>Error interno del servidor.</h4>
+        
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+</body>
+</html>
