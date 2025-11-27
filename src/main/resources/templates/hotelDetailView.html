@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title th:text="${hotel.nombre}">Hoteles Galicia</title>
+</head>
+
+<body class="hotelview">
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <div th:if="${error!=null}">
+            <p class="alert alert-danger" th:text="${error}"></p>
+        </div>
+        <div th:if="${warning!=null}">
+            <p class="warning alert-warning" th:text="${warning}"></p>
+        </div>
+        <div th:if="${message!=null}">
+            <p class="message alert-warning" th:text="${message}"></p>
+        </div>
+
+        <div class="container-sm mt-1 w-100 mb-4">
+            <div class="minicaja container my-2 mx-2">
+                <p>Puntuación: <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
+                <p><span th:text="${valoraciones.size}"></span> Reseñas</p>
+            </div>
+            <h1 th:text="${hotel.nombre}"></h1>
+            <p><i class="bi bi-geo-alt-fill"></i> <span th:text="${hotel.direccion}"></span> - <span
+                    th:text="${hotel.municipio.provincia.nombre}"></span></p>
+            <div class="container mt-4">
+                <div class="row g-3">
+
+                    <!-- Imagen principal del hotel (2x2) -->
+                    <div class="col-md-8">
+                        <div class="hotel-image-big h-100">
+                            <img th:src="@{'/files/' + ${hotel.imagen}}" class="img-fluid rounded">
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 d-flex flex-column gap-3">
+                        <div th:each="hab, iter : ${habitaciones}" th:if="${iter.index < 2}">
+                            <img th:src="@{'/files/' + ${hab.imagen}}" class="img-fluid rounded">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Cuadrícula de habitaciones debajo (3 por fila) -->
+                <div class="row mt-1 g-3">
+                    <div th:each="hab, iter : ${habitaciones}" th:if="${iter.index >= 2}" class="col-md-4">
+                        <img th:src="@{'/files/' + ${hab.imagen}}" class="img-fluid rounded">
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="row-g2">
+                <div class="col-md-8 cajaimagenes">
+                    <img class="img-fluid rounded-3 g-2 cajaimagenes" th:src="'/files/'+${hotel.imagen}">
+                    <div class="col-md-4 d-flex flex-column gap-3 w-50">
+                        <div th:each="hab, iter : ${habitaciones}" th:if="${iter.index < 2}">
+                            <img th:src="'/files/'+${hab.imagen}" class="img-fluid rounded">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3 g-2">
+                    <div th:each="hab, iter : ${habitaciones}" th:if="${iter.index >= 2}" class="col-md-4">
+                        <img th:src="'/files/'+${hab.imagen}" class="img-fluid rounded shadow">
+                    </div>
+                </div>
+            </div> -->
+            <br>
+            <p class="p-descripcion mt-3 container" th:text="${hotel.descripcion}"></p>
+
+        </div>
+        <div class="container-sm mb-5 w-100">
+            <div class="container-sm">
+                <h4>Disponibilidad</h4>
+                <form class="row g-3" th:action="@{/hotel/{id}(id=${hotel.id})}" method="get" th:object="${filtro}">
+                    <div class="form-floating col-md-4 container">
+                        <input type="date" th:field="*{fechaInicio}" class="form-control" id="fechaInicio">
+                        <label for="fechaInicio" class="form-label">Fecha de inicio</label>
+                        <div class="text-danger" th:if="${#fields.hasErrors('fechaInicio')}" th:errors="*{fechaInicio}">
+                        </div>
+                    </div>
+
+                    <div class="form-floating col-md-4">
+                        <input type="date" th:field="*{fechaFin}" class="form-control" id="fechaFin">
+                        <label for="fechaFin" class="form-label">Fecha de fin</label>
+                        <div class="text-danger" th:if="${#fields.hasErrors('fechaFin')}" th:errors="*{fechaFin}"></div>
+                    </div>
+                    <div class="form-floating col-md-2">
+                        <input type="number" th:field="*{personas}" min="1" class="form-control" id="personas">
+                        <label for="personas" class="form-label">Personas</label>
+                        <div class="text-danger" th:if="${#fields.hasErrors('personas')}" th:errors="*{personas}"></div>
+                    </div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-primary h-100">Actualizar
+                            búsqueda</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="container w-100">
+            <h4>Habitaciones</h4>
+            <form th:action="@{/hotel/{id}/reserve (id=${hotelId})}" method="post" th:object="${reserva}">
+                <input type="hidden" th:field="*{fechaInicio}" readonly />
+                <input type="hidden" th:field="*{fechaFin}" readonly />
+                <input type="hidden" th:field="*{personas}" readonly />
+                <div class="d-flex flex-row">
+                    <table class="table table-hover table-bordered border-gray">
+                        <thead class="table-dark hotelheader">
+                            <th>Tipo de habitación</th>
+                            <th>Capacidad</th>
+                            <th>Precio</th>
+                            <th>Selecciona habitaciones</th>
+                        </thead>
+                        <tbody>
+                            <tr th:each="habi, iterHab:${habitaciones}">
+                                <td class="d-flex flex-row">
+                                    <img class="rounded-3 imagenminihotel"
+                                        th:src="'/files/'+${habi.imagen}">
+                                    <div>
+                                        <h5 th:text="${habi.nombre}"></h5>
+                                        <p th:text="${habi.descripcion}"></p>
+                                    </div>
+                                </td>
+                                <td><i th:each="i : ${#numbers.sequence(1, habi.capacidad)}"
+                                        class="bi bi-person-standing"></i></td>
+                                <td>
+                                    <p th:text="'€ ' + ${#numbers.formatDecimal(habi.precio,0,0)}"></p>
+                                </td>
+                                <td width="30px">
+                                    <input type="hidden" th:field="*{habitaciones[__${iterHab.index}__].habitacion}"
+                                        th:value="${habi.id}" />
+                                    <input type="number" th:field="*{habitaciones[__${iterHab.index}__].cantidad}"
+                                        min="0" th:max="${habi.disponibles}" class="form-control" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="faketable table-bordered border-gray ">
+                        <div class="fakeheader td w-100"></div>
+                        <button type="submit" class="btn btn-primary mx-2 my-2">Reservar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br>
+        <div sec:authorize="hasAnyRole('USER')"
+            class="cajavaloraform-p d-flex flex-column align-items-center container-sm">
+            <h4>Deja una reseña.</h4>
+            <form class="cajavaloraform" method="post" action="#" th:action="@{/hotel/{id}/valoration (id=${hotel.id})}"
+                th:object="${valoracion}">
+                <input type="hidden" name="hotel" th:value="${hotelId}">
+                <div class="container">
+                    <label class="form-label mr-2" for="puntaje">Puntaje:</label>
+                    <input type="number" class="form-control w-25 ml-2" name="puntaje" id="puntaje" min="1" max="10"
+                        value="1" required>
+                </div>
+                <div class="container-sm">
+                    <label class="form-label">Comentario:</label>
+                    <textarea th:field="*{comentario}" class="form-control"
+                        placeholder="Indique aquí los puntos que desee mencionar sobre el hotel, su experiencia, etc."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar</button>
+            </form>
+        </div>
+        <div class="d-flex flex-column align-items-center container-sm">
+            <h4>Reseñas de usuarios:</h4>
+            <div class="cajavaloramain">
+                <div class="container cajavalora" th:each="valora:${valoraciones}">
+                    <p class="blueIcon float-end rounded" th:text="${valora.puntaje}"></p>
+                    <h5><span th:text="${valora.cliente.nombre}"></span> <span class="minitexto"
+                            th:text="${#temporals.format(valora.fecha, 'dd MMMM yyyy')}"></span></h5>
+                    <p th:text="${valora.comentario}"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+</body>
+
+</html>

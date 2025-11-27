@@ -2,6 +2,8 @@ package com.hotelgalicia.proyectohotelgalicia.dto;
 
 import java.time.LocalDate;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 
@@ -31,11 +33,13 @@ public class HotelSearchDTO {
 
     @Min(value = 1, message = "Debe haber al menos una habitación en la busqueda.")
     private int cantHabi;
-
+    
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @NotNull(message = "Debe ingresar una fecha de inicio.")
     @FutureOrPresent(message = "La fecha de inicio de la reserva debe ser la fecha actual o posterior.")
     private LocalDate fechaInicio;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @NotNull(message = "Debe ingresar una fecha de fin.")
     @Future(message = "La fecha de salida debe ser una fecha posterior.")
     private LocalDate fechaFin;

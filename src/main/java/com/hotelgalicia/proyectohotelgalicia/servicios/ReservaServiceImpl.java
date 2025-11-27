@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.DetalleReserva;
@@ -29,8 +30,6 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.HabitacionRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ReservaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReservaServiceImpl implements ReservaService {
@@ -71,8 +70,7 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional
     public Reserva agregar(ReservaDTO reserv, Long hotelId) {
-        String correo = "carlos.perez@example.com";
-        // SecurityContextHolder.getContext().getAuthentication().getName();
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         // Identifica hotel y cliente
         Cliente cliente = cRep.findByCorreoIgnoreCase(correo)
                 .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
@@ -97,7 +95,7 @@ public class ReservaServiceImpl implements ReservaService {
                     continue;
                 Habitacion habi = haRep.findById(detalle.getHabitacion())
                         .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
-                verificarDisponibilidad(habi, detalle.getCantidad());
+                verificarDisponibilidad(habi, detalle.getCantidad(), reserv.getFechaInicio(), reserv.getFechaFin());
                 DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
                         habi.getNombre(), habi.getPrecio());
                 // drRep.save(detFinal);
@@ -142,7 +140,7 @@ public class ReservaServiceImpl implements ReservaService {
                     continue;
                 Habitacion habi = haRep.findById(detalle.getHabitacion())
                         .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
-                verificarDisponibilidad(habi, detalle.getCantidad());
+                verificarDisponibilidad(habi, detalle.getCantidad(), reserv.getFechaInicio(), reserv.getFechaFin());
                 DetalleReserva detFinal = new DetalleReserva(habi, reservaFinal, detalle.getCantidad(),
                         habi.getNombre(), habi.getPrecio());
                 // drRep.save(detFinal);
@@ -222,9 +220,9 @@ public class ReservaServiceImpl implements ReservaService {
         .anyMatch(h -> h.getCantidad() != null && h.getCantidad() > 0);
     }
 
-    private void verificarDisponibilidad(Habitacion habitacion, int cantSoli) {
+    private void verificarDisponibilidad(Habitacion habitacion, int cantSoli, LocalDate inicioSolicitud, LocalDate finSolicitud) {
         Integer cantReserv = drRep.sumByHabitacionId(habitacion.getId(),
-                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
+                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA), inicioSolicitud, finSolicitud);
         if (cantReserv == null) {
             cantReserv = 0;
         }

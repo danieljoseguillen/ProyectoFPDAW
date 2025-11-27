@@ -11,14 +11,14 @@
     <div th:if="${error!=null}">
         <p class="alert alert-danger" th:text="${error}"></p>
     </div>
-        <div th:if="${warning!=null}">
+    <div th:if="${warning!=null}">
         <p class="warning alert-warning" th:text="${warning}"></p>
     </div>
-            <div th:if="${message!=null}">
+    <div th:if="${message!=null}">
         <p class="message alert-warning" th:text="${message}"></p>
     </div>
     <main id="inicio">
-        <div class="busqueda rounded-3 ms-auto container-sm">
+        <div class="busqueda rounded-3 container-sm">
             <form method="post" action="#" th:action="@{/search}" th:object="${searchform}">
 
                 <h3>Filtros de busqueda:</h3>
@@ -98,17 +98,27 @@
                     <label for="filtro" class="form-label">Ordenar por</label>
                 </div>
                 <br>
-                <div class="col-3">
+                <div>
                     <button type="submit" class="btn btn-primary">Buscar</button>
+                    <button type="reset" class="float-end btn btn-primary">Reestablecer</button>
                 </div>
-
             </form>
         </div>
         <div class="container-md">
             <div th:each="hotel:${listado}" class="caja container rounded-3">
-                <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
+                <a th:href="@{/hotel/{id} (id=${hotel.id},
+                            fechaInicio=${searchform.fechaInicio},
+                            fechaFin=${searchform.fechaFin},
+                            personas=${searchform.personas})}">
+                    <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
+                </a>
                 <div class="cajamain container">
-                    <h4 th:text="${hotel.nombre}"></h4>
+                    <a th:href="@{/hotel/{id} (id=${hotel.id},
+                            fechaInicio=${searchform.fechaInicio},
+                            fechaFin=${searchform.fechaFin},
+                            personas=${searchform.personas})}">
+                        <h4 th:text="${hotel.nombre}"></h4>
+                    </a>
                     <div>
                         <p class="parrafo" th:text="${hotel.municipio.nombre}"></p>
                         <p class="parrafo" th:text="${hotel.direccion}"></p>
@@ -117,13 +127,12 @@
                         <h5 th:text="${hotel.habitacion.nombre}">Habitación: </h5>
                         <p>Capacidad: <i th:each="i : ${#numbers.sequence(1, hotel.habitacion.capacidad)}"
                                 class="bi bi-person-standing"></i></p>
-                        <p>Precio: <span th:text="${hotel.habitacion.precio}"></span>€/noche </p>
+                        <p>Precio: <span th:text="${hotel.habitacion.precio}"></span>€ en total </p>
                     </div>
                 </div>
                 <div class="minicaja container">
                     <p>Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
                     <p><span th:text="${hotel.valoraciones}"></span> Reseñas</p>
-
                 </div>
             </div>
         </div>

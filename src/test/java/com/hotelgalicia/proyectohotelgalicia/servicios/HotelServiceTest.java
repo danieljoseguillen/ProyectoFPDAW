@@ -167,7 +167,7 @@ class HotelServiceTest {
         when(hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(any(), any(), eq(true)))
                 .thenReturn(List.of(hotel));
 
-        when(drRep.sumByHabitacionId(anyLong(), anyList())).thenReturn(0);
+        when(drRep.sumByHabitacionId(anyLong(), anyList(),dto.getFechaInicio(),dto.getFechaFin())).thenReturn(0);
 
         List<HotelMiniDTO> resultado = hotelService.listSortedHotel(dto);
 

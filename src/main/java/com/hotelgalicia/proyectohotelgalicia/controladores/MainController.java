@@ -27,6 +27,7 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HotelDateDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ValoracionDTO;
@@ -44,7 +45,7 @@ import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
 import jakarta.validation.Valid;
 
 @Controller
-@SessionAttributes({ "reserva", "hotelId", })
+@SessionAttributes({ "reserva", "hotelId", "searchform" })
 public class MainController {
     @Autowired
     public FileStorageService fileserv;
@@ -100,7 +101,6 @@ public class MainController {
     @GetMapping({ "/", "/home", "/index" })
     public String showHome(Model model,
             @ModelAttribute("searchform") HotelSearchDTO dto) {
-
         model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
         return "indexView";
     }
@@ -130,19 +130,57 @@ public class MainController {
         }
     }
 
+    // Lista vacía por defecto
+    private HotelDateDTO defaultDateDTO() {
+        return new HotelDateDTO(
+                LocalDate.now(), LocalDate.now().plusDays(1), 1);
+    }
+
+    @ModelAttribute("filtro")
+    public HotelDateDTO filtro() {
+        return defaultDateDTO();
+    }
+
     // Muestra hoteles
     @GetMapping("/hotel/{id}")
-    public String getHotel(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
+    public String getHotel(@PathVariable Long id,
+            @ModelAttribute("filtro") HotelDateDTO filtro, Model model,
+            RedirectAttributes redirectAttributes,
             Principal principal, SessionStatus status) {
         try {
+            // Valida fechas
+            if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())) {
+                filtro.setFechaFin(filtro.getFechaInicio().plusDays(1));
+
+            }
+
+            if (filtro.getFechaInicio().isBefore(LocalDate.now())) {
+                filtro.setFechaInicio(LocalDate.now());
+
+            }
+
+            if (filtro.getFechaFin().isBefore(LocalDate.now())) {
+                filtro.setFechaFin(LocalDate.now().plusDays(1));
+            }
             // Hotel y habitaciones
             Hotel hotel = hoServ.getById(id);
-            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelId(id);
+            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelIdDisponibles(id,
+                    filtro.getFechaInicio(),
+                    filtro.getFechaFin());
 
+            if (filtro.getFechaInicio() == null) {
+                filtro.setFechaInicio(LocalDate.now());
+                filtro.setFechaFin(LocalDate.now().plusDays(1));
+                filtro.setPersonas(1);
+            }
+            model.addAttribute("filtro", filtro);
             // Completa el formulario de estár vacío.
             if (model.getAttribute("hotelId") == null || !model.getAttribute("hotelId").equals(id)) {
                 status.setComplete();
                 ReservaDTO reserva = new ReservaDTO();
+                reserva.setFechaInicio(filtro.getFechaInicio());
+                reserva.setFechaFin(filtro.getFechaFin());
+                reserva.setPersonas(filtro.getPersonas());
                 List<DetalleReservaDTO> detalles = habitaciones.stream()
                         .map(h -> new DetalleReservaDTO(h.getId(), 0))
                         .toList();
@@ -163,16 +201,17 @@ public class MainController {
     }
 
     @PostMapping("/hotel/{id}/reserve")
-    public String postHotelReserve(@Valid @ModelAttribute("reserva") ReservaDTO reserva, BindingResult bindingResult,
+    public String postHotelReserve(@Valid ReservaDTO reserva, BindingResult bindingResult,
             @PathVariable Long id,
             Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
-        model.addAttribute("reserva", reserva);
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
         } else if (!reServ.verificarCantidad(reserva)) {
             redirectAttributes.addFlashAttribute("error", "Debe reservar al menos una habitación.");
         } else {
             try {
+                model.addAttribute("reserva", reserva);
+                model.addAttribute("hotelId", id);
                 model.addAttribute("hotel", hoServ.ConvertHotelToDTO(hoServ.getById(id)));
                 return "cliente/ReservaConfirmView";
             } catch (Exception e) {
@@ -254,7 +293,8 @@ public class MainController {
 
     // Registro Usuario
     @PostMapping("/register/usuario/submit")
-    public String postRegUser(@Valid @ModelAttribute("fusuario") ClienteDTO formulario, BindingResult bindingResult, Model model,
+    public String postRegUser(@Valid @ModelAttribute("fusuario") ClienteDTO formulario, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             // model.addAttribute("error", formatBindingErrors(bindingResult));
@@ -276,7 +316,8 @@ public class MainController {
 
     // Registro Empresa
     @PostMapping("/register/empresa/submit")
-    public String postAdd(@Valid @ModelAttribute("fempresa") EmpresaDTO formulario, BindingResult bindingResult, Model model,
+    public String postAdd(@Valid @ModelAttribute("fempresa") EmpresaDTO formulario, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             // model.addAttribute("error", formatBindingErrors(bindingResult));

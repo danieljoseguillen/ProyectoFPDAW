@@ -1,5 +1,5 @@
 package com.hotelgalicia.proyectohotelgalicia.modelos;
 
 public enum EstadoReserva {
- REALIZADA, CONFIRMADA, CANCELADA
+ REALIZADA, CONFIRMADA, CANCELADA, FINALIZADA
 }

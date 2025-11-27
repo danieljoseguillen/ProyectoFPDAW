@@ -1,5 +1,6 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,20 +47,24 @@ public class ValoracionServiceImpl implements ValoracionService {
     public List<Valoracion> listByUserMail(String correo) {
         return vaRep.findByClienteCorreo(correo);
     }
+
     @Override
     public List<Valoracion> listByUserId(Long id) {
         return vaRep.findByClienteId(id);
     }
+
     @Override
     public Boolean agregar(ValoracionDTO val) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Valoracion valor = new Valoracion();
-        valor.setCliente(cRep.findByCorreoIgnoreCase(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario.")));
-        valor.setHotel(hoRep.findById(val.getHotel()).orElseThrow(() -> new RuntimeException("Hotel no encontrado.")));
-        valor.setPuntaje(val.getPuntaje());
-        valor.setComentario(val.getComentario());
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Valoracion valor = new Valoracion();
+            valor.setCliente(cRep.findByCorreoIgnoreCase(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario.")));
+            valor.setHotel(
+                    hoRep.findById(val.getHotel()).orElseThrow(() -> new RuntimeException("Hotel no encontrado.")));
+            valor.setPuntaje(val.getPuntaje());
+            valor.setComentario(val.getComentario());
+            valor.setFecha(LocalDate.now());
             vaRep.save(valor);
             return true;
         } catch (Exception e) {
@@ -68,7 +73,7 @@ public class ValoracionServiceImpl implements ValoracionService {
     }
 
     @Override
-    public Valoracion getByIds(Long iduser, Long idhotel){
+    public Valoracion getByIds(Long iduser, Long idhotel) {
         ValoracionID id = new ValoracionID(iduser, idhotel);
         return vaRep.findById(id).orElse(null);
     }

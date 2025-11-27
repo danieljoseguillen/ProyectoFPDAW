@@ -53,6 +53,7 @@
                 </div>
                 <div class="col-6">
                     <button type="submit" class="btn btn-primary">Registrarse</button>
+                    <button type="reset" class="btn btn-primary">Reestablecer</button>
                 </div>
             </form>
         </div>
@@ -83,12 +84,12 @@
                 <div class="col-md-12">
                     <label for="apellido" class="form-label"><b>CIF</b> </label>
                     <input type="text" class="form-control" th:field="*{cif}" id="cif">
-                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('cif')}"
-                        th:errors="*{cif}">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('cif')}" th:errors="*{cif}">
                     </div>
                 </div>
                 <div class="col-6">
                     <button type="submit" class="btn btn-primary">Registrarse</button>
+                    <button type="reset" class="btn btn-primary">Reestablecer</button>
                 </div>
             </form>
         </div>

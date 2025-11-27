@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:insert="~{/fragments.html::cabecera}">
+    <title th:text="${hotel.nombre}">Hoteles Galicia: Confirmar datos de reserva</title>
+</head>
+<body>
+    <form th:action="@{/hotel/{id}/reserve/submit (id=${hotelId})}" method="post" th:object="${reserva}">
+        <p th:text="${hotelId}"></p>
+        <input type="date" th:value="*{fechaInicio}">
+    </form>
+</body>
+</html>

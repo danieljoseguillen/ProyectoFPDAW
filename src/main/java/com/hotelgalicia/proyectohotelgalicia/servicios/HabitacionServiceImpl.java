@@ -1,6 +1,9 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -37,26 +40,74 @@ public class HabitacionServiceImpl implements HabitacionService {
     @Autowired
     public FileStorageService fileserv;
 
+
     @Override
     public List<HabitacionListDTO> listHabitacionByHotelId(Long id) {
-        List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE);
-        List<HabitacionListDTO> listado = habitaciones.stream().map(hab -> {
-            HabitacionListDTO dto = new HabitacionListDTO();
-            dto.setId(hab.getId());
-            dto.setNombre(hab.getNombre());
-            dto.setDescripcion(hab.getDescripcion());
-            dto.setCapacidad(hab.getCapacidad());
-            dto.setPrecio(hab.getPrecio());
-            dto.setImagen(hab.getImagen());
-            Integer cantReserv = drRep.sumByHabitacionId(hab.getId(),
-                    List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
-            if (cantReserv == null) {
-                cantReserv = 0;
-            }
-            dto.setDisponibles(hab.getCantidad() - cantReserv);
-            return dto;
-        }).toList();
-        return listado;
+            return haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE)
+            .stream()
+            .map(hab -> {
+                HabitacionListDTO dto = new HabitacionListDTO();
+                dto.setId(hab.getId());
+                dto.setNombre(hab.getNombre());
+                dto.setDescripcion(hab.getDescripcion());
+                dto.setCapacidad(hab.getCapacidad());
+                dto.setPrecio(hab.getPrecio());
+                dto.setImagen(hab.getImagen());
+                return dto;
+            })
+            .toList();
+        // List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE);
+        // List<HabitacionListDTO> listado = habitaciones.stream().map(hab -> {
+        //     HabitacionListDTO dto = new HabitacionListDTO();
+        //     dto.setId(hab.getId());
+        //     dto.setNombre(hab.getNombre());
+        //     dto.setDescripcion(hab.getDescripcion());
+        //     dto.setCapacidad(hab.getCapacidad());
+        //     dto.setPrecio(hab.getPrecio());
+        //     dto.setImagen(hab.getImagen());
+        //     Integer cantReserv = drRep.sumByHabitacionId(hab.getId(),
+        //             List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
+        //     if (cantReserv == null) {
+        //         cantReserv = 0;
+        //     }
+        //     if (cantReserv < hab.getCantidad()) {
+        //         dto.setDisponibles(hab.getCantidad() - cantReserv);
+        //         return dto;
+        //     }
+        // })
+        //         .filter(Objects::nonNull)
+        //         .toList();
+        // return listado;
+    }
+
+    @Override
+    public List<HabitacionListDTO> listHabitacionByHotelIdDisponibles(Long id, LocalDate entrada, LocalDate salida) {
+        Long dias = ChronoUnit.DAYS.between(entrada, salida);
+        return haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE)
+                .stream()
+                .map(hab -> {
+                    int ocupadas = drRep.sumByHabitacionId(
+                            hab.getId(),
+                            List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA),
+                            entrada,
+                            salida);
+
+                    int libres = hab.getCantidad() - ocupadas;
+
+                    if (libres <= 0)
+                        return null;
+
+                    return new HabitacionListDTO(
+                            hab.getId(),
+                            hab.getNombre(),
+                            hab.getDescripcion(),
+                            hab.getCapacidad(),
+                            hab.getPrecio() * dias,
+                            hab.getImagen(),
+                            libres);
+                })
+                .filter(dto -> dto != null)
+                .toList();
     }
 
     @Override

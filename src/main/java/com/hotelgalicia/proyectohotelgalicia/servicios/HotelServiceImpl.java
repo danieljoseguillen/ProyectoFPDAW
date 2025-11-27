@@ -1,5 +1,6 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
@@ -32,8 +34,6 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.DetalleReservaReposito
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HotelServiceImpl implements HotelService {
@@ -88,7 +88,7 @@ public class HotelServiceImpl implements HotelService {
                     .filter(h -> h.getPrecio() * dias >= dto.getPresupuestoMin()
                             && h.getPrecio() * dias <= dto.getPresupuestoMax()
                             && h.getCapacidad() >= dto.getPersonas()
-                            && verificarDisponibilidad(h, dto.getCantHabi()))
+                            && verificarDisponibilidad(h, dto.getCantHabi(), dto.getFechaInicio(), dto.getFechaFin()))
                     .findFirst().orElse(null);
 
             if (habit != null) {
@@ -241,9 +241,10 @@ public class HotelServiceImpl implements HotelService {
         return habitacionfinal;
     }
 
-    private boolean verificarDisponibilidad(Habitacion habitacion, int cantSoli) {
+    private boolean verificarDisponibilidad(Habitacion habitacion, int cantSoli, LocalDate inicioSolicitud,
+            LocalDate finSolicitud) {
         Integer cantReserv = drRep.sumByHabitacionId(habitacion.getId(),
-                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
+                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA), inicioSolicitud, finSolicitud);
         if (cantReserv == null) {
             cantReserv = 0;
         }
