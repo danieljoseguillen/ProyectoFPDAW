@@ -9,16 +9,6 @@
     <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <main>
-        <div th:if="${error!=null}">
-            <p class="alert alert-danger" th:text="${error}"></p>
-        </div>
-        <div th:if="${warning!=null}">
-            <p class="warning alert-warning" th:text="${warning}"></p>
-        </div>
-        <div th:if="${message!=null}">
-            <p class="message alert-warning" th:text="${message}"></p>
-        </div>
-
         <div class="container-sm mt-1 w-100 mb-4">
             <div class="minicaja container my-2 mx-2">
                 <p>Puntuación: <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
@@ -101,23 +91,24 @@
         </div>
         <div class="container w-100">
             <h4>Habitaciones</h4>
-            <form th:action="@{/hotel/{id}/reserve (id=${hotelId})}" method="post" th:object="${reserva}">
-                <input type="hidden" th:field="*{fechaInicio}" readonly />
-                <input type="hidden" th:field="*{fechaFin}" readonly />
-                <input type="hidden" th:field="*{personas}" readonly />
+            <form id="reservaForm" th:action="@{/hotel/{id}/reserve (id=${hotel.id})}" method="post"
+                th:object="${reserva}">
+                <input type="hidden" th:field="*{id}" readonly />
+                <input type="hidden" id="fechaInicioReserva" th:field="*{fechaInicio}" readonly />
+                <input type="hidden" id="fechaFinReserva" th:field="*{fechaFin}" readonly />
+                <input type="hidden" id="personasReserva" th:field="*{personas}" readonly />
                 <div class="d-flex flex-row">
                     <table class="table table-hover table-bordered border-gray">
-                        <thead class="table-dark hotelheader">
+                        <thead class="bg-dark bg-gradient hotelheader">
                             <th>Tipo de habitación</th>
-                            <th>Capacidad</th>
+                            <th>Personas</th>
                             <th>Precio</th>
-                            <th>Selecciona habitaciones</th>
+                            <th sec:authorize="hasAnyRole('USER')">Selecciona habitaciones</th>
                         </thead>
                         <tbody>
                             <tr th:each="habi, iterHab:${habitaciones}">
                                 <td class="d-flex flex-row">
-                                    <img class="rounded-3 imagenminihotel"
-                                        th:src="'/files/'+${habi.imagen}">
+                                    <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
                                     <div>
                                         <h5 th:text="${habi.nombre}"></h5>
                                         <p th:text="${habi.descripcion}"></p>
@@ -128,7 +119,7 @@
                                 <td>
                                     <p th:text="'€ ' + ${#numbers.formatDecimal(habi.precio,0,0)}"></p>
                                 </td>
-                                <td width="30px">
+                                <td sec:authorize="hasAnyRole('USER')" width="30px">
                                     <input type="hidden" th:field="*{habitaciones[__${iterHab.index}__].habitacion}"
                                         th:value="${habi.id}" />
                                     <input type="number" th:field="*{habitaciones[__${iterHab.index}__].cantidad}"
@@ -137,9 +128,10 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div class="faketable table-bordered border-gray ">
+                    <div class="faketable table-bordered border-gray" sec:authorize="hasAnyRole('USER')">
                         <div class="fakeheader td w-100"></div>
-                        <button type="submit" class="btn btn-primary mx-2 my-2">Reservar</button>
+                        <button type="submit" class="btn btn-primary mx-2 my-2"
+                            onclick="sincronizarFiltro()">Reservar</button>
                     </div>
                 </div>
             </form>
@@ -150,7 +142,7 @@
             <h4>Deja una reseña.</h4>
             <form class="cajavaloraform" method="post" action="#" th:action="@{/hotel/{id}/valoration (id=${hotel.id})}"
                 th:object="${valoracion}">
-                <input type="hidden" name="hotel" th:value="${hotelId}">
+                <input type="hidden" name="hotel" th:value="${hotel.id}">
                 <div class="container">
                     <label class="form-label mr-2" for="puntaje">Puntaje:</label>
                     <input type="number" class="form-control w-25 ml-2" name="puntaje" id="puntaje" min="1" max="10"
@@ -177,6 +169,9 @@
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>
+    <script th:src="@{/js/hotelDetail.js}"></script>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+    <script th:src="@{/js/alertas.js}"></script>
 </body>
 
 </html>

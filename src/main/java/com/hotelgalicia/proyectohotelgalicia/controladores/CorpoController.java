@@ -26,6 +26,7 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
@@ -77,13 +78,18 @@ public class CorpoController {
 
     // profile get
     @GetMapping("/profile")
-    public String getProfile(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Empresa emp = eServ.getByCorreo(authentication.getName());
-        model.addAttribute("empresa", emp);
-        List<Hotel> hoteles = hoServ.listHotelByCorpo(emp.getId());
-        model.addAttribute("hoteles", hoteles);
-        return "empresa/empresaProfileView";
+    public String getProfile(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Empresa emp = eServ.getByCorreo(authentication.getName());
+            model.addAttribute("empresa", emp);
+            List<Hotel> hoteles = hoServ.listHotelByCorpo(emp.getId());
+            model.addAttribute("hoteles", hoteles);
+            return "empresa/empresaProfileView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/index";
+        }
     }
 
     // edit profile get
@@ -102,7 +108,7 @@ public class CorpoController {
 
     // edit profile post
     @PostMapping("/editprofile/submit")
-    public String postedit(@Valid EmpresaDTO empresa, BindingResult bindingResult, Model model,
+    public String postedit(@Valid CorreoDTO empresa, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
@@ -111,7 +117,7 @@ public class CorpoController {
         }
         try {
             eServ.modificar(empresa);
-            redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+            redirectAttributes.addFlashAttribute("message", "Correo actualizado con éxito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -121,7 +127,7 @@ public class CorpoController {
     @GetMapping("/password")
     public String getPasswordChange(Model model, RedirectAttributes redirectAttributes) {
         try {
-            model.addAttribute("formulario", new ClaveDTO(null, null));
+            model.addAttribute("formulario", new ClaveDTO(null, null, null));
             return "empresa/changePasswordView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -143,6 +149,21 @@ public class CorpoController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/enterprise/profile";
+    }
+
+    @GetMapping("/hotels")
+    public String getHotels(Model model, RedirectAttributes redirectAttributes,
+            SessionStatus status) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Empresa emp = eServ.getByCorreo(authentication.getName());
+            List<Hotel> hoteles = hoServ.listHotelByCorpo(emp.getId());
+            model.addAttribute("hoteles", hoteles);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/index";
+        }
+        return "empresa/hotelEnterpriseView";
     }
 
     // ver hotel get

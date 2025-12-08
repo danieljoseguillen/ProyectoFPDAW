@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 
 public interface EmpresaService {
@@ -20,7 +21,7 @@ public interface EmpresaService {
 
     Empresa agregar(EmpresaDTO user);
 
-    Empresa modificar(EmpresaDTO user);
+    Empresa modificar(CorreoDTO user);
 
     Boolean cambiarContraseñaPorId(ClaveDTO dto);
 }

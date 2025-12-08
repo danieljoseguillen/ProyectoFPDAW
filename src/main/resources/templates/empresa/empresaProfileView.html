@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia: Perfil de usuario</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main id="inicio" class="w-100">
+        <div class="opciones border mt-3 container-sm p-3 rounded">
+            <h4>Opciones</h4>
+            <div class="panelops">
+                <p><a th:href="@{/enterprise/editprofile}" class="btn btn-info">Modificar correo</a></p>
+                <p><a th:href="@{/enterprise/password}" class="btn btn-info">Actualizar contraseña</a></p>
+            </div>
+        </div>
+        <div class="container my-3 border align-self-start p-3 rounded mw-100">
+            <h3 class="mb-5">Datos De la empresa:</h3>
+            <div class="profilecell">
+                <div class="proflabel">
+                    <p class="fs-5">Razón social</p>
+                </div>
+                <div class="proftext">
+                    <p th:text="${empresa.razonSocial}"></p>
+                </div>
+            </div>
+            <div class="profilecell">
+                <div class="proflabel">
+                    <p class="fs-5">C.I.F</p>
+                </div>
+                <div class="proftext">
+                    <p th:text="${empresa.cif}"></p>
+                </div>
+            </div>
+            <div class="profilecell">
+                <div class="proflabel">
+                    <p class="fs-5">Correo</p>
+                </div>
+                <div class="proftext">
+                    <p th:text="${empresa.correo}"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+
+</body>
+
+</html>

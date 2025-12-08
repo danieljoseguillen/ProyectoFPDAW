@@ -59,6 +59,11 @@ public class AdminController {
     @Autowired
     private AdminService aServ;
 
+    // NOTE: SessionAttributeAdvice proporciona atributos de sesión por defecto
+    // (por ejemplo: `searchform`, `reserva`, `hotelId`, `filtro`, `reservaId`,
+    // `habitacionId`, `userid`, `hotelid`). No es necesario añadir manualmente
+    // `redirectAttributes.addFlashAttribute("searchform", defaultSearchDTO())`.
+
     @Autowired
     private ClienteService cServ;
 
@@ -98,21 +103,27 @@ public class AdminController {
 
     // Retorna la id del usuario.
     // private Usuario retornarUser() {
-    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    //     if (authentication == null || !authentication.isAuthenticated()
-    //             || "anonymousUser".equals(authentication.getName())) {
-    //         return null;
-    //     }
-    //     return cServ.getByCorreo(authentication.getName());
+    // Authentication authentication =
+    // SecurityContextHolder.getContext().getAuthentication();
+    // if (authentication == null || !authentication.isAuthenticated()
+    // || "anonymousUser".equals(authentication.getName())) {
+    // return null;
+    // }
+    // return cServ.getByCorreo(authentication.getName());
     // }
 
     // profile get
     @GetMapping("/profile")
     public String getProfile(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = aServ.getByCorreo(authentication.getName());
-        model.addAttribute("usuario", usuario);
-        return "admin/ProfileView";
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Usuario usuario = aServ.getByCorreo(authentication.getName());
+            model.addAttribute("usuario", usuario);
+            return "admin/ProfileView";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        return "indexView";
     }
 
     // edit profile get
@@ -150,7 +161,7 @@ public class AdminController {
     @GetMapping("/password")
     public String getPasswordChange(Model model, RedirectAttributes redirectAttributes) {
         try {
-            model.addAttribute("formulario", new ClaveDTO(null, null));
+            model.addAttribute("formulario", new ClaveDTO(null, null, null));
             return "admin/changePasswordView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -184,6 +195,8 @@ public class AdminController {
             return "userListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            // COMENTADO: SessionAttributeAdvice proporciona `searchform` automáticamente
+            // redirectAttributes.addFlashAttribute("searchform", defaultSearchDTO());
             return "redirect:/index";
         }
     }
@@ -317,7 +330,7 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/"+type+"/" + id + "/reserves";
+        return "redirect:/admin/" + type + "/" + id + "/reserves";
     }
 
     // Reservas de usuario y hotel
@@ -402,7 +415,8 @@ public class AdminController {
 
             // Crea el DTO
             // ReservaDTO reservaDTO = modelMapper.map(reserva, ReservaDTO.class);
-            ReservaDTO reservaDTO = new ReservaDTO(reserva.getFechaInicio(), reserva.getFechaFin(),
+            ReservaDTO reservaDTO = new ReservaDTO(reserva.getHotel().getId(), reserva.getFechaInicio(),
+                    reserva.getFechaFin(),
                     reserva.getPersonas(), null);
             List<DetalleReservaDTO> detalles = habitaciones.stream()
                     .map(h -> new DetalleReservaDTO(h.getId(),

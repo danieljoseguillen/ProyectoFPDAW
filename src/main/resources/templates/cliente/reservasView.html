@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <h3 class="mb-4">Mis Reservas</h3>
+        <div>
+            <div th:each="rese:${reservas}" class="item-card d-flex flex-row border rounded-3 my-3">
+                <div class="card-col-primary">
+                    <p class="fw-bold">Hotel</p>
+                    <p><a th:href="@{/hotel/{id} (id=${rese.hotel.id})}" th:text="${rese.hotel.nombre}"></a></p>
+                </div>
+                <div class="card-col-secondary">
+                    <p class="fw-bold">Fechas</p>
+                    <p class="card-date" th:text="${#temporals.format(rese.fechaInicio, 'dd MMM yyyy')}"></p>
+                    <p class="card-date" th:text="${#temporals.format(rese.fechaFin, 'dd MMM yyyy')}"></p>
+                </div>
+                <div class="card-col-stat">
+                    <!-- <p class="fw-bold hideable-list-header">Personas</p> -->
+                    <p class="icon-header-small-screen" title="Personas">
+                        <i class="bi bi-person-standing"></i></p>
+                    <p class="" th:text="${rese.personas}"></p>
+                </div>
+                <div class="card-col-stat">
+                    <!-- <p class="fw-bold hideable-list-header">Habitaciones</p> -->
+                    <p class="icon-header-small-screen" title="Habitaciones"><i class="bi bi-door-open"></i></p>
+                    <p class="" th:text="${rese.habitacionestotal}"></p>
+                </div>
+                <div class="card-col-stat">
+                    <p class="fw-bold">Total</p>
+                    <p th:text="'€ ' + ${#numbers.formatDecimal(rese.costototal,0,0)}"></p>
+                </div>
+                <div class="card-col-secondary">
+                    <p class="fw-bold">Estado</p>
+                    <p th:text="${rese.estado}"></p>
+                </div>
+                <div class="card-col-options">
+                    <div class="card-col-info">
+                        <a th:href="@{/user/reserves/{id} (id=${rese.id})}">
+                            <i class="bi  bi-info-square-fill"></i></a>
+                    </div>
+                    <div th:if="${rese.estado.name() != 'CANCELADA' && rese.estado.name() != 'FINALIZADA'}" class="card-col-action h-100">
+                        <a th:href="@{/user/reserves/cancel (id=${rese.id})}"
+                            onclick="return confirm('Está seguro que desea cancelar la reserva?')"><i
+                                class="bi bi-x-lg"></i></a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <div>
+            <h3 class="mb-4">Reseñas del usuario</h3>
+            <div th:each="valo:${valoraciones}" class="item-card d-flex flex-row border rounded-3 my-3">
+                <div class="card-col-primary">
+                    <h5>Hotel</h5>
+                    <p><a th:href="@{/hotel/{id} (id=${valo.hotel.id})}" th:text="${valo.hotel.nombre}"></a></p>
+                </div>
+                <div class="card-col-content w-auto">
+                    <h5>Comentario</h5>
+                    <p th:text="${valo.comentario}"></p>
+                </div>
+                <div class="card-col-secondary">
+                    <h5>Fecha</h5>
+                    <p class="card-date" th:text="${#temporals.format(valo.fecha, 'dd MMM yyyy')}"></p>
+                </div>
+                <div class="card-col-stat">
+                    <h5>Puntaje</h5>
+                    <p th:text="${valo.puntaje}"></p>
+                </div>
+                    <div class="card-col-action-lone">
+                        <a th:href="@{/user/valoraciones/delete (id=${valo.hotel.id})}"
+                            onclick="return confirm('Desea borrar la reseña?')"><i class="bi bi-x-lg"></i></a>
+                    </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

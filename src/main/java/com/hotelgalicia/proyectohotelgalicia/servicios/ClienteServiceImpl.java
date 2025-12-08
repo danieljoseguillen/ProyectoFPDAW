@@ -120,6 +120,9 @@ public class ClienteServiceImpl implements ClienteService {
         if (encoder.matches(dto.getClaveNueva().trim(), cliente.getContraseña())) {
             throw new BadCredentialsException("Error: La contraseña nueva no puede ser igual a a la anterior.");
         }
+        if (!dto.getClaveNueva().equals(dto.getClaveRepetir())) {
+            throw new BadCredentialsException("Error: Las contraseñas no son iguales.");
+        }
         cliente.setContraseña(encoder.encode(dto.getClaveNueva().trim()));
         try {
             cRep.save(cliente);

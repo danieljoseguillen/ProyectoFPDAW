@@ -1,15 +1,10 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
-import java.security.Principal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,33 +14,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.HotelDateDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.ValoracionDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
-import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
-import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.FileStorageService;
-import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
-import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
-import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
 
 import jakarta.validation.Valid;
 
 @Controller
-@SessionAttributes({ "reserva", "hotelId", "searchform" })
+@SessionAttributes({ "searchform" })
 public class MainController {
     @Autowired
     public FileStorageService fileserv;
@@ -59,49 +42,46 @@ public class MainController {
     @Autowired
     private HotelService hoServ;
 
-    @Autowired
-    private HabitacionService haServ;
-
-    @Autowired
-    private ValoracionService vaServ;
-
-    @Autowired
-    private ReservaService reServ;
-
-    // Retorna la id del usuario.
-    private Long retornarId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getName())) {
-            return null;
+    // Valida fechas y da mensajes de error
+    private void validarfechasalert(HotelSearchDTO filtro) {
+        if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())
+                || filtro.getFechaFin().isEqual(filtro.getFechaInicio())) {
+            filtro.setFechaFin(filtro.getFechaInicio().plusDays(1));
+            throw new RuntimeException("La fecha de fin debe ser posterior a la fecha de inicio.");
         }
-        return cServ.getByCorreo(authentication.getName()).getId();
-    }
 
-    private String formatBindingErrors(BindingResult bindingResult) {
-        return bindingResult.getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(" | "));
+        if (filtro.getFechaInicio().isBefore(LocalDate.now())) {
+            filtro.setFechaInicio(LocalDate.now());
+            throw new RuntimeException("La fecha de inicio no puede ser anterior a la fecha actual.");
+        }
+
+        if (filtro.getFechaFin().isBefore(LocalDate.now())) {
+            filtro.setFechaFin(LocalDate.now().plusDays(1));
+            throw new RuntimeException("La fecha de fin no puede ser anterior a la fecha actual.");
+        }
     }
 
     // Lista vacía por defecto
-    private HotelSearchDTO defaultSearchDTO() {
-        return new HotelSearchDTO(
-                "", Municipios.TODOS, "", 1, 1,
-                LocalDate.now(), LocalDate.now().plusDays(1),
-                5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
-    }
-
-    @ModelAttribute("searchform")
-    public HotelSearchDTO searchForm() {
-        return defaultSearchDTO();
-    }
+    // COMENTADO: SessionAttributeAdvice proporciona searchform automáticamente
+    // private HotelSearchDTO defaultSearchDTO() {
+    //     return new HotelSearchDTO(
+    //             "", Municipios.TODOS, "", 1, 1,
+    //             LocalDate.now(), LocalDate.now().plusDays(1),
+    //             5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
+    // }
 
     // Controlador principal, verifica listas vacías
     @GetMapping({ "/", "/home", "/index" })
     public String showHome(Model model,
             @ModelAttribute("searchform") HotelSearchDTO dto) {
-        model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+        try {
+            validarfechasalert(dto);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
+        // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+        model.addAttribute("listado", hoServ.listSortedHotel(dto));
         return "indexView";
     }
 
@@ -114,142 +94,25 @@ public class MainController {
             // redirectAttributes.addFlashAttribute("error",
             // formatBindingErrors(bindingResult));
             model.addAttribute("searchform", dto);
-            model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+            // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
+            // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+            model.addAttribute("listado", hoServ.listSortedHotel(dto));
             return "indexView";
         } else {
             try {
+                validarfechasalert(dto);
                 model.addAttribute("listado", hoServ.listSortedHotel(dto));
             } catch (EmptyListException e) {
                 model.addAttribute("warning", e.getMessage());
-                model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+                // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
+                // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+                model.addAttribute("listado", hoServ.listSortedHotel(dto));
             } catch (Exception e) {
                 model.addAttribute("error", e.getMessage());
             }
             model.addAttribute("searchform", dto);
             return "indexView";
         }
-    }
-
-    // Lista vacía por defecto
-    private HotelDateDTO defaultDateDTO() {
-        return new HotelDateDTO(
-                LocalDate.now(), LocalDate.now().plusDays(1), 1);
-    }
-
-    @ModelAttribute("filtro")
-    public HotelDateDTO filtro() {
-        return defaultDateDTO();
-    }
-
-    // Muestra hoteles
-    @GetMapping("/hotel/{id}")
-    public String getHotel(@PathVariable Long id,
-            @ModelAttribute("filtro") HotelDateDTO filtro, Model model,
-            RedirectAttributes redirectAttributes,
-            Principal principal, SessionStatus status) {
-        try {
-            // Valida fechas
-            if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())) {
-                filtro.setFechaFin(filtro.getFechaInicio().plusDays(1));
-
-            }
-
-            if (filtro.getFechaInicio().isBefore(LocalDate.now())) {
-                filtro.setFechaInicio(LocalDate.now());
-
-            }
-
-            if (filtro.getFechaFin().isBefore(LocalDate.now())) {
-                filtro.setFechaFin(LocalDate.now().plusDays(1));
-            }
-            // Hotel y habitaciones
-            Hotel hotel = hoServ.getById(id);
-            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelIdDisponibles(id,
-                    filtro.getFechaInicio(),
-                    filtro.getFechaFin());
-
-            if (filtro.getFechaInicio() == null) {
-                filtro.setFechaInicio(LocalDate.now());
-                filtro.setFechaFin(LocalDate.now().plusDays(1));
-                filtro.setPersonas(1);
-            }
-            model.addAttribute("filtro", filtro);
-            // Completa el formulario de estár vacío.
-            if (model.getAttribute("hotelId") == null || !model.getAttribute("hotelId").equals(id)) {
-                status.setComplete();
-                ReservaDTO reserva = new ReservaDTO();
-                reserva.setFechaInicio(filtro.getFechaInicio());
-                reserva.setFechaFin(filtro.getFechaFin());
-                reserva.setPersonas(filtro.getPersonas());
-                List<DetalleReservaDTO> detalles = habitaciones.stream()
-                        .map(h -> new DetalleReservaDTO(h.getId(), 0))
-                        .toList();
-                reserva.setHabitaciones(detalles);
-                model.addAttribute("hotelId", hotel.getId());
-                model.addAttribute("reserva", reserva);
-            }
-            model.addAttribute("hotel", hotel);
-            model.addAttribute("habitaciones", habitaciones);
-            model.addAttribute("valoraciones", vaServ.listByHotelId(id));
-            model.addAttribute("valoracion", new ValoracionDTO());
-            model.addAttribute("myval", vaServ.getByIds(retornarId(), id));
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/index";
-        }
-        return "hotelDetailView";
-    }
-
-    @PostMapping("/hotel/{id}/reserve")
-    public String postHotelReserve(@Valid ReservaDTO reserva, BindingResult bindingResult,
-            @PathVariable Long id,
-            Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-        } else if (!reServ.verificarCantidad(reserva)) {
-            redirectAttributes.addFlashAttribute("error", "Debe reservar al menos una habitación.");
-        } else {
-            try {
-                model.addAttribute("reserva", reserva);
-                model.addAttribute("hotelId", id);
-                model.addAttribute("hotel", hoServ.ConvertHotelToDTO(hoServ.getById(id)));
-                return "cliente/ReservaConfirmView";
-            } catch (Exception e) {
-                status.setComplete();
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
-        }
-        return "redirect:/hotel/" + id;
-    }
-
-    @PostMapping("/hotel/{id}/reserve/submit")
-    public String postHotelReserveSubmit(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
-            @ModelAttribute("reserva") ReservaDTO reserva, SessionStatus status) {
-        try {
-            reServ.agregar(reserva, id);
-            redirectAttributes.addFlashAttribute("message", "Reserva realizada con exito.");
-            status.setComplete();
-            return "redirect:/index";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/hotel/" + id;
-        }
-    }
-
-    @PostMapping("/hotel/{id}/valoration")
-    public String postNewValoration(@Valid ValoracionDTO valoracion, BindingResult bindingResult, @PathVariable Long id,
-            Model model, RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-        } else {
-            try {
-                vaServ.agregar(valoracion);
-                redirectAttributes.addFlashAttribute("message", "Reseña agregada con exito.");
-            } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
-        }
-        return "redirect:/hotel/" + id;
     }
 
     // Envía a la pagina de error

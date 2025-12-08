@@ -74,14 +74,14 @@ public class ValoracionServiceImpl implements ValoracionService {
 
     @Override
     public Valoracion getByIds(Long iduser, Long idhotel) {
-        ValoracionID id = new ValoracionID(iduser, idhotel);
+        ValoracionID id = new ValoracionID(idhotel, iduser);
         return vaRep.findById(id).orElse(null);
     }
 
     @Override
     public boolean borrarPorId(Long iduser, Long idhotel) {
         verificarpropiedad(iduser);
-        ValoracionID id = new ValoracionID(iduser, idhotel);
+        ValoracionID id = new ValoracionID(idhotel, iduser);
         if (vaRep.existsById(id)) {
             vaRep.deleteById(id);
             return true;

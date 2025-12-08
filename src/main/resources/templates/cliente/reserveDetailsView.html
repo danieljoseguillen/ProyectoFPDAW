@@ -2,22 +2,23 @@
 <html lang="en">
 
 <head th:insert="~{/fragments.html::cabecera}">
-    <title th:text="${hotel.nombre}">Hoteles Galicia: Confirmar datos de reserva</title>
+    <title>Hoteles Galicia</title>
 </head>
 
 <body>
     <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
-    <main id="resconfmain" class="d-flex flex-row container">
+<main id="resconfmain" class="d-flex flex-row container">
         <div class="container h-100 d-flex flex-column justify-content-top resconfdiv1">
             <div class="container border rounded-3 px-0 mb-3">
-                <img th:src="@{'/files/' + ${hotel.imagen}}" class="thumbimage rounded-3 mx-0 mt-0">
+                <img th:src="@{'/files/' + ${reserva.hotel.imagen}}" class="thumbimage rounded-3 mx-0 mt-0">
                 <div class="container">
-                    <h3 th:text="${hotel.nombre}"></h3>
-                    <p th:text="${hotel.direccion}"></p>
+                    
+                    <h3><a th:href="@{/hotel/{id} (id=${reserva.hotel.id})}" th:text="${reserva.hotel.nombre}"></a></h3>
+                    <p th:text="${reserva.hotel.direccion}"></p>
                     <div class="d-flex flex-row textomenor">
-                        <p class="me-3">Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
-                        <p class=""><span th:text="${hotel.valoraciones}"></span> Reseñas</p>
+                        <p class="me-3">Puntaje <span class="blueIcon rounded" th:text="${reserva.hotel.puntaje}"></span></p>
+                        <p class=""><span th:text="${reserva.hotel.valoracion.size}"></span> Reseñas</p>
                     </div>
                 </div>
             </div>
@@ -32,7 +33,6 @@
             </div>
         </div>
         <div class="container h-100 d-flex flex-column justify-content-top">
-            <form th:action="@{/hotel/{id}/reserve/submit (id=${reserva.id})}" method="post" th:object="${reserva}">
                 <h4>Datos de la reserva</h4>
                 <div class="d-flex flex-row justify-content-center border rounded-3 mb-3">
                     <div class="w-25 text-center border">
@@ -66,31 +66,31 @@
                         <th>Cantidad</th>
                     </thead>
                     <tbody>
-                        <tr th:each="habi, iterHab:${habitaciones}"
-                            th:if="${reserva.habitaciones[__${iterHab.index}__].cantidad > 0}">
+                        <tr th:each="habi, iterHab:${reserva.habitaciones}">
                             <td class="d-flex flex-row">
-                                <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
+                                <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.habitacion.imagen}">
                                 <div>
                                     <h5 th:text="${habi.nombre}"></h5>
-                                    <p th:text="${habi.descripcion}"></p>
+                                    <!-- <p th:text="${habi.habitacion.descripcion}"></p>     -->
                                 </div>
                             </td>
-                            <td><i th:each="i : ${#numbers.sequence(1, habi.capacidad)}"
+                            <td><i th:each="i : ${#numbers.sequence(1, habi.habitacion.capacidad)}"
                                     class="bi bi-person-standing"></i></td>
                             <td>
-                                <p th:text="'€ ' + ${#numbers.formatDecimal(habi.precio,0,0)}"></p>
+                                <p th:text="'€ ' + ${#numbers.formatDecimal(habi.habitacion.precio*dias,0,0)}"></p>
                             </td>
                             <td sec:authorize="hasAnyRole('USER')" width="30px">
-                                <p th:text="${reserva.habitaciones[__${iterHab.index}__].cantidad}"></p>
+                                <p th:text="${habi.cantidad}"></p>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="">
-                    <button type="submit" class="btn btn-primary mx-2">Realizar reserva</button>
-                    <a class="btn btn-primary me-2" th:href="@{/hotel/{id} (id=${hotel.id})}">Volver</a>
+                    <a class="btn btn-primary me-2" th:href="@{/user/reserves}">Volver</a>
+                    <a class="btn btn-danger" th:href="@{/user/reserves/cancel (id=${reserva.id})}"
+                    th:if="${reserva.estado.name() != 'CANCELADA' && reserva.estado.name() != 'FINALIZADA'}"
+                            onclick="return confirm('Está seguro que desea cancelar la reserva?')">Cancelar</a>
                 </div>
-            </form>
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>

@@ -21,6 +21,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReservaDTO {
+    
+    private Long id;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @NotNull(message = "Debe ingresar una fecha de inicio.")

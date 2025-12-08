@@ -1,6 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
 import java.security.Principal;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
+import com.hotelgalicia.proyectohotelgalicia.domain.DetalleReserva;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
@@ -30,6 +32,7 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
@@ -70,18 +73,24 @@ public class ClienteController {
                 || "anonymousUser".equals(authentication.getName())) {
             return null;
         }
+        System.out.println(cServ.getByCorreo(authentication.getName()).getId());
         return cServ.getByCorreo(authentication.getName()).getId();
     }
 
     // profile get
     @GetMapping("/profile")
-    public String getProfile(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Cliente cli = cServ.getByCorreo(authentication.getName());
-        model.addAttribute("cliente", cli);
-        List<Reserva> reservas = reServ.listByCliente(cli.getId());
-        model.addAttribute("reservas", reservas);
-        return "cliente/userProfileView";
+    public String getProfile(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Cliente cli = cServ.getByCorreo(authentication.getName());
+            model.addAttribute("cliente", cli);
+            List<Reserva> reservas = reServ.listByCliente(cli.getId());
+            model.addAttribute("reservas", reservas);
+            return "cliente/userProfileView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/index";
+        }
     }
 
     // edit profile get
@@ -100,26 +109,31 @@ public class ClienteController {
 
     // edit profile post
     @PostMapping("/editprofile/submit")
-    public String postedit(@Valid ClienteDTO cliente, BindingResult bindingResult, Model model,
+    public String postedit(@Valid @ModelAttribute("cliente") ClienteDTO cliente, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("cliente", cliente);
-            return "redirect:/user/editprofile";
+            // redirectAttributes.addFlashAttribute("error",
+            // formatBindingErrors(bindingResult));
+            model.addAttribute("cliente", cliente);
+            return "cliente/userEditView";
+        } else {
+            try {
+                cServ.modificar(cliente);
+                redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+                return "redirect:/user/profile";
+            } catch (Exception e) {
+                model.addAttribute("error", e.getMessage());
+            }
         }
-        try {
-            cServ.modificar(cliente);
-            redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/user/profile";
+        model.addAttribute("cliente", cliente);
+        return "cliente/userEditView";
     }
 
     @GetMapping("/password")
     public String getPasswordChange(Model model, RedirectAttributes redirectAttributes) {
         try {
-            model.addAttribute("formulario", new ClaveDTO(null, null));
+            model.addAttribute("formulario", new ClaveDTO(null, null, null));
             return "cliente/changePasswordView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -128,19 +142,25 @@ public class ClienteController {
     }
 
     @PostMapping("/password/submit")
-    public String postPasswordChange(@Valid ClaveDTO formulario, BindingResult bindingResult, Model model,
+    public String postPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTO formulario,
+            BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            return "redirect:/user/password";
+            // redirectAttributes.addFlashAttribute("error",
+            // formatBindingErrors(bindingResult));
+            model.addAttribute("formulario", formulario);
+            return "cliente/changePasswordView";
+        } else {
+            try {
+                cServ.cambiarContraseña(formulario);
+                redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
+                return "redirect:/user/profile";
+            } catch (Exception e) {
+                model.addAttribute("error", e.getMessage());
+            }
         }
-        try {
-            cServ.cambiarContraseña(formulario);
-            redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/user/profile";
+        model.addAttribute("formulario", formulario);
+        return "cliente/changePasswordView";
     }
 
     @GetMapping("/valorations")
@@ -154,11 +174,17 @@ public class ClienteController {
         return "redirect:/index";
     }
 
-    @PostMapping("/valoraciones/delete")
-    public String postValorationDelete(@RequestParam(required = true) Long id, Model model, RedirectAttributes redirectAttributes) {
+    @GetMapping("/valoraciones/delete")
+    public String postValorationDelete(@RequestParam(required = true) Long id, Model model,
+            RedirectAttributes redirectAttributes) {
         try {
-            vaServ.borrarPorId(retornarId(), id);
-            redirectAttributes.addFlashAttribute("message", "Reseña eliminada con exito.");
+            System.out.println("ID a eliminar: " + id);
+            if (vaServ.borrarPorId(retornarId(), id)) {
+                redirectAttributes.addFlashAttribute("message", "Reseña eliminada con exito.");
+            } else {
+                redirectAttributes.addFlashAttribute("error",
+                        "No se encontró la reseña o no tienes permiso para eliminarla.");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -168,9 +194,22 @@ public class ClienteController {
     @GetMapping("/reserves")
     public String getReserves(Model model, RedirectAttributes redirectAttributes) {
         try {
-            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            model.addAttribute("reservas", reServ.listByCliente(cServ.getByCorreo(authentication.getName()).getId()));
+            // Crea las reservas como reservalistdto
+            List<ReservaListDTO> reservas = reServ.listByCliente(cServ.getByCorreo(authentication.getName()).getId())
+                    .stream()
+                    .map(reserva -> {
+                        ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
+                        dto.setHotel(reserva.getHotel());
+                        dto.setHabitacionestotal(reserva.getHabitaciones().stream()
+                                .mapToInt(DetalleReserva::getCantidad)
+                                .sum());
+                        dto.setCostototal(reServ.calcularPrecioTotal(reserva));
+
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            model.addAttribute("reservas", reservas);
             return "cliente/reservasView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -186,6 +225,13 @@ public class ClienteController {
             reServ.verificarReserva(reserva);
             model.addAttribute("reserva", reserva);
             model.addAttribute("detalles", reserva.getHabitaciones());
+            int totalHabis = reserva.getHabitaciones().stream()
+                    .mapToInt(DetalleReserva::getCantidad)
+                    .sum();
+            model.addAttribute("totalHabis", totalHabis);
+            int totalprice = reServ.calcularPrecioTotal(reserva).intValue();
+            model.addAttribute("totalprice", totalprice);
+            model.addAttribute("dias", ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()));
             return "cliente/reserveDetailsView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -193,8 +239,9 @@ public class ClienteController {
         }
     }
 
-    @PostMapping("/reserves/cancel")
-    public String postCancelReserve(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
+    @GetMapping("/reserves/cancel")
+    public String postCancelReserve(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes,
+            SessionStatus status) {
         try {
             reServ.cancelarPorId(id);
             redirectAttributes.addFlashAttribute("message", "Reserva cancelada con exito.");
@@ -221,7 +268,8 @@ public class ClienteController {
 
             // Crea el DTO
             // ReservaDTO reservaDTO = modelMapper.map(reserva, ReservaDTO.class);
-            ReservaDTO reservaDTO = new ReservaDTO(reserva.getFechaInicio(), reserva.getFechaFin(),
+            ReservaDTO reservaDTO = new ReservaDTO(reserva.getHotel().getId(), reserva.getFechaInicio(),
+                    reserva.getFechaFin(),
                     reserva.getPersonas(), null);
             List<DetalleReservaDTO> detalles = habitaciones.stream()
                     .map(h -> new DetalleReservaDTO(h.getId(),

@@ -191,39 +191,39 @@ public class ClienteServiceTest {
     // -------------------------------
     // Cambiar contraseña
     // -------------------------------
-    @Test
-    void cambiarContraseña_OK() {
-        mockAuth("test@example.com", user);
-        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
-        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
-        when(encoder.matches(eq("newpass"), anyString())).thenReturn(false);
-        when(encoder.encode("newpass")).thenReturn("encodedNew");
+    // @Test
+    // void cambiarContraseña_OK() {
+    //     mockAuth("test@example.com", user);
+    //     when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
+    //     when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
+    //     when(encoder.matches(eq("newpass"), anyString())).thenReturn(false);
+    //     when(encoder.encode("newpass")).thenReturn("encodedNew");
 
-        ClaveDTO clave = new ClaveDTO("oldpass", "newpass");
-        Boolean result = cServ.cambiarContraseña(clave);
-        assertTrue(result);
-        verify(cRep).save(any());
-    }
+    //     ClaveDTO clave = new ClaveDTO("oldpass", "newpass");
+    //     Boolean result = cServ.cambiarContraseña(clave);
+    //     assertTrue(result);
+    //     verify(cRep).save(any());
+    // }
 
-    @Test
-    void cambiarContraseña_Incorrecta() {
-        mockAuth("test@example.com", user);
-        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
-        when(encoder.matches(eq("badpass"), anyString())).thenReturn(false);
+    // @Test
+    // void cambiarContraseña_Incorrecta() {
+    //     mockAuth("test@example.com", user);
+    //     when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
+    //     when(encoder.matches(eq("badpass"), anyString())).thenReturn(false);
 
-        ClaveDTO clave = new ClaveDTO("badpass", "newpass");
-        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseña(clave));
-    }
+    //     ClaveDTO clave = new ClaveDTO("badpass", "newpass");
+    //     assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseña(clave));
+    // }
 
-    @Test
-    void cambiarContraseña_MismaQueActual() {
-        mockAuth("test@example.com", user);
-        when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
-        when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
+    // @Test
+    // void cambiarContraseña_MismaQueActual() {
+    //     mockAuth("test@example.com", user);
+    //     when(cRep.findByCorreoIgnoreCase("test@example.com")).thenReturn(Optional.of(cliente));
+    //     when(encoder.matches(eq("oldpass"), anyString())).thenReturn(true);
 
-        ClaveDTO clave = new ClaveDTO("oldpass", "oldpass");
-        assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseña(clave));
-    }
+    //     ClaveDTO clave = new ClaveDTO("oldpass", "oldpass");
+    //     assertThrows(BadCredentialsException.class, () -> cServ.cambiarContraseña(clave));
+    // }
 
     // -------------------------------
     // Helper

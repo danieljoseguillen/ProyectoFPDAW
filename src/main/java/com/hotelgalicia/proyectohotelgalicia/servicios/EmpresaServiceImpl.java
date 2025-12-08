@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.PermissionDeniedException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
@@ -85,9 +86,12 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public Empresa modificar(EmpresaDTO usuario) {
+    public Empresa modificar(CorreoDTO usuario) {
         Empresa base = retornarEmpresa();
         verificarpropiedad(base);
+        if(usuario.getCorreo().equals(base.getCorreo())){
+            throw new RuntimeException("Debe ingresar un correo diferente al actual.");
+        }
         uRep.findByCorreoIgnoreCase(usuario.getCorreo().trim().toLowerCase()).ifPresent(user -> {
             if (!user.getId().equals(base.getId())) {
                 throw new RuntimeException("El correo ingresado ya está en uso.");
@@ -99,14 +103,12 @@ public class EmpresaServiceImpl implements EmpresaService {
         }
 
         base.setCorreo(usuario.getCorreo().trim());
-        base.setRazonSocial(usuario.getRazon().trim());
-        base.setCif(usuario.getCif().trim());
 
         try {
             return eRep.save(base);
         } catch (DataIntegrityViolationException e) {
             throw new SaveFailedException(
-                    "Error al modificar datos del usuario: " + e.getMostSpecificCause().getMessage());
+                    "Error al modificar el correo: " + e.getMostSpecificCause().getMessage());
         } catch (Exception e) {
             throw new RuntimeException("Error inesperado al modificar datos del usuario: " + e.getMessage());
         }

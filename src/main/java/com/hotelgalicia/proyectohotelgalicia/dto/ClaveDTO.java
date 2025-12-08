@@ -19,5 +19,10 @@ public class ClaveDTO {
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres.")
     @NotBlank(message = "La contraseña es obligatoria.")
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]+$", message = "La contraseña debe contener al menos una letra mayúscula y un número.")
+    private String claveRepetir;
+
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres.")
+    @NotBlank(message = "La contraseña es obligatoria.")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]+$", message = "La contraseña debe contener al menos una letra mayúscula y un número.")
     private String claveNueva;
 }

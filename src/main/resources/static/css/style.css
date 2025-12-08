@@ -64,17 +64,18 @@ main {
     display: flex;
     flex: auto;
     flex-direction: column;
-    padding-top: 10px;
     background-color: white;
     align-items: center;
     max-width: 80%;
     min-width: min-content;
     align-self: center;
-    justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 .formregistro {
-    max-width: 1000px;
+    min-width: 300px;
+    max-width: 800px;
 }
 
 /* Ajuste del flex para el panel de inicio */
@@ -152,6 +153,8 @@ footer>p {
     grid-area: left;
     width: 200px;
     height: 200px;
+    min-width: 150px;
+    min-height: 150px;
     align-self: center;
     margin: 10px;
 }
@@ -262,9 +265,136 @@ footer>p {
     width: 350px;
 }
 
+/* Generic item card layout (responsive) */
+.item-card {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: stretch;
+    /* children fill height */
+    width: 100%;
+}
+
+.card-col-primary {
+    /* max-width: 220px; */
+    width: 50%;
+    min-width: 200px;
+    padding: 10px;
+}
+
+.card-col-content {
+    min-width: 160px;
+    padding: 10px;
+    width: 50% !important;
+}
+
+.card-col-stat {
+    max-width: 80px;
+    padding: 10px;
+    text-align: center;
+}
+
+.card-col-options {
+    width: 100%;
+    min-width: 40px;
+    max-width: 80px;
+    display: flex;
+    flex-direction: row;
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+    float: right;
+}
+
+.card-col-action {
+    width: 100%;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #dc3545;
+    /* danger red */
+    color: white;
+}
+
+.card-col-action-lone {
+    width: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #dc3545;
+    color: white;
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+
+.card-col-info {
+    width: 100%;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: deepskyblue;
+    color: white;
+}
+
+.card-col-action a,
+.card-col-action-lone a,
+.card-col-info a {
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-col-options div:last-child {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+
+
+.item-card i {
+    font-size: 1.25rem;
+}
+
+.card-col-secondary {
+    max-width: 140px;
+    min-width: 120px;
+    padding: 10px;
+    text-align: center;
+}
+
+@media only screen and (max-width: 767px) {
+
+    /* .item-card>div,
+    .card-col-primary,
+    .card-col-content,
+    .card-col-stat,
+    .card-col-action {
+        padding: 6px 8px;
+
+    } */
+
+    .card-col-primary,
+    .card-col-content,.card-col-stat,
+    .card-col-secondary {
+        min-width: auto;
+    }
+
+    .card-col-options {
+    width: 100%;
+    min-width: 80px;
+    }
+
+}
+
 .minitexto {
     font-size: 8pt;
     font-weight: normal;
+}
+
+.textomenor {
+    font-size: 0.9em;
 }
 
 /* Muestra los saltos de linea */
@@ -281,21 +411,83 @@ footer>p {
     height: 100%;
 }
 
-.faketable{
+/* Tablas falsas para opciones en habitaciones */
+.faketable {
+    border-top: solid;
     border-right: solid;
     border-bottom: solid;
-    border-width: 1px ;
+    border-width: 1px;
     border-color: #dee2e6;
     margin-bottom: 1rem;
 }
-.hotelheader{
-    /* height: 61px; */
-}
-.fakeheader{
-    height: 62px;
+
+.fakeheader {
+    height: 61px;
     background-color: #212529;
+    background-image: var(--bs-gradient) !important;
     align-self: flex-start;
 }
+
+.hotelheader {
+    color: white;
+    font-weight: bold;
+}
+
+/* Componentes para el panel de confirmacion de reserva */
+
+/* Miniatura de confirmacion de reserva */
+.thumbimage {
+    min-width: 200px;
+    width: 100%;
+    height: auto;
+}
+
+/* Primer panel de confirmacion de reserva */
+.resconfdiv1 {
+    max-width: 400px;
+    min-width: 300px;
+}
+
+/* .resconfdiv2 {} */
+
+.resconfdiv2 p {
+    min-width: max-content;
+}
+
+/* Contenido de perfiles */
+/* Barra de busqueda */
+.opciones {
+    max-width: 25%;
+    min-width: 250px;
+    margin-right: 30px;
+    max-height: fit-content;
+    padding: 5px;
+    align-self: flex-start;
+}
+
+/* Listade datos */
+.profilecell {
+    display: flex;
+    flex-direction: row;
+    height: 75px;
+    border-bottom: solid;
+    align-items: center;
+    border-width: 1pt;
+}
+
+.profilecell:first-of-type {
+    border-top: solid;
+    border-width: 1pt;
+}
+
+.profilecell p {
+    margin-bottom: 0px;
+}
+
+.proflabel {
+    min-width: 125px;
+}
+
 /* Ajustes en base al tamaño de la pantalla */
 @media only screen and (max-width: 1200px) {
     .cajavaloramain {
@@ -308,19 +500,12 @@ footer>p {
 
 @media only screen and (max-width: 1050px) {}
 
-@media only screen and (max-width: 950px) {
+@media only screen and (max-width: 1000px) {
 
-    html {
-        margin: 0px;
-    }
 
     .caja {
         margin-left: 0px;
         margin-right: 0px;
-    }
-
-    .busqueda {
-        margin: 1%;
     }
 
     .imagenminihotel {
@@ -333,17 +518,86 @@ footer>p {
 
     #inicio {
         flex-direction: column;
-        width: 100%;
+        width: 100% !important;
         align-items: center;
+        /* min-width: fit-content; */
     }
 
-    .busqueda {
-        min-width: 95%;
+    /* main {
+    width: 100%
+                padding-left: 10px;
+        padding-right: 10px;
+    } */
+
+    .busqueda,
+    .opciones {
+        min-width: 100%;
         align-self: center;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    #inicio>.container-md {
+        padding-left: 0px;
+        padding-right: 0px;
     }
 
     .cajavaloraform {
         width: 100%;
+    }
+
+    .panelops {
+        display: flex;
+        flex-direction: row;
+
+    }
+
+    .panelops a {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .panelops a:first-child {
+        margin-left: 0px !important;
+        margin-right: 10px;
+    }
+
+    .profilecell {
+        flex-direction: column;
+        align-items: baseline;
+        margin-top: 10px;
+        padding-bottom: 10px;
+        height: auto;
+    }
+
+    .profilecell:first-of-type {
+        padding-top: 10px;
+    }
+
+    .profilecell .proflabel {
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+
+    .profilecell .proftext {
+        margin-bottom: 10px;
+    }
+}
+
+/* Estilo de alertas */
+.floating-alert {
+    animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
@@ -354,8 +608,33 @@ footer>p {
         min-width: 250px;
     }
 
+    .caja {
+        min-width: 100%;
+    }
+
+    #resconfmain {
+        flex-direction: column !important;
+        width: 100%;
+        align-items: center;
+    }
+
+    .resconfdiv1 {
+        min-width: 80%;
+    }
+
 }
 
+@media only screen and (max-width: 690px) {
+
+    .resconfdiv1 {
+        min-width: 100%;
+    }
+
+    .imgcaja {
+        display: none;
+    }
+
+}
 
 @media only screen and (max-width: 600px) {
     .cajavaloraform-p {

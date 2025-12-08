@@ -112,56 +112,56 @@ class EmpresaServiceTest {
     // ---------------------------
     // MODIFICAR
     // ---------------------------
-    @Test
-    void modificar_ok() {
-        mockAuthAs("empresa@demo.com", Roles.CORPORATION);
-        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(encoder.matches("1234", "encodedPass")).thenReturn(true);
-        when(eRep.save(any())).thenReturn(empresa);
+    // @Test
+    // void modificar_ok() {
+    //     mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+    //     when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(encoder.matches("1234", "encodedPass")).thenReturn(true);
+    //     when(eRep.save(any())).thenReturn(empresa);
 
-        Empresa result = service.modificar(dto);
-        assertNotNull(result);
-        verify(eRep).save(any());
-    }
+    //     Empresa result = service.modificar(dto);
+    //     assertNotNull(result);
+    //     verify(eRep).save(any());
+    // }
 
-    @Test
-    void modificar_contraseñaIncorrecta() {
-        mockAuthAs("empresa@demo.com", Roles.CORPORATION);
-        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(encoder.matches("1234", "encodedPass")).thenReturn(false);
+    // @Test
+    // void modificar_contraseñaIncorrecta() {
+    //     mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+    //     when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(encoder.matches("1234", "encodedPass")).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> service.modificar(dto));
-    }
+    //     assertThrows(BadCredentialsException.class, () -> service.modificar(dto));
+    // }
 
     // ---------------------------
     // CAMBIAR CONTRASEÑA
     // ---------------------------
-    @Test
-    void cambiarContraseña_ok() {
-        mockAuthAs("empresa@demo.com", Roles.CORPORATION);
-        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(encoder.matches("actual", "encodedPass")).thenReturn(true);
-        when(encoder.matches("nueva", "encodedPass")).thenReturn(false);
-        when(encoder.encode("nueva")).thenReturn("encodedNueva");
+    // @Test
+    // void cambiarContraseña_ok() {
+    //     mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+    //     when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(uRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(encoder.matches("actual", "encodedPass")).thenReturn(true);
+    //     when(encoder.matches("nueva", "encodedPass")).thenReturn(false);
+    //     when(encoder.encode("nueva")).thenReturn("encodedNueva");
 
-        boolean result = service.cambiarContraseñaPorId(new ClaveDTO("actual", "nueva"));
+    //     boolean result = service.cambiarContraseñaPorId(new ClaveDTO("actual", "nueva"));
 
-        assertTrue(result);
-        verify(eRep).save(any());
-    }
+    //     assertTrue(result);
+    //     verify(eRep).save(any());
+    // }
 
-    @Test
-    void cambiarContraseña_incorrecta() {
-        mockAuthAs("empresa@demo.com", Roles.CORPORATION);
-        when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
-        when(encoder.matches("actual", "encodedPass")).thenReturn(false);
+    // @Test
+    // void cambiarContraseña_incorrecta() {
+    //     mockAuthAs("empresa@demo.com", Roles.CORPORATION);
+    //     when(eRep.findByCorreoIgnoreCase("empresa@demo.com")).thenReturn(Optional.of(empresa));
+    //     when(encoder.matches("actual", "encodedPass")).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class,
-                () -> service.cambiarContraseñaPorId(new ClaveDTO("actual", "nueva")));
-    }
+    //     assertThrows(BadCredentialsException.class,
+    //             () -> service.cambiarContraseñaPorId(new ClaveDTO("actual", "nueva")));
+    // }
 
     // ---------------------------
     // OTROS

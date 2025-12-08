@@ -54,7 +54,7 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public List<Reserva> listByCliente(Long id) {
-        return reRep.findByClienteId(id);
+        return reRep.findByClienteIdOrderByIdDesc(id);
     }
 
     @Override
@@ -178,6 +178,9 @@ public class ReservaServiceImpl implements ReservaService {
         if (!reserva.getFechaInicio().isAfter(LocalDate.now().plusDays(1))) {
             throw new RuntimeException("Solo pueden cancelarse reservas con más de 1 día de antelación.");
         }
+        if (reserva.getEstado() == EstadoReserva.CANCELADA || reserva.getEstado() == EstadoReserva.FINALIZADA) {
+            throw new RuntimeException("La reserva no puede cancelarse en su estado actual.");
+        }
         reserva.setEstado(EstadoReserva.CANCELADA);
         try {
             reRep.save(reserva);
@@ -230,5 +233,26 @@ public class ReservaServiceImpl implements ReservaService {
         if (!(disponible >= cantSoli)) {
             throw new RoomFullException(habitacion.getNombre(), disponible, cantSoli);
         }
+    }
+    @Override
+    public Double calcularPrecioTotal(ReservaDTO reserva){
+        double total = 0.0;
+        for(DetalleReservaDTO detalle : reserva.getHabitaciones()){
+            Habitacion habi = haRep.findById(detalle.getHabitacion())
+            .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
+            long dias = reserva.getFechaFin().toEpochDay() - reserva.getFechaInicio().toEpochDay();
+            total += habi.getPrecio() * detalle.getCantidad() * dias;
+        }
+        return total;
+    }
+
+    @Override
+    public Double calcularPrecioTotal(Reserva reserva){
+        double total = 0.0;
+        for(DetalleReserva detalle : reserva.getHabitaciones()){
+            long dias = reserva.getFechaFin().toEpochDay() - reserva.getFechaInicio().toEpochDay();
+            total += detalle.getPrecio() * detalle.getCantidad() * dias;
+        }
+        return total;
     }
 }

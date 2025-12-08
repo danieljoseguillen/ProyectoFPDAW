@@ -26,4 +26,7 @@ public interface ReservaService {
 
     boolean verificarCantidad (ReservaDTO reserva);
 
+    Double calcularPrecioTotal(ReservaDTO reserva);
+    Double calcularPrecioTotal(Reserva reserva);
+
 }

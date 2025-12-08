@@ -7,13 +7,7 @@
 
 <body>
     <header th:replace="~{/fragments.html::logo}"></header>
-    <main>
-        <div th:if="${error!=null}">
-            <p class="alert alert-danger" th:text="${error}"></p>
-        </div>
-        <div th:if="${warning!=null}">
-            <p class="warning alert-warning" th:text="${warning}"></p>
-        </div>
+    <main class="justify-content-center">
         <div class="container formregistro" th:if="${tipo=='usuario'}">
             <h2 class="mb-4">Registro de usuario:</h2>
             <form class="row g-3" method="post" action="#" th:action="@{/register/usuario/submit}"
@@ -95,6 +89,8 @@
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+    <script th:src="@{/js/alertas.js}"></script>
 </body>
 
 </html>
