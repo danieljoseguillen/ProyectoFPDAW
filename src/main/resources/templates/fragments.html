@@ -93,7 +93,8 @@
         </div>
     </div> -->
     <th:block th:fragment="alertas">
-    <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        
+    <div class="alert-container position-fixed top-0 end-0 p-3" data-bs-delay="5000" data-bs-autohide="true" style="z-index: 9999;">
 
         <!-- Mensaje de éxito -->
         <div th:if="${message}" 

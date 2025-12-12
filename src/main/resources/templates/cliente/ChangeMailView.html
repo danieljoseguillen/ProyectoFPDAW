@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <div class="w-100">
+            <h2 class="my-4">Modificación de correo de usuario:</h2>
+            <form class="row g-3 formregistro" method="post" action="#" th:action="@{/user/editmail/submit}"
+                th:object="${correo}">
+                <div class="col-md-12">
+                    <label for="correo" class="form-label"><b>Correo</b> </label>
+                    <input type="email" class="form-control" th:field="*{correo}" id="correo">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="Contraseña" class="form-label"><b>Ingrese su contraseña</b> </label>
+                    <input type="password" class="form-control" th:field="*{contraseña}" id="contraseña" title="Ingrese su contraseña para confirmar los cambios">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('contraseña')}"
+                        th:errors="*{contraseña}">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                    <button type="reset" class="btn btn-info float-right">Reestablecer</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+        <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

@@ -29,6 +29,7 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
@@ -128,6 +129,37 @@ public class ClienteController {
         }
         model.addAttribute("cliente", cliente);
         return "cliente/userEditView";
+    }
+
+        @GetMapping("/editmail")
+    public String geteditmail(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            model.addAttribute("correo",
+                    modelMapper.map(cServ.getByCorreo(authentication.getName()), CorreoDTO.class));
+            return "cliente/ChangeMailView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/enterprise/profile";
+        }
+    }
+
+    // edit profile post
+    @PostMapping("/editmail/submit")
+    public String posteditmail(@Valid CorreoDTO correo, BindingResult bindingResult, Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            redirectAttributes.addFlashAttribute("correo", correo);
+            return "redirect:/user/editmail";
+        }
+        try {
+            cServ.modificarCorreo(correo);
+            redirectAttributes.addFlashAttribute("message", "Correo actualizado con éxito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/user/profile";
     }
 
     @GetMapping("/password")

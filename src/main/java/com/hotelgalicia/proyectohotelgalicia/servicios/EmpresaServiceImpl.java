@@ -17,6 +17,8 @@ import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.PermissionDeniedException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
+import com.hotelgalicia.proyectohotelgalicia.security.UserDetailsImpl;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 
@@ -86,7 +88,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public Empresa modificar(CorreoDTO usuario) {
+    public Empresa modificarCorreo(CorreoDTO usuario) {
         Empresa base = retornarEmpresa();
         verificarpropiedad(base);
         if(usuario.getCorreo().equals(base.getCorreo())){
@@ -105,7 +107,15 @@ public class EmpresaServiceImpl implements EmpresaService {
         base.setCorreo(usuario.getCorreo().trim());
 
         try {
-            return eRep.save(base);
+            Empresa usuarioModificado = eRep.save(base);
+
+            // Actualizar la autenticación en el contexto de seguridad con el nuevo correo
+            UserDetailsImpl userDetails = UserDetailsImpl.build(usuarioModificado, usuarioModificado.getRazonSocial());
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return usuarioModificado;
         } catch (DataIntegrityViolationException e) {
             throw new SaveFailedException(
                     "Error al modificar el correo: " + e.getMostSpecificCause().getMessage());

@@ -100,12 +100,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     // Parte administrativa
-    private Usuario retornarUser() {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = uRep.findByCorreoIgnoreCase(correo)
-                .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
-        return usuario;
-    }
+    // private Usuario retornarUser() {
+    //     String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+    //     Usuario usuario = uRep.findByCorreoIgnoreCase(correo)
+    //             .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
+    //     return usuario;
+    // }
 
     private void verificarAdmin() {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();

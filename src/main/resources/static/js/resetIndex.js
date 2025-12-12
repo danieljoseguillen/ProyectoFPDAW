@@ -1,9 +1,9 @@
   const inicio = () => {
-    document.getElementById("searchform").addEventListener("reset", resetear);
+    document.getElementById("searchform").addEventListener("reset", resetearIndex);
 }
 document.addEventListener("DOMContentLoaded", inicio);
 
-const resetear = () => {
+const indexValues = (e) => {
     // Campos de texto
     document.getElementById("nombre").value = "";
     document.getElementById("direccion").value = "";
@@ -34,4 +34,12 @@ const formatoFecha = (fecha) => {
     const mes = String(fecha.getMonth() + 1).padStart(2, '0');
     const dia = String(fecha.getDate()).padStart(2, '0');
     return `${año}-${mes}-${dia}`;
+}
+
+const resetearIndex =(e)=> {
+    if (e && typeof e.preventDefault === 'function') {
+        
+        try { e.preventDefault(); } catch (err) { /* ignore */ }
+    }
+    setTimeout(indexValues, 0);
 }

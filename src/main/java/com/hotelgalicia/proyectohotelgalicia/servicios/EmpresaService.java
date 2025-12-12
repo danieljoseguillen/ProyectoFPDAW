@@ -21,7 +21,7 @@ public interface EmpresaService {
 
     Empresa agregar(EmpresaDTO user);
 
-    Empresa modificar(CorreoDTO user);
+    Empresa modificarCorreo(CorreoDTO user);
 
     Boolean cambiarContraseñaPorId(ClaveDTO dto);
 }

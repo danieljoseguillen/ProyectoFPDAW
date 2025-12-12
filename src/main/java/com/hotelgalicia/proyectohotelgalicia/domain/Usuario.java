@@ -34,7 +34,6 @@ public class Usuario {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NaturalId
     @Column(unique = true)
     @Email(message = "El correo debe tener un formato válido.")
     @NotBlank(message = "El correo es obligatorio.")

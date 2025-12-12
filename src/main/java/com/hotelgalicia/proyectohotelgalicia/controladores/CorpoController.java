@@ -93,13 +93,13 @@ public class CorpoController {
     }
 
     // edit profile get
-    @GetMapping("/editprofile")
+    @GetMapping("/editmail")
     public String getedit(Model model, RedirectAttributes redirectAttributes) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            model.addAttribute("empresa",
+            model.addAttribute("correo",
                     modelMapper.map(eServ.getByCorreo(authentication.getName()), EmpresaDTO.class));
-            return "empresa/empresaEditView";
+            return "empresa/ChangeMailView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/enterprise/profile";
@@ -107,16 +107,16 @@ public class CorpoController {
     }
 
     // edit profile post
-    @PostMapping("/editprofile/submit")
-    public String postedit(@Valid CorreoDTO empresa, BindingResult bindingResult, Model model,
+    @PostMapping("/editmail/submit")
+    public String postedit(@Valid CorreoDTO correo, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("empresa", empresa);
-            return "redirect:/enterprise/editprofile";
+            redirectAttributes.addFlashAttribute("correo", correo);
+            return "redirect:/enterprise/editmail";
         }
         try {
-            eServ.modificar(empresa);
+            eServ.modificarCorreo(correo);
             redirectAttributes.addFlashAttribute("message", "Correo actualizado con éxito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

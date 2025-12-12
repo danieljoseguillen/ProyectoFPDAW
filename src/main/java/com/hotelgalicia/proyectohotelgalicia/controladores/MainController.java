@@ -60,6 +60,20 @@ public class MainController {
             throw new RuntimeException("La fecha de fin no puede ser anterior a la fecha actual.");
         }
     }
+        private void validarfechas(HotelSearchDTO filtro) {
+        if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())
+                || filtro.getFechaFin().isEqual(filtro.getFechaInicio())) {
+            filtro.setFechaFin(filtro.getFechaInicio().plusDays(1));
+        }
+
+        if (filtro.getFechaInicio().isBefore(LocalDate.now())) {
+            filtro.setFechaInicio(LocalDate.now());
+        }
+
+        if (filtro.getFechaFin().isBefore(LocalDate.now())) {
+            filtro.setFechaFin(LocalDate.now().plusDays(1));
+        }
+    }
 
     // Lista vacía por defecto
     // COMENTADO: SessionAttributeAdvice proporciona searchform automáticamente
@@ -93,6 +107,7 @@ public class MainController {
         if (bindingResult.hasErrors()) {
             // redirectAttributes.addFlashAttribute("error",
             // formatBindingErrors(bindingResult));
+            validarfechas(dto);
             model.addAttribute("searchform", dto);
             // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
             // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));

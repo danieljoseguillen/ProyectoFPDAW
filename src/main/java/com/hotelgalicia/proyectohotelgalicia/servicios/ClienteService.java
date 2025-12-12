@@ -5,6 +5,7 @@ import java.util.List;
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
 
 public interface ClienteService {
 
@@ -21,6 +22,8 @@ public interface ClienteService {
     Cliente agregar(ClienteDTO cliente);
 
     Cliente modificar(ClienteDTO user);
+
+    Cliente modificarCorreo(CorreoDTO usuario);
 
     Boolean cambiarContraseña(ClaveDTO dto);
 

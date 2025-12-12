@@ -15,7 +15,7 @@
                 th:object="${cliente}">
                 <div class="col-md-12">
                     <label for="correo" class="form-label"><b>Correo</b> </label>
-                    <input type="email" class="form-control" th:field="*{correo}" id="correo">
+                    <input type="email" readonly class="form-control" th:field="*{correo}" id="correo">
                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}">
                     </div>
                 </div>

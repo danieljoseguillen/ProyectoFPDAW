@@ -11,8 +11,8 @@
     <main>
         <div class="w-100">
             <h2 class="my-4">Modificación de datos de usuario:</h2>
-            <form class="row g-3 formregistro" method="post" action="#" th:action="@{/enterprise/editprofile/submit}"
-                th:object="${empresa}">
+            <form class="row g-3 formregistro" method="post" action="#" th:action="@{/enterprise/editmail/submit}"
+                th:object="${correo}">
                 <div class="col-md-12">
                     <label for="correo" class="form-label"><b>Correo</b> </label>
                     <input type="email" class="form-control" th:field="*{correo}" id="correo">
