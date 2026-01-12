@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <div>
+            <h2 class="my-4">Creación de hotel:</h2>
+            <form class="row g-3 formregistro" method="post" enctype="multipart/form-data" action="#"
+                th:action="@{/enterprise/hotels/new/submit}" th:object="${formulario}">
+                <div class="col-md-12">
+                    <label for="nombre" class="form-label"><b>Nombre</b> </label>
+                    <input type="text" class="form-control" th:field="*{nombre}" id="nombre">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label for="descripcion" class="form-label"><b>Descripcion del hotel</b> </label>
+                    <textarea class="form-control" th:field="*{descripcion}" id="descripcion"></textarea>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}"
+                        th:errors="*{descripcion}">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label for="municipio" class="form-label"><b>Municipio</b></label>
+                    <select th:field="*{municipio}" class="form-select" id="municipio">
+                        <option th:each="m, iter : ${T(com.hotelgalicia.proyectohotelgalicia.modelos.Municipios).values()}"
+                            th:value="${m}" th:text="${m.nombre}" th:if="${iter.index > 0}"></option>
+                    </select>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('municipio')}"
+                        th:errors="*{municipio}">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label for="direccion" class="form-label"><b>Dirección</b> </label>
+                    <input type="text" class="form-control" th:field="*{direccion}" id="direccion">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('direccion')}"
+                        th:errors="*{direccion}">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label for="telefono" class="form-label"><b>Telefono</b> </label>
+                    <input type="tel" class="form-control" th:field="*{telefono}" id="telefono">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('telefono')}"
+                        th:errors="*{telefono}">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="file" class="form-label"><b>Foto de portada del hotel</b> </label><br>
+                    <input type="file" name="file" required />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Crear</button>
+                    <button type="reset" class="btn btn-info float-right">Reestablecer</button>
+                </div>
+
+            </form>
+        </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

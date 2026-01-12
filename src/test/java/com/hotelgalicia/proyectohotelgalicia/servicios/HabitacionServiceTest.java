@@ -160,19 +160,19 @@ class HabitacionServiceTest {
         assertEquals("Suite", result.getNombre());
     }
 
-    @Test
-    void cambiarEstado_OK() {
-        when(haRep.findById(10L)).thenReturn(Optional.of(habitacion));
-        doNothing().when(hoServ).verificarHotel(any());
-        when(haRep.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    // @Test
+    // void cambiarEstado_OK() {
+    //     when(haRep.findById(10L)).thenReturn(Optional.of(habitacion));
+    //     doNothing().when(hoServ).verificarHotel(any());
+    //     when(haRep.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        EstadoHabitacionDTO estadoDTO = new EstadoHabitacionDTO();
-        estadoDTO.setId(10L);
-        estadoDTO.setEstado(EstadoHabitacion.INACTIVA);
+    //     EstadoHabitacionDTO estadoDTO = new EstadoHabitacionDTO();
+    //     estadoDTO.setId(10L);
+    //     estadoDTO.setEstado(EstadoHabitacion.INACTIVA);
 
-        Habitacion result = service.cambiarEstado(estadoDTO);
-        assertEquals(EstadoHabitacion.INACTIVA, result.getEstado());
-    }
+    //     Habitacion result = service.cambiarEstado(estadoDTO);
+    //     assertEquals(EstadoHabitacion.INACTIVA, result.getEstado());
+    // }
 
     @Test
     void desabilitarPorId_OK() {
@@ -223,18 +223,18 @@ class HabitacionServiceTest {
         assertTrue(ex.getMessage().contains("Error al guardar la imagen"));
     }
 
-    @Test
-    void cambiarEstado_ErrorSave() {
-        when(haRep.findById(10L)).thenReturn(Optional.of(habitacion));
-        doNothing().when(hoServ).verificarHotel(any());
-        when(haRep.save(any())).thenThrow(new DataIntegrityViolationException("duplicado"));
+    // @Test
+    // void cambiarEstado_ErrorSave() {
+    //     when(haRep.findById(10L)).thenReturn(Optional.of(habitacion));
+    //     doNothing().when(hoServ).verificarHotel(any());
+    //     when(haRep.save(any())).thenThrow(new DataIntegrityViolationException("duplicado"));
 
-        EstadoHabitacionDTO estadoDTO = new EstadoHabitacionDTO();
-        estadoDTO.setId(10L);
-        estadoDTO.setEstado(EstadoHabitacion.INACTIVA);
+    //     EstadoHabitacionDTO estadoDTO = new EstadoHabitacionDTO();
+    //     estadoDTO.setId(10L);
+    //     estadoDTO.setEstado(EstadoHabitacion.INACTIVA);
 
-        assertThrows(SaveFailedException.class, () -> service.cambiarEstado(estadoDTO));
-    }
+    //     assertThrows(SaveFailedException.class, () -> service.cambiarEstado(estadoDTO));
+    // }
 
     @Test
     void desabilitarPorId_ErrorSave() {

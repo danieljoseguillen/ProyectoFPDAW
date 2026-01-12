@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
-import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 
@@ -24,7 +23,7 @@ public interface HabitacionService {
 
     Habitacion modificar(HabitacionDTO habitacion, Long habId, MultipartFile file);
 
-    Habitacion cambiarEstado(EstadoHabitacionDTO estado);
+    Habitacion cambiarEstado(Long id);
 
     Habitacion DesabilitarPorId(Long id);
 

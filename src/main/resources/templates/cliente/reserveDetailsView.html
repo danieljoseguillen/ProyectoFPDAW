@@ -23,13 +23,12 @@
                 </div>
             </div>
 
-            <div class="container border rounded-3 mb-3">
-                <h5 class="mb-3">Precio</h4>
-                <div class="d-flex flex-row">
+            <div class=" border rounded-3 mb-3">
+                <h5 class="reservheaderl">Precio</h4>
+                <div class="d-flex flex-row mx-2">
                     <h4>Total: </h4>
                     <h4 class="ms-auto">€ <span th:text="${totalprice}"></span></h4>
                 </div>
-                
             </div>
         </div>
         <div class="container h-100 d-flex flex-column justify-content-top">
@@ -79,7 +78,7 @@
                             <td>
                                 <p th:text="'€ ' + ${#numbers.formatDecimal(habi.habitacion.precio*dias,0,0)}"></p>
                             </td>
-                            <td sec:authorize="hasAnyRole('USER')" width="30px">
+                            <td width="30px">
                                 <p th:text="${habi.cantidad}"></p>
                             </td>
                         </tr>

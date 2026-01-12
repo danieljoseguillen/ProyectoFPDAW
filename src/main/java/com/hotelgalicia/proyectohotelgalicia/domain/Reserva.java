@@ -49,6 +49,7 @@ public class Reserva {
     @Min(value = 1, message = "Debe haber al menos una persona en la reserva")
     private Integer personas;
 
+    @NotNull
     private EstadoReserva estado;
 
     @ManyToOne

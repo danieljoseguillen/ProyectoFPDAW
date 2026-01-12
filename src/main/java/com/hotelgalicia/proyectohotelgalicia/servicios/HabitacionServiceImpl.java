@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
-import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
@@ -171,11 +170,18 @@ public class HabitacionServiceImpl implements HabitacionService {
     }
 
     @Override
-    public Habitacion cambiarEstado(EstadoHabitacionDTO estado) {
-        Habitacion habitacion = haRep.findById(estado.getId())
+    public Habitacion cambiarEstado(Long id) {
+        Habitacion habitacion = haRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
         hoServ.verificarHotel(habitacion.getHotel());
-        habitacion.setEstado(estado.getEstado());
+        if (habitacion.getEstado() == EstadoHabitacion.DISPONIBLE) {
+            habitacion.setEstado(EstadoHabitacion.INACTIVA);
+        } else if (habitacion.getEstado() == EstadoHabitacion.INACTIVA) {
+            habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+        }
+        if (habitacion.getEstado() == EstadoHabitacion.ELIMINADA) {
+            throw new RuntimeException("Error: La habitación está desactivada(Eliminada para futuras busquedas).");    
+        }
         try {
             return haRep.save(habitacion);
         } catch (DataIntegrityViolationException e) {

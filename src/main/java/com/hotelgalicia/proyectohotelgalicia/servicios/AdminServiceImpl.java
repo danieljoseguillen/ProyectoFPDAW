@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ClienteRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.EmpresaRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
+import com.hotelgalicia.proyectohotelgalicia.security.UserDetailsImpl;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -65,11 +67,19 @@ public class AdminServiceImpl implements AdminService {
             throw new BadCredentialsException("Contraseña incorrecta.");
         }
         base.setCorreo(usuario.getCorreo().trim());
-        try {
-            return uRep.save(base);
+                try {
+            Usuario usuarioModificado = uRep.save(base);
+
+            // Actualizar la autenticación en el contexto de seguridad con el nuevo correo
+            UserDetailsImpl userDetails = UserDetailsImpl.build(usuarioModificado, "Administrador #"+usuarioModificado.getId());
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return usuarioModificado;
         } catch (DataIntegrityViolationException e) {
             throw new SaveFailedException(
-                    "Error al modificar datos del usuario: " + e.getMostSpecificCause().getMessage());
+                    "Error al modificar el correo: " + e.getMostSpecificCause().getMessage());
         } catch (Exception e) {
             throw new RuntimeException("Error inesperado al modificar datos del usuario: " + e.getMessage());
         }

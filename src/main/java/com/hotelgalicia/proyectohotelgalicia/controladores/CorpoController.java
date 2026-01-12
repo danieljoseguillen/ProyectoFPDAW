@@ -1,5 +1,6 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.hotelgalicia.proyectohotelgalicia.domain.DetalleReserva;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
@@ -28,10 +30,10 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
@@ -99,7 +101,7 @@ public class CorpoController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             model.addAttribute("correo",
                     modelMapper.map(eServ.getByCorreo(authentication.getName()), EmpresaDTO.class));
-            return "empresa/ChangeMailView";
+            return "empresa/changeMailView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/enterprise/profile";
@@ -163,7 +165,7 @@ public class CorpoController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/index";
         }
-        return "empresa/hotelEnterpriseView";
+        return "empresa/hotelEnterpriseListView";
     }
 
     // ver hotel get
@@ -175,7 +177,9 @@ public class CorpoController {
             hoServ.verificarHotel(hotel);
             model.addAttribute("hotel", hotel);
             model.addAttribute("hotelId", id);
-            model.addAttribute("habitaciones", hotel.getHabitaciones());
+            model.addAttribute("habitaciones", hotel.getHabitaciones().stream()
+                    .filter(hab -> hab.getEstado().name() != "ELIMINADA")
+                    .toList());
             model.addAttribute("valoraciones", hotel.getValoracion());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -190,7 +194,23 @@ public class CorpoController {
         try {
             Hotel hotel = hoServ.getById(id);
             hoServ.verificarHotel(hotel);
-            model.addAttribute("listaReservas", reServ.listByHotel(id));
+            // model.addAttribute("listaReservas", reServ.listByHotel(id));
+            // Crea las reservas como reservalistdto
+            List<ReservaListDTO> reservas = reServ.listByHotel(id)
+                    .stream()
+                    .map(reserva -> {
+                        ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
+                        dto.setHotel(reserva.getHotel());
+                        dto.setHabitacionestotal(reserva.getHabitaciones().stream()
+                                .mapToInt(DetalleReserva::getCantidad)
+                                .sum());
+                        dto.setCostototal(reServ.calcularPrecioTotal(reserva));
+
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            model.addAttribute("hotel", hotel);
+            model.addAttribute("reservas", reservas);
             return "empresa/hotelReserveView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -206,6 +226,14 @@ public class CorpoController {
             reServ.verificarReserva(reserva);
             model.addAttribute("reserva", reserva);
             model.addAttribute("detalles", reserva.getHabitaciones());
+            int totalHabis = reserva.getHabitaciones().stream()
+                    .mapToInt(DetalleReserva::getCantidad)
+                    .sum();
+            model.addAttribute("totalHabis", totalHabis);
+            int totalprice = reServ.calcularPrecioTotal(reserva).intValue();
+            model.addAttribute("totalprice", totalprice);
+            model.addAttribute("dias", ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()));
+            model.addAttribute("estadoReserva", new EstadoReservaDTO());
             return "empresa/reserveDetailsView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -245,11 +273,13 @@ public class CorpoController {
     public String postNewHotel(@Valid @ModelAttribute("formulario") HotelDTO dto, BindingResult bindingResult,
             Model model, @RequestParam MultipartFile file,
             RedirectAttributes redirectAttributes) {
+        // bindingResult.rejectValue("municipio", "municipio.error", "Debe Seleccionar
+        // un municipio.");
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("formulario", dto);
-            return "redirect:/enterprise/hotels/new";
+            model.addAttribute("formulario", dto);
+            return "empresa/hotelNewView";
         } else {
+
             try {
                 // revisar el redirect
                 Hotel hotel = hoServ.agregar(dto, file);
@@ -264,20 +294,20 @@ public class CorpoController {
     }
 
     // editar hotel get
-    @GetMapping("/hotels/edit/{id}")
+    @GetMapping("/hotels/{id}/edit")
     public String getEditHotel(Model model,
             RedirectAttributes redirectAttributes, @PathVariable Long id, SessionStatus status) {
         try {
             Hotel hotel = hoServ.getById(id);
             hoServ.verificarHotel(hotel);
             HotelDTO dto = modelMapper.map(hotel, HotelDTO.class);
-            status.setComplete();
+
             model.addAttribute("hotelId", id);
             model.addAttribute("formulario", dto);
             return "empresa/hotelEditView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/enterprise/profile";
+            return "redirect:/enterprise/hotels/" + id;
         }
     }
 
@@ -305,15 +335,31 @@ public class CorpoController {
     }
 
     // editar estado habitacion post
-    @PostMapping("/hotels/{id}/habitacion/status")
-    public String postEditHabStatus(@Valid @ModelAttribute("estadoHabitacion") EstadoHabitacionDTO dto,
+    @GetMapping("/hotels/{id}/habitacion/status/{habId}")
+    public String postEditHabStatus(@Valid @ModelAttribute("habId") Long habId,
             BindingResult bindingResult, @PathVariable Long id,
             Model model, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
         } else {
             try {
-                haServ.cambiarEstado(dto);
+                haServ.cambiarEstado(habId);
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
+            }
+        }
+        return "redirect:/enterprise/hotels/" + id;
+    }
+
+    @GetMapping("/hotels/{id}/habitacion/delete/{habId}")
+    public String postElimHabStatus(@Valid @ModelAttribute("habId") Long habId,
+            BindingResult bindingResult, @PathVariable Long id,
+            Model model, RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+        } else {
+            try {
+                haServ.DesabilitarPorId(habId);
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
             }
@@ -325,7 +371,6 @@ public class CorpoController {
     @GetMapping("/hotels/{id}/habitacion/new")
     public String getNewHab(Model model, @ModelAttribute("formulario") HabitacionDTO dto, @PathVariable Long id,
             SessionStatus status) {
-        status.setComplete();
         model.addAttribute("hotelId", id);
         model.addAttribute("formulario", dto);
         return "empresa/habitacionNewView";
@@ -337,9 +382,9 @@ public class CorpoController {
             @PathVariable Long id, Model model, @RequestParam MultipartFile file, SessionStatus status,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("formulario", dto);
-            return "redirect:/enterprise/hotels/" + id + "/habitacion/new";
+            model.addAttribute("hotelId", id);
+            model.addAttribute("formulario", dto);
+            return "empresa/habitacionNewView";
         } else {
             try {
                 hoServ.getById(id);
@@ -362,7 +407,6 @@ public class CorpoController {
         try {
             Habitacion habi = haServ.getById(habId);
             hoServ.verificarHotel(habi.getHotel());
-            status.setComplete();
             HabitacionDTO dto = modelMapper.map(habi, HabitacionDTO.class);
             model.addAttribute("formulario", dto);
             model.addAttribute("habitacionId", habId);
@@ -380,9 +424,9 @@ public class CorpoController {
             @ModelAttribute("habitacionId") Long habId,
             RedirectAttributes redirectAttributes, SessionStatus status) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("formulario", dto);
-            return "redirect:/enterprise/hotels/" + id + "/habitacion/edit/" + habId;
+            model.addAttribute("formulario", dto);
+            model.addAttribute("habitacionId", habId);
+            return "empresa/habitacionEditView";
         } else {
             try {
                 haServ.modificar(dto, habId, file);

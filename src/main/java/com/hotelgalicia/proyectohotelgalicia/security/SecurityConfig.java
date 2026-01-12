@@ -37,10 +37,14 @@ public class SecurityConfig {
                                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
                 http.authorizeHttpRequests(
                                 auth -> auth
-                                                // .requestMatchers("/h2-console/**").hasRole("ADMIN")
-                                                .requestMatchers("/**", "/Css/**", "/Media/**", "/error", "/api-docs")
+                                                .requestMatchers("/h2-console/**").hasRole("ADMIN")
+                                                .requestMatchers("/search", "/hotel/*", "/register/**", "/Css/**",
+                                                                "/files/**", "/error", "/api-docs", "/accessError",
+                                                                "/index", "/", "/home")
                                                 .permitAll()
-                                                .requestMatchers("/usuarios/**").hasAnyRole("ADMIN")
+                                                .requestMatchers("/hotel/*/**", "/user/**").hasRole("USER")
+                                                .requestMatchers("/enterprise/**").hasRole("CORPORATION")
+                                                .requestMatchers("/admin/**").hasRole("ADMIN")
                                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                                                 .permitAll()
                                                 .anyRequest().authenticated())
@@ -51,7 +55,15 @@ public class SecurityConfig {
                                                 .logoutSuccessUrl("/")
                                                 .permitAll())
                                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
-                http.exceptionHandling(exceptions -> exceptions.accessDeniedPage("/accessError"));
+                http.exceptionHandling(exceptions ->
+                exceptions.accessDeniedPage("/accessError"));
+                // .exceptionHandling(ex -> ex
+                //                 .accessDeniedHandler((request, response, exception) -> {
+                //                         request.getSession().setAttribute(
+                //                                         "error",
+                //                                         "No tienes permisos para acceder a esa sección");
+                //                         response.sendRedirect("/index");
+                //                 }));
                 return http.build();
         }
 

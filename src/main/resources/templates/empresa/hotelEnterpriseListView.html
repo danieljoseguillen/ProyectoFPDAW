@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia: Establecimientos</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main class="w-100">
+        <h3 class="mb-4">Establecimientos</h3>
+        <a th:href="@{/enterprise/hotels/new}"
+                        class="btn btn-info mx-2">Agregar un hotel</a>
+        <div class="w-100">
+            <div th:each="hotel:${hoteles}" class="caja-alt container rounded-3 mx-auto">
+                <a th:href="@{/enterprise/hotels/{id} (id=${hotel.id})}">
+                    <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
+                </a>
+                <div class="cajamain container">
+                    <a th:href="@{/enterprise/hotels/{id} (id=${hotel.id})}">
+                        <h4 th:text="${hotel.nombre}"></h4>
+                    </a>
+                    <div>
+                        <p class="parrafo" th:text="${hotel.municipio.nombre}"></p>
+                        <p class="parrafo" th:text="${hotel.direccion}"></p>
+                    </div>
+                </div>
+                <div class="minicaja container">
+                    <p>Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
+                    <!-- <p><span th:text="${hotel.valoraciones}"></span> Reseñas</p> -->
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

@@ -67,7 +67,7 @@ main {
     background-color: white;
     align-items: center;
     max-width: 80%;
-    min-width: min-content;
+    min-width: 75%;
     align-self: center;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -140,12 +140,23 @@ footer>p {
     border-style: solid;
     border-color: lightgray;
     border-width: 1px;
-    /* display: grid;
-    grid-template-areas: 'left center right';
-    grid-template-columns: repeat(3, 1fr); */
     flex: 1 0 auto;
     display: flex;
     flex-direction: row;
+}
+
+.caja-alt {
+    height: 250px;
+    min-width: 600px;
+    margin: 10px 20px 20px;
+    padding: 10px;
+    border-style: solid;
+    border-color: lightgray;
+    border-width: 1px;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-self: center;
 }
 
 /* Imagen miniaturas */
@@ -277,7 +288,7 @@ footer>p {
 
 .card-col-primary {
     /* max-width: 220px; */
-    width: 50%;
+    width: 40%;
     min-width: 200px;
     padding: 10px;
 }
@@ -303,6 +314,7 @@ footer>p {
     border-top-right-radius: .25rem;
     border-bottom-right-radius: .25rem;
     float: right;
+    margin-left: auto;
 }
 
 .card-col-action {
@@ -376,14 +388,15 @@ footer>p {
     } */
 
     .card-col-primary,
-    .card-col-content,.card-col-stat,
+    .card-col-content,
+    .card-col-stat,
     .card-col-secondary {
         min-width: auto;
     }
 
     .card-col-options {
-    width: 100%;
-    min-width: 80px;
+        width: 100%;
+        min-width: 80px;
     }
 
 }
@@ -422,7 +435,7 @@ footer>p {
 }
 
 .fakeheader {
-    height: 61px;
+    height: 3.7em;
     background-color: #212529;
     background-image: var(--bs-gradient) !important;
     align-self: flex-start;
@@ -431,6 +444,17 @@ footer>p {
 .hotelheader {
     color: white;
     font-weight: bold;
+}
+
+.reservheaderl {
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #212529;
+    background-image: var(--bs-gradient) !important;
+    border-top-right-radius: .25rem;
+    border-top-left-radius: .25rem;
 }
 
 /* Componentes para el panel de confirmacion de reserva */
@@ -457,7 +481,7 @@ footer>p {
 /* Contenido de perfiles */
 /* Barra de busqueda */
 .opciones {
-    max-width: 25%;
+    max-width: 300px;
     min-width: 250px;
     margin-right: 30px;
     max-height: fit-content;
@@ -503,7 +527,8 @@ footer>p {
 @media only screen and (max-width: 1000px) {
 
 
-    .caja {
+    .caja,
+    .caja-alt {
         margin-left: 0px;
         margin-right: 0px;
     }
@@ -602,13 +627,18 @@ footer>p {
 }
 
 @media only screen and (max-width: 767px) {
+    main {
+        max-width: 95%;
+    }
+
     .cajavalora {
         max-width: 300px;
         width: auto;
         min-width: 250px;
     }
 
-    .caja {
+    .caja,
+    .caja-alt {
         min-width: 100%;
     }
 

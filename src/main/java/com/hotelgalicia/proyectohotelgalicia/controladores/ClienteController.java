@@ -137,7 +137,7 @@ public class ClienteController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             model.addAttribute("correo",
                     modelMapper.map(cServ.getByCorreo(authentication.getName()), CorreoDTO.class));
-            return "cliente/ChangeMailView";
+            return "cliente/changeMailView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/enterprise/profile";

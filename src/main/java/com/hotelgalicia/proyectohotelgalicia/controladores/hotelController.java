@@ -152,7 +152,9 @@ public class hotelController {
             model.addAttribute("habitaciones", habitaciones);
             model.addAttribute("valoraciones", vaServ.listByHotelId(id));
             model.addAttribute("valoracion", new ValoracionDTO());
-            model.addAttribute("myval", vaServ.getByIds(retornarId(), id));
+            // if (vaServ.getByIds(retornarId(), id) != null) {
+            //     model.addAttribute("myval", vaServ.getByIds(retornarId(), id));
+            // }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/index";

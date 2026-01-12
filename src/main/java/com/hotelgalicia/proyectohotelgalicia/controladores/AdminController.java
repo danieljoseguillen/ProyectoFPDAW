@@ -34,6 +34,8 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTOAdmin;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTOAdmin;
 import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTOAdmin;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
@@ -44,6 +46,7 @@ import com.hotelgalicia.proyectohotelgalicia.dto.SortDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.UsuarioDTO;
 import com.hotelgalicia.proyectohotelgalicia.servicios.AdminService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
+import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
@@ -66,6 +69,9 @@ public class AdminController {
 
     @Autowired
     private ClienteService cServ;
+
+    @Autowired
+    private EmpresaService eServ;
 
     @Autowired
     private HotelService hoServ;
@@ -151,7 +157,7 @@ public class AdminController {
         }
         try {
             aServ.modificar(usuario);
-            redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+            redirectAttributes.addFlashAttribute("message", "Correo actualizado con éxito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -284,6 +290,84 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/users/" + userid;
+    }
+
+    // Zona compañias
+    @GetMapping("/enterprises/{id}")
+    public String getCorpoData(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("usuario", eServ.getById(id));
+            model.addAttribute("userid", id);
+            return "admin/usuarioView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/users";
+        }
+    }
+
+    @GetMapping("/enterprises/{id}/edit")
+    public String geteditCorpo(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
+            @ModelAttribute("userid") Long userid) {
+        try {
+            verificarsessionvalue(userid);
+            model.addAttribute("cliente",
+                    modelMapper.map(eServ.getById(id), EmpresaDTO.class));
+
+            return "admin/userEditView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/enterprises/" + id;
+        }
+    }
+
+    @PostMapping("/enterprises/edit/submit")
+    public String posteditCorpo(@Valid EmpresaDTOAdmin empresa, BindingResult bindingResult, Model model,
+            RedirectAttributes redirectAttributes, @ModelAttribute("userid") Long userid, SessionStatus status) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            redirectAttributes.addFlashAttribute("empresa", empresa);
+        } else {
+            try {
+                verificarsessionvalue(userid);
+                aServ.modificarEmpresa(empresa, userid);
+                status.setComplete();
+                redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
+            }
+        }
+        return "redirect:/admin/enterprises/" + userid;
+    }
+
+    @GetMapping("/enterprises/{id}/password")
+    public String getCorpoPasswordChange(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
+            @ModelAttribute("userid") Long userid) {
+        try {
+            verificarsessionvalue(userid);
+            model.addAttribute("formulario", new ClaveDTOAdmin(null));
+            return "admin/changePasswordView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/enterprises/" + id;
+        }
+    }
+
+    @PostMapping("/enterprises/password/submit")
+    public String postcorpoPasswordChange(@Valid ClaveDTOAdmin formulario, BindingResult bindingResult, Model model,
+            RedirectAttributes redirectAttributes, @ModelAttribute("userid") Long userid, SessionStatus status) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
+            return "redirect:/admin/enterprises/" + userid + "password";
+        }
+        try {
+            verificarsessionvalue(userid);
+            aServ.cambiarContraseñaPorId(userid, formulario);
+            redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
+            status.setComplete();
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/enterprises/" + userid;
     }
 
     // Zona hotel

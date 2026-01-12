@@ -19,12 +19,15 @@ public class HabitacionDTO {
     @Column(length = 3000)
     private String descripcion;
 
+    @NotNull(message = "Debe haber por lo menos una habitación de ese tipo.")
     @Min(value = 1, message = "Debe haber por lo menos una habitación de ese tipo")
     private Integer cantidad;
 
+    @NotNull(message = "La habitacion debe poder alojar por lo menos a una persona.")
     @Min(value = 1, message = "La habitacion debe poder alojar por lo menos a una persona.")
     private Integer capacidad;
 
+    @NotNull(message = "El precio no puede estar vacío.")
     @Min(value = 0, message = "Precio fuera de rango.")
     private Double precio;
 }
