@@ -12,9 +12,14 @@
         <div class="opciones border mt-3 container-sm p-3 rounded">
             <h4>Opciones</h4>
             <div class="panelops">
-                <a th:href="@{/user/editprofile}" class="btn btn-info">Modificar Datos</a>
-                <a th:href="@{/user/editmail}" class="btn btn-info">Modificar correo</a>
-                <a th:href="@{/user/password}" class="btn btn-info">Actualizar contraseña</a>
+                <a th:href="@{/admin/users/{id}/edit (id=${userid})}" class="btn btn-info">Modificar Datos</a>
+                <a th:href="@{/admin/users/{id}/password (id=${userid})}" class="btn btn-info">Actualizar contraseña</a>
+                <form th:action="@{/admin/users/{id}/status(id=${userid})}" method="post">
+                    <button type="submit" class="btn btn-warning" th:text="${usuario.estado ? 'Desactivar' : 'Activar'}">
+                    </button>
+                </form>
+                <a th:href="@{/admin/users/{id}/reviews (id=${userid})}" class="btn btn-info ">Ver reseñas</a>
+                <a th:href="@{/admin/users}" class="btn btn-info">Volver</a>
             </div>
         </div>
         <div class="container my-3 border align-self-start p-3 rounded mw-100">
@@ -24,7 +29,7 @@
                     <p class="fs-5">Nombre</p>
                 </div>
                 <div class="proftext">
-                    <p th:text="${cliente.nombre + ' ' + cliente.apellido}"></p>
+                    <p th:text="${usuario.nombre + ' ' + usuario.apellido}"></p>
                 </div>
             </div>
             <div class="profilecell">
@@ -32,7 +37,7 @@
                     <p class="fs-5">Correo</p>
                 </div>
                 <div class="proftext">
-                    <p th:text="${cliente.correo}"></p>
+                    <p th:text="${usuario.correo}"></p>
                 </div>
             </div>
             <div class="profilecell">
@@ -40,7 +45,15 @@
                     <p class="fs-5">Telefono</p>
                 </div>
                 <div class="proftext">
-                    <p th:text="${cliente.telefono}"></p>
+                    <p th:text="${usuario.telefono}"></p>
+                </div>
+            </div>
+            <div class="profilecell">
+                <div class="proflabel">
+                    <p class="fs-5">Estado</p>
+                </div>
+                <div class="proftext">
+                    <p th:text="${usuario.estado ? 'Activo' :'Inactivo'}"></p>
                 </div>
             </div>
         </div>

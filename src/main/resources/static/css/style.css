@@ -286,6 +286,13 @@ footer>p {
     width: 100%;
 }
 
+.card-col-user {
+    /* max-width: 220px; */
+    width: 30%;
+    min-width: 100px;
+    padding: 10px;
+}
+
 .card-col-primary {
     /* max-width: 220px; */
     width: 40%;
@@ -325,19 +332,7 @@ footer>p {
     justify-content: center;
     background-color: #dc3545;
     /* danger red */
-    color: white;
-}
-
-.card-col-action-lone {
-    width: 40px;
-    min-width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #dc3545;
-    color: white;
-    border-top-right-radius: .25rem;
-    border-bottom-right-radius: .25rem;
+    color: white !important;
 }
 
 .card-col-info {
@@ -347,12 +342,32 @@ footer>p {
     align-items: center;
     justify-content: center;
     background-color: deepskyblue;
-    color: white;
+    color: white !important;
 }
 
-.card-col-action a,
-.card-col-action-lone a,
+/* .card-col-action-lone {
+    width: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #dc3545;
+    color: white;
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+} */
+
+.card-col-lone {
+    width: 40px !important;
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+    margin-left: auto;
+}
+
+
+.card-col-action a, .card-col-action button,
 .card-col-info a {
+    height: 100%;
     color: inherit;
     display: inline-flex;
     align-items: center;
@@ -374,31 +389,6 @@ footer>p {
     min-width: 120px;
     padding: 10px;
     text-align: center;
-}
-
-@media only screen and (max-width: 767px) {
-
-    /* .item-card>div,
-    .card-col-primary,
-    .card-col-content,
-    .card-col-stat,
-    .card-col-action {
-        padding: 6px 8px;
-
-    } */
-
-    .card-col-primary,
-    .card-col-content,
-    .card-col-stat,
-    .card-col-secondary {
-        min-width: auto;
-    }
-
-    .card-col-options {
-        width: 100%;
-        min-width: 80px;
-    }
-
 }
 
 .minitexto {
@@ -493,16 +483,16 @@ footer>p {
 .profilecell {
     display: flex;
     flex-direction: row;
-    height: 75px;
-    border-bottom: solid;
+    height: 60px;
+    /* border-bottom: solid; */
     align-items: center;
-    border-width: 1pt;
+    /* border-width: 1pt; */
 }
 
-.profilecell:first-of-type {
+/* .profilecell:first-of-type {
     border-top: solid;
     border-width: 1pt;
-}
+} */
 
 .profilecell p {
     margin-bottom: 0px;
@@ -510,6 +500,16 @@ footer>p {
 
 .proflabel {
     min-width: 125px;
+}
+
+/* Controla tamaños del panel de opciones de perfil */
+.panelops{
+    gap: 075rem;
+}
+.panelops a, .panelops button {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 /* Ajustes en base al tamaño de la pantalla */
@@ -521,6 +521,7 @@ footer>p {
     }
 
 }
+
 
 @media only screen and (max-width: 1050px) {}
 
@@ -574,18 +575,18 @@ footer>p {
     .panelops {
         display: flex;
         flex-direction: row;
-
+        gap: 0.75rem;
+        justify-content: center;
     }
 
-    .panelops a {
-        margin-left: 10px;
-        margin-right: 10px;
+    .panelops a, .panelops button {
+        width: auto;
     }
-
+/*
     .panelops a:first-child {
         margin-left: 0px !important;
         margin-right: 10px;
-    }
+    } */
 
     .profilecell {
         flex-direction: column;
@@ -626,6 +627,7 @@ footer>p {
     }
 }
 
+
 @media only screen and (max-width: 767px) {
     main {
         max-width: 95%;
@@ -652,6 +654,28 @@ footer>p {
         min-width: 80%;
     }
 
+    /* .item-card>div,
+    .card-col-primary,
+    .card-col-content,
+    .card-col-stat,
+    .card-col-action {
+        padding: 6px 8px;
+
+    } */
+
+    .card-col-primary,
+    .card-col-user,
+    .card-col-content,
+    .card-col-stat,
+    .card-col-secondary {
+        min-width: auto;
+    }
+
+    .card-col-options {
+        width: 100%;
+        min-width: 80px;
+    }
+
 }
 
 @media only screen and (max-width: 690px) {
@@ -661,6 +685,10 @@ footer>p {
     }
 
     .imgcaja {
+        display: none;
+    }
+
+    .hide600 {
         display: none;
     }
 

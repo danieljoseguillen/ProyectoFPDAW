@@ -110,12 +110,10 @@ public class CorpoController {
 
     // edit profile post
     @PostMapping("/editmail/submit")
-    public String postedit(@Valid CorreoDTO correo, BindingResult bindingResult, Model model,
+    public String postedit(@Valid @ModelAttribute("correo") CorreoDTO correo, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("correo", correo);
-            return "redirect:/enterprise/editmail";
+            return "empresa/changeMailView";
         }
         try {
             eServ.modificarCorreo(correo);

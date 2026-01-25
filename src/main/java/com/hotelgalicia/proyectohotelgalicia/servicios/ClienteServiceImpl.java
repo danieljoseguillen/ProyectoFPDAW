@@ -2,6 +2,7 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,6 +34,9 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
     private UsuarioRepository uRep;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
     public List<Cliente> listAll() {

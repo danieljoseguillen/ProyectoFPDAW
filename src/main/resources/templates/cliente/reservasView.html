@@ -24,7 +24,8 @@
                 <div class="card-col-stat">
                     <!-- <p class="fw-bold hideable-list-header">Personas</p> -->
                     <p class="icon-header-small-screen" title="Personas">
-                        <i class="bi bi-person-standing"></i></p>
+                        <i class="bi bi-person-standing"></i>
+                    </p>
                     <p class="" th:text="${rese.personas}"></p>
                 </div>
                 <div class="card-col-stat">
@@ -41,15 +42,16 @@
                     <p th:text="${rese.estado}"></p>
                 </div>
                 <div class="card-col-options">
-                    <div class="card-col-info">
-                        <a th:href="@{/user/reserves/{id} (id=${rese.id})}">
-                            <i class="bi  bi-info-square-fill"></i></a>
-                    </div>
-                    <div th:if="${rese.estado.name() != 'CANCELADA' && rese.estado.name() != 'FINALIZADA'}" class="card-col-action h-100">
-                        <a th:href="@{/user/reserves/cancel (id=${rese.id})}"
-                            onclick="return confirm('Está seguro que desea cancelar la reserva?')"><i
-                                class="bi bi-x-lg"></i></a>
-                    </div>
+                    <a class="card-col-info" th:href="@{/user/reserves/{id} (id=${rese.id})}">
+                        <i class="bi  bi-info-square-fill"></i>
+                    </a>
+                    <form th:if="${rese.estado.name() != 'CANCELADA' && rese.estado.name() != 'FINALIZADA'}"
+                        th:action="@{/user/reserves/cancel}" method="post"
+                        onsubmit="return confirm('Está seguro que desea cancelar la reserva?')"
+                        class="card-col-action">
+                        <input type="hidden" name="id" th:value="${rese.id}" />
+                        <button type="submit" class="btn btn-link p-0"><i class="bi bi-x-lg"></i></button>
+                    </form>
                 </div>
 
             </div>

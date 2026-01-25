@@ -27,7 +27,7 @@ public interface AdminService {
 
     List<Empresa> getSortedEmpresa (SortDTO formulario);
 
-    Boolean cambiarEstadoPorId(Long id, boolean estado);
+    Boolean cambiarEstadoPorId(Long id);
 
     Cliente modificarCliente(ClienteDTOAdmin user, Long id);
 

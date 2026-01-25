@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
@@ -139,7 +141,7 @@ public class AdminController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             model.addAttribute("usuario",
                     modelMapper.map(aServ.getByCorreo(authentication.getName()), UsuarioDTO.class));
-            return "admin/userEditView";
+            return "admin/EditView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/profile";
@@ -148,12 +150,12 @@ public class AdminController {
 
     // edit profile post
     @PostMapping("/editprofile/submit")
-    public String postedit(@Valid UsuarioDTO usuario, BindingResult bindingResult, Model model,
+    public String postedit(@Valid @ModelAttribute("usuario") UsuarioDTO usuario, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("usuario", usuario);
-            return "redirect:/admin/editprofile";
+            model.addAttribute("usuario", usuario);
+            return "admin/EditView";
         }
         try {
             aServ.modificar(usuario);
@@ -176,17 +178,18 @@ public class AdminController {
     }
 
     @PostMapping("/password/submit")
-    public String postPasswordChange(@Valid ClaveDTO formulario, BindingResult bindingResult, Model model,
+    public String postPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTO formulario,
+            BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            return "redirect:/admin/password";
+            return "admin/changePasswordView";
         }
         try {
             aServ.cambiarContraseña(formulario);
             redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "admin/changePasswordView";
         }
         return "redirect:/admin/profile";
     }
@@ -198,7 +201,7 @@ public class AdminController {
         try {
             model.addAttribute("listado", cServ.listAll());
             model.addAttribute("sortform", new SortDTO());
-            return "userListView";
+            return "admin/usuariolistView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             // COMENTADO: SessionAttributeAdvice proporciona `searchform` automáticamente
@@ -207,14 +210,42 @@ public class AdminController {
         }
     }
 
-    @PostMapping("users/sort/name")
+    @PostMapping("users/sort")
     public String postIClientSorted(SortDTO sortform, Model model) {
         model.addAttribute("listado", aServ.getSortedClientes(sortform));
         model.addAttribute("sortform", sortform);
         return "admin/usuariolistView";
     }
 
-    // zona usuario
+    /**
+     * Cambia el estado de un usuario o empresa segun su id.
+     * 
+     * @param type
+     * @param id
+     * @param model
+     * @param redirectAttributes
+     * @return
+     */
+    @PostMapping("/{type}/{id}/status")
+    public String changeUserStatus(@PathVariable String type, @PathVariable Long id, Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            aServ.cambiarEstadoPorId(id);
+            redirectAttributes.addFlashAttribute("message", "Estado del usuario cambiado con éxito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/" + type + "/" + id;
+    }
+
+    /**
+     * Muestra el panel de datos de un cliente
+     * 
+     * @param id                 id del cliente
+     * @param model
+     * @param redirectAttributes
+     * @return
+     */
     @GetMapping("/users/{id}")
     public String getUserData(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
@@ -243,22 +274,23 @@ public class AdminController {
     }
 
     @PostMapping("/users/edit/submit")
-    public String posteditUser(@Valid ClienteDTOAdmin cliente, BindingResult bindingResult, Model model,
+    public String posteditUser(@Valid @ModelAttribute("cliente") ClienteDTOAdmin cliente, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes, @ModelAttribute("userid") Long userid, SessionStatus status) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("cliente", cliente);
+            model.addAttribute("cliente", cliente);
         } else {
             try {
                 verificarsessionvalue(userid);
                 aServ.modificarCliente(cliente, userid);
                 status.setComplete();
                 redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+                return "redirect:/admin/users/" + userid;
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
             }
         }
-        return "redirect:/admin/users/" + userid;
+        return "admin/userEditView";
     }
 
     @GetMapping("/users/{id}/password")
@@ -266,8 +298,8 @@ public class AdminController {
             @ModelAttribute("userid") Long userid) {
         try {
             verificarsessionvalue(userid);
-            model.addAttribute("formulario", new ClaveDTOAdmin(null));
-            return "admin/changePasswordView";
+            model.addAttribute("formulario", new ClaveDTOAdmin(null, null));
+            return "admin/userPasswordView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/users/" + id;
@@ -275,30 +307,50 @@ public class AdminController {
     }
 
     @PostMapping("/users/password/submit")
-    public String postUserPasswordChange(@Valid ClaveDTOAdmin formulario, BindingResult bindingResult, Model model,
+    public String postUserPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTOAdmin formulario,
+            BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes, @ModelAttribute("userid") Long userid, SessionStatus status) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            return "redirect:/admin/users/" + userid + "password";
+            return "admin/userPasswordView";
         }
         try {
             verificarsessionvalue(userid);
             aServ.cambiarContraseñaPorId(userid, formulario);
             redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
             status.setComplete();
+            return "redirect:/admin/users/" + userid;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "admin/userPasswordView";
         }
-        return "redirect:/admin/users/" + userid;
     }
 
     // Zona compañias
+    @GetMapping("/enterprises")
+    public String getCorpoList(Model model, RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("listado", eServ.listAll());
+            model.addAttribute("sortform", new SortDTO());
+            return "admin/corpolistView";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/index";
+        }
+    }
+
+    @PostMapping("enterprises/sort")
+    public String postCorpoSorted(SortDTO sortform, Model model) {
+        model.addAttribute("listado", aServ.getSortedEmpresa(sortform));
+        model.addAttribute("sortform", sortform);
+        return "admin/corpolistView";
+    }
+
     @GetMapping("/enterprises/{id}")
     public String getCorpoData(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             model.addAttribute("usuario", eServ.getById(id));
             model.addAttribute("userid", id);
-            return "admin/usuarioView";
+            return "admin/empresaView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/users";
@@ -310,10 +362,10 @@ public class AdminController {
             @ModelAttribute("userid") Long userid) {
         try {
             verificarsessionvalue(userid);
-            model.addAttribute("cliente",
+            model.addAttribute("empresa",
                     modelMapper.map(eServ.getById(id), EmpresaDTO.class));
 
-            return "admin/userEditView";
+            return "admin/corpoEditView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/enterprises/" + id;
@@ -321,22 +373,23 @@ public class AdminController {
     }
 
     @PostMapping("/enterprises/edit/submit")
-    public String posteditCorpo(@Valid EmpresaDTOAdmin empresa, BindingResult bindingResult, Model model,
+    public String posteditCorpo(@Valid @ModelAttribute("empresa") EmpresaDTOAdmin empresa, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes, @ModelAttribute("userid") Long userid, SessionStatus status) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("empresa", empresa);
+            model.addAttribute("empresa", empresa);
         } else {
             try {
                 verificarsessionvalue(userid);
                 aServ.modificarEmpresa(empresa, userid);
                 status.setComplete();
                 redirectAttributes.addFlashAttribute("message", "Datos actualizados con éxito.");
+                return "redirect:/admin/enterprises/" + userid;
             } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
+                model.addAttribute("error", e.getMessage());
             }
         }
-        return "redirect:/admin/enterprises/" + userid;
+        return "admin/corpoEditView";
     }
 
     @GetMapping("/enterprises/{id}/password")
@@ -344,8 +397,8 @@ public class AdminController {
             @ModelAttribute("userid") Long userid) {
         try {
             verificarsessionvalue(userid);
-            model.addAttribute("formulario", new ClaveDTOAdmin(null));
-            return "admin/changePasswordView";
+            model.addAttribute("formulario", new ClaveDTOAdmin(null, null));
+            return "admin/corpoPasswordView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/enterprises/" + id;
@@ -353,21 +406,22 @@ public class AdminController {
     }
 
     @PostMapping("/enterprises/password/submit")
-    public String postcorpoPasswordChange(@Valid ClaveDTOAdmin formulario, BindingResult bindingResult, Model model,
+    public String postcorpoPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTOAdmin formulario,
+            BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes, @ModelAttribute("userid") Long userid, SessionStatus status) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            return "redirect:/admin/enterprises/" + userid + "password";
+            return "admin/corpoPasswordView";
         }
         try {
             verificarsessionvalue(userid);
             aServ.cambiarContraseñaPorId(userid, formulario);
             redirectAttributes.addFlashAttribute("message", "Contraseña actualizada con exito.");
             status.setComplete();
+            return "redirect:/admin/enterprises/" + userid;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "admin/corpoPasswordView";
         }
-        return "redirect:/admin/enterprises/" + userid;
     }
 
     // Zona hotel
@@ -379,12 +433,17 @@ public class AdminController {
         try {
             verificarTipo(type);
             if (type.equals("users")) {
-                model.addAttribute("reviews", vaServ.listByUserId(id));
-                model.addAttribute("usuario", cServ.getById(id));
+                Cliente cliente = cServ.getById(id);
+                model.addAttribute("valoraciones", vaServ.listByUserId(id));
+                model.addAttribute("nombre", cliente.getNombre() + " " + cliente.getApellido());
             } else if (type.equals("hotels")) {
-                model.addAttribute("reviews", vaServ.listByHotelId(id));
-                model.addAttribute("hotel", hoServ.getById(id));
+                model.addAttribute("valoraciones", vaServ.listByHotelId(id));
+                model.addAttribute("nombre", hoServ.getById(id).getNombre());
+            }else{
+                throw new RuntimeException("Tipo de recurso no válido.");
             }
+            model.addAttribute("id", id);
+            model.addAttribute("type", type);
             return "admin/reviewListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -414,7 +473,7 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/" + type + "/" + id + "/reserves";
+        return "redirect:/admin/" + type + "/" + id + "/reviews";
     }
 
     // Reservas de usuario y hotel

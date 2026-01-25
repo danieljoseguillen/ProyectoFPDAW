@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <div class="w-100">
+            <h3 class="mb-4">Lista de usuarios</h3>
+            <form method="post" action="#" th:action="@{/admin/enterprises/sort}" th:object="${sortform}">
+                <div class="form-group d-flex flex-row">
+                    <input class="btn btn-primary" type="submit" value="Buscar">
+                    <input type="text" th:field="*{sortname}" class="form-control-sm">
+                    <div class="mx-3 align-self-center">
+                        <input type="radio" class="form-check-input" name="sorttype"
+                            value="RAZON" checked>
+                        <label class="form-check-label" for="sorttype">Razon</label>
+                    </div>
+                    <div class="mx-3 align-self-center">
+                        <input type="radio" class="form-check-input" name="sorttype"
+                            value="CORREO">
+                        <label class="form-check-label" for="sorttype">Correo</label>
+                    </div>
+                    <a class="btn btn-primary" th:href="@{/admin/enterprises}">Reestablecer</a>
+                </div>
+            </form>
+            <div th:each="user:${listado}" class="item-card border rounded-3 my-3">
+                <div class="card-col-user">
+                    <h5>Razón</h5>
+                    <p th:text="${user.razonSocial}"></p>
+                </div>
+                <div class="card-col-user hide600">
+                    <h5>CIF</h5>
+                    <p th:text="${user.cif}"></p>
+                </div>
+                <div class="card-col-content">
+                    <h5>Correo</h5>
+                    <p th:text="${user.correo}"></p>
+                </div>
+                <div class="card-col-stat">
+                    <h5>Estado</h5>
+                    <p th:text="${user.estado} ?'Activo' :'Inactivo'"></p>
+                </div>
+                <a class="card-col-info card-col-lone" th:href="@{/admin/enterprises/{id} (id=${user.id})}">
+                    <i class="bi  bi-info-square-fill"></i>
+                </a>
+            </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

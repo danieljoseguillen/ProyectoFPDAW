@@ -24,6 +24,8 @@
                     <li class="nav-item"><a class="nav-link" aria-current="page" th:href="@{/}">Hoteles</a></li>
                     <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')"><a class="nav-link" aria-current="page"
                             th:href="@{/admin/users}">Usuarios</a></li>
+                    <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')"><a class="nav-link" aria-current="page"
+                            th:href="@{/admin/enterprises}">Empresas</a></li>
                     <li sec:authorize="hasAnyRole('USER')" class="nav-item"><a class="nav-link" aria-current="page"
                             th:href="@{/user/reserves}">Mis Reservas</a></li>
                     <li sec:authorize="hasAnyRole('USER')" class="nav-item"><a class="nav-link" aria-current="page"
@@ -131,6 +133,7 @@
                 <span th:text="${info}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+            <script th:src="@{/js/alertas.js}"></script>
     </th:block>
 </body>
 

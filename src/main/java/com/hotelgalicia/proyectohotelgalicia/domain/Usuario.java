@@ -1,7 +1,5 @@
 package com.hotelgalicia.proyectohotelgalicia.domain;
 
-import org.hibernate.annotations.NaturalId;
-
 import com.hotelgalicia.proyectohotelgalicia.modelos.Roles;
 
 import jakarta.persistence.Column;

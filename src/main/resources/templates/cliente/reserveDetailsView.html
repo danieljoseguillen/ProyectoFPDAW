@@ -8,16 +8,17 @@
 <body>
     <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
-<main id="resconfmain" class="d-flex flex-row container">
+    <main id="resconfmain" class="d-flex flex-row container">
         <div class="container h-100 d-flex flex-column justify-content-top resconfdiv1">
             <div class="container border rounded-3 px-0 mb-3">
                 <img th:src="@{'/files/' + ${reserva.hotel.imagen}}" class="thumbimage rounded-3 mx-0 mt-0">
                 <div class="container">
-                    
+
                     <h3><a th:href="@{/hotel/{id} (id=${reserva.hotel.id})}" th:text="${reserva.hotel.nombre}"></a></h3>
                     <p th:text="${reserva.hotel.direccion}"></p>
                     <div class="d-flex flex-row textomenor">
-                        <p class="me-3">Puntaje <span class="blueIcon rounded" th:text="${reserva.hotel.puntaje}"></span></p>
+                        <p class="me-3">Puntaje <span class="blueIcon rounded"
+                                th:text="${reserva.hotel.puntaje}"></span></p>
                         <p class=""><span th:text="${reserva.hotel.valoracion.size}"></span> Reseñas</p>
                     </div>
                 </div>
@@ -25,71 +26,80 @@
 
             <div class=" border rounded-3 mb-3">
                 <h5 class="reservheaderl">Precio</h4>
-                <div class="d-flex flex-row mx-2">
-                    <h4>Total: </h4>
-                    <h4 class="ms-auto">€ <span th:text="${totalprice}"></span></h4>
-                </div>
+                    <div class="d-flex flex-row mx-2">
+                        <h4>Total: </h4>
+                        <h4 class="ms-auto">€ <span th:text="${totalprice}"></span></h4>
+                    </div>
+            </div>
+            <div class="border rounded-3 mb-3">
+                <h5 class="reservheaderl">Estado</h4>
+                    <div class="d-flex flex-row mx-2">
+                        <h5 th:text="${reserva.estado}"></h5>
+                    </div>
             </div>
         </div>
         <div class="container h-100 d-flex flex-column justify-content-top">
-                <h4>Datos de la reserva</h4>
-                <div class="d-flex flex-row justify-content-center border rounded-3 mb-3">
-                    <div class="w-25 text-center border">
-                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Entrada</p>
-                        <p class="mb-1" th:text="${#temporals.format(reserva.fechaInicio, 'EE, dd/MM/yyyy')}"></p>
+            <h4>Datos de la reserva</h4>
+            <div class="d-flex flex-row justify-content-center border rounded-3 mb-3">
+                <div class="w-25 text-center border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Entrada</p>
+                    <p class="mb-1" th:text="${#temporals.format(reserva.fechaInicio, 'EE, dd/MM/yyyy')}"></p>
 
-                    </div>
-                    <div class="w-25 text-center  border">
-                        <p class="mb-2 p-2 hotelheader bg-dark bg-gradient">Salida</p>
-                        <p class="mb-1" th:text="${#temporals.format(reserva.fechaFin, 'EE, dd/MM/yyyy')}"></p>
-                    </div>
-                    <div class="w-25 text-center  border">
-                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Duración</p>
-                        <p><span class="mb-1" th:text="${dias}"></span><span th:if="${dias==1}"> Noche</span> <span
-                                th:unless="${dias==1}">Noches</span></p>
-                    </div>
-                    <div class="w-25 text-center border">
-                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Personas</p>
-                        <p class="mb-1" th:text="${reserva.personas}"></p>
-                    </div>
-                    <div class="w-25 text-center border">
-                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Habitaciones</p>
-                        <p class="mb-1" th:text="${totalHabis}"></p>
-                    </div>
                 </div>
-                <table class="table table-hover table-bordered border-gray">
-                    <thead class="hotelheader bg-dark bg-gradient">
-                        <th>habitación</th>
-                        <th>Capacidad</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                    </thead>
-                    <tbody>
-                        <tr th:each="habi, iterHab:${reserva.habitaciones}">
-                            <td class="d-flex flex-row">
-                                <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.habitacion.imagen}">
-                                <div>
-                                    <h5 th:text="${habi.nombre}"></h5>
-                                    <!-- <p th:text="${habi.habitacion.descripcion}"></p>     -->
-                                </div>
-                            </td>
-                            <td><i th:each="i : ${#numbers.sequence(1, habi.habitacion.capacidad)}"
-                                    class="bi bi-person-standing"></i></td>
-                            <td>
-                                <p th:text="'€ ' + ${#numbers.formatDecimal(habi.habitacion.precio*dias,0,0)}"></p>
-                            </td>
-                            <td width="30px">
-                                <p th:text="${habi.cantidad}"></p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="">
-                    <a class="btn btn-primary me-2" th:href="@{/user/reserves}">Volver</a>
-                    <a class="btn btn-danger" th:href="@{/user/reserves/cancel (id=${reserva.id})}"
-                    th:if="${reserva.estado.name() != 'CANCELADA' && reserva.estado.name() != 'FINALIZADA'}"
-                            onclick="return confirm('Está seguro que desea cancelar la reserva?')">Cancelar</a>
+                <div class="w-25 text-center  border">
+                    <p class="mb-2 p-2 hotelheader bg-dark bg-gradient">Salida</p>
+                    <p class="mb-1" th:text="${#temporals.format(reserva.fechaFin, 'EE, dd/MM/yyyy')}"></p>
                 </div>
+                <div class="w-25 text-center  border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Duración</p>
+                    <p><span class="mb-1" th:text="${dias}"></span><span th:if="${dias==1}"> Noche</span> <span
+                            th:unless="${dias==1}">Noches</span></p>
+                </div>
+                <div class="w-25 text-center border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Personas</p>
+                    <p class="mb-1" th:text="${reserva.personas}"></p>
+                </div>
+                <div class="w-25 text-center border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Habitaciones</p>
+                    <p class="mb-1" th:text="${totalHabis}"></p>
+                </div>
+            </div>
+            <table class="table table-hover table-bordered border-gray">
+                <thead class="hotelheader bg-dark bg-gradient">
+                    <th>habitación</th>
+                    <th>Capacidad</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                </thead>
+                <tbody>
+                    <tr th:each="habi, iterHab:${reserva.habitaciones}">
+                        <td class="d-flex flex-row">
+                            <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.habitacion.imagen}">
+                            <div>
+                                <h5 th:text="${habi.nombre}"></h5>
+                                <!-- <p th:text="${habi.habitacion.descripcion}"></p>     -->
+                            </div>
+                        </td>
+                        <td><i th:each="i : ${#numbers.sequence(1, habi.habitacion.capacidad)}"
+                                class="bi bi-person-standing"></i></td>
+                        <td>
+                            <p th:text="'€ ' + ${#numbers.formatDecimal(habi.habitacion.precio*dias,0,0)}"></p>
+                        </td>
+                        <td width="30px">
+                            <p th:text="${habi.cantidad}"></p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="">
+                <a class="btn btn-primary me-2" th:href="@{/user/reserves}">Volver</a>
+                <form th:if="${reserva.estado.name() != 'CANCELADA' && reserva.estado.name() != 'FINALIZADA'}"
+                    th:action="@{/user/reserves/cancel}" method="post"
+                    onsubmit="return confirm('Está seguro que desea cancelar la reserva?')" class="d-inline">
+                    <input type="hidden" name="id" th:value="${reserva.id}" />
+                    <button type="submit" class="btn btn-danger">Cancelar</button>
+                </form>
+            </div>
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>

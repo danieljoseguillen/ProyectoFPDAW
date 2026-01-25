@@ -67,11 +67,12 @@ public class AdminServiceImpl implements AdminService {
             throw new BadCredentialsException("Contraseña incorrecta.");
         }
         base.setCorreo(usuario.getCorreo().trim());
-                try {
+        try {
             Usuario usuarioModificado = uRep.save(base);
 
             // Actualizar la autenticación en el contexto de seguridad con el nuevo correo
-            UserDetailsImpl userDetails = UserDetailsImpl.build(usuarioModificado, "Administrador #"+usuarioModificado.getId());
+            UserDetailsImpl userDetails = UserDetailsImpl.build(usuarioModificado,
+                    "Administrador #" + usuarioModificado.getId());
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -93,9 +94,11 @@ public class AdminServiceImpl implements AdminService {
         if (!encoder.matches(dto.getClaveActual().trim(), usuario.getContraseña())) {
             throw new BadCredentialsException("Error: Contraseña incorrecta.");
         }
-
         if (encoder.matches(dto.getClaveNueva().trim(), usuario.getContraseña())) {
             throw new BadCredentialsException("Error: La contraseña nueva no puede ser igual a a la anterior.");
+        }
+        if (!dto.getClaveNueva().equals(dto.getClaveRepetir())) {
+            throw new BadCredentialsException("Error: Las contraseñas no son iguales.");
         }
         usuario.setContraseña(encoder.encode(dto.getClaveNueva().trim()));
         try {
@@ -111,10 +114,12 @@ public class AdminServiceImpl implements AdminService {
 
     // Parte administrativa
     // private Usuario retornarUser() {
-    //     String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-    //     Usuario usuario = uRep.findByCorreoIgnoreCase(correo)
-    //             .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los datos del usuario."));
-    //     return usuario;
+    // String correo =
+    // SecurityContextHolder.getContext().getAuthentication().getName();
+    // Usuario usuario = uRep.findByCorreoIgnoreCase(correo)
+    // .orElseThrow(() -> new RuntimeException("Error: No se pudieron recuperar los
+    // datos del usuario."));
+    // return usuario;
     // }
 
     private void verificarAdmin() {
@@ -130,6 +135,9 @@ public class AdminServiceImpl implements AdminService {
     public List<Cliente> getSortedClientes(SortDTO formulario) {
         if (formulario.getSortname() == null)
             formulario.setSortname("");
+        if (formulario.getSorttype() == null)
+            formulario.setSorttype("NOMBRE");
+
         switch (formulario.getSorttype()) {
             case "NOMBRE" -> {
                 return cRep.findByNombreContainingIgnoreCase(formulario.getSortname());
@@ -161,14 +169,14 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Boolean cambiarEstadoPorId(Long id, boolean estado) {
+    public Boolean cambiarEstadoPorId(Long id) {
         Usuario objetivo = uRep.findById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Error: No se pudieron recuperar los datos del usuario a modificar."));
         // verifica que el usuario sea admin
         verificarAdmin();
         try {
-            objetivo.setEstado(estado);
+            objetivo.setEstado(!objetivo.getEstado());
             uRep.save(objetivo);
             return true;
         } catch (DataIntegrityViolationException e) {
@@ -243,6 +251,9 @@ public class AdminServiceImpl implements AdminService {
         verificarAdmin();
         if (encoder.matches(dto.getClaveNueva().trim(), usuario.getContraseña())) {
             throw new BadCredentialsException("Error: La contraseña nueva no puede ser igual a a la anterior.");
+        }
+        if (!dto.getClaveNueva().equals(dto.getClaveRepetir())) {
+            throw new BadCredentialsException("Error: Las contraseñas no son iguales.");
         }
         usuario.setContraseña(encoder.encode(dto.getClaveNueva().trim()));
         try {

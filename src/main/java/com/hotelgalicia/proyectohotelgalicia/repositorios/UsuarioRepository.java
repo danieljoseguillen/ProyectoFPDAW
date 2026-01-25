@@ -16,7 +16,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Boolean existsByCorreo(String correo);
 
-    @Query("SELECT u FROM Usuario u LEFT JOIN Cliente c ON u.id = c.id LEFT JOIN Empresa e ON u.id = e.id WHERE u.correo = :correo")
+        // @Query("SELECT u FROM Usuario u LEFT JOIN Cliente c ON u.id = c.id LEFT JOIN Empresa e ON u.id = e.id WHERE u.correo = :correo AND u.estado IS TRUE")
+    @Query("SELECT u FROM Usuario u WHERE u.correo = :correo AND u.estado IS TRUE")
     Optional<Usuario> findFullUsuarioByCorreo(@Param("correo") String correo);
 
 }

@@ -131,7 +131,7 @@ public class ClienteController {
         return "cliente/userEditView";
     }
 
-        @GetMapping("/editmail")
+    @GetMapping("/editmail")
     public String geteditmail(Model model, RedirectAttributes redirectAttributes) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -146,12 +146,10 @@ public class ClienteController {
 
     // edit profile post
     @PostMapping("/editmail/submit")
-    public String posteditmail(@Valid CorreoDTO correo, BindingResult bindingResult, Model model,
+    public String posteditmail(@Valid @ModelAttribute("correo")  CorreoDTO correo, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("correo", correo);
-            return "redirect:/user/editmail";
+            return "cliente/changeMailView";
         }
         try {
             cServ.modificarCorreo(correo);
@@ -178,9 +176,6 @@ public class ClienteController {
             BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            // redirectAttributes.addFlashAttribute("error",
-            // formatBindingErrors(bindingResult));
-            model.addAttribute("formulario", formulario);
             return "cliente/changePasswordView";
         } else {
             try {
@@ -206,11 +201,10 @@ public class ClienteController {
         return "redirect:/index";
     }
 
-    @GetMapping("/valoraciones/delete")
+    @PostMapping("/valoraciones/delete")
     public String postValorationDelete(@RequestParam(required = true) Long id, Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            System.out.println("ID a eliminar: " + id);
             if (vaServ.borrarPorId(retornarId(), id)) {
                 redirectAttributes.addFlashAttribute("message", "Reseña eliminada con exito.");
             } else {
@@ -271,7 +265,7 @@ public class ClienteController {
         }
     }
 
-    @GetMapping("/reserves/cancel")
+    @PostMapping("/reserves/cancel")
     public String postCancelReserve(@RequestParam Long id, Model model, RedirectAttributes redirectAttributes,
             SessionStatus status) {
         try {

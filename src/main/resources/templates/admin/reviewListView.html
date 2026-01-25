@@ -10,7 +10,7 @@
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <main>
         <div class="w-100">
-            <h3 class="mb-4">Reseñas del usuario</h3>
+            <h3 class="mb-4">Reseñas de <span th:text="${nombre}"></span></h3>
             <div th:each="valo:${valoraciones}" class="item-card d-flex flex-row border rounded-3 my-3">
                 <div class="card-col-primary">
                     <h5>Hotel</h5>
@@ -28,9 +28,10 @@
                     <h5>Puntaje</h5>
                     <p th:text="${valo.puntaje}"></p>
                 </div>
-                <form th:action="@{/user/valoraciones/delete}" method="post"
+                <form th:action="@{/admin/{type}/{id}/reviews/delete(type=${type},id=${id})}" method="post"
                     onsubmit="return confirm('¿Desea borrar la reseña?')" class="card-col-action card-col-lone">
-                    <input type="hidden" name="id" th:value="${valo.hotel.id}" />
+                    <input type="hidden" name="idhotel" th:value="${valo.hotel.id}" />
+                    <input type="hidden" name="iduser" th:value="${valo.cliente.id}" />
                     <button type="submit" class="btn btn-link p-0">
                         <i class="bi bi-x-lg"></i>
                     </button>
