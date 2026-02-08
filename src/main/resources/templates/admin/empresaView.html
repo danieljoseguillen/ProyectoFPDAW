@@ -8,54 +8,75 @@
 <body>
     <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
-    <main id="inicio" class="w-100">
-        <div class="opciones border mt-3 container-sm p-3 rounded">
-            <h4>Opciones</h4>
-            <div class="panelops">
-                <a th:href="@{/admin/enterprises/{id}/edit (id=${userid})}" class="btn btn-info">Modificar correo</a>
-                <a th:href="@{/admin/enterprises/{id}/password (id=${userid})}" class="btn btn-info">Actualizar
-                    contraseña</a>
-                <form th:action="@{/admin/enterprises/{id}/status(id=${userid})}" method="post">
-                    <button type="submit" class="btn btn-warning"
-                        th:text="${usuario.estado ? 'Desactivar' : 'Activar'}">
-                    </button>
-                </form>
-                <a th:href="@{/admin/enterprises}" class="btn btn-info">Volver</a>
+    <main >
+        <div id="inicio" class="mw-75 container">
+            <div class="opciones border mt-3 container-sm p-3 rounded">
+                <h4>Opciones</h4>
+                <div class="panelops">
+                    <a th:href="@{/admin/enterprises/{id}/edit (id=${userid})}" class="btn btn-info">Modificar
+                        correo</a>
+                    <a th:href="@{/admin/enterprises/{id}/password (id=${userid})}" class="btn btn-info">Actualizar
+                        contraseña</a>
+                    <form th:action="@{/admin/enterprises/{id}/status(id=${userid})}" method="post">
+                        <button type="submit" class="btn btn-warning"
+                            th:text="${usuario.estado ? 'Desactivar' : 'Activar'}">
+                        </button>
+                    </form>
+                    <a th:href="@{/admin/enterprises}" class="btn btn-info">Volver</a>
+                </div>
+            </div>
+            <div class="container my-3 border align-self-start p-3 rounded mw-100">
+                <h3 class="mb-5">Datos de la empresa:</h3>
+                <div class="profilecell">
+                    <div class="proflabel">
+                        <p class="fs-5">Razón social</p>
+                    </div>
+                    <div class="proftext">
+                        <p th:text="${usuario.razonSocial}"></p>
+                    </div>
+                </div>
+                <div class="profilecell">
+                    <div class="proflabel">
+                        <p class="fs-5">C.I.F</p>
+                    </div>
+                    <div class="proftext">
+                        <p th:text="${usuario.cif}"></p>
+                    </div>
+                </div>
+                <div class="profilecell">
+                    <div class="proflabel">
+                        <p class="fs-5">Correo</p>
+                    </div>
+                    <div class="proftext">
+                        <p th:text="${usuario.correo}"></p>
+                    </div>
+                </div>
+                <div class="profilecell">
+                    <div class="proflabel">
+                        <p class="fs-5">Estado</p>
+                    </div>
+                    <div class="proftext">
+                        <p th:text="${usuario.estado ? 'Activo' :'Inactivo'}"></p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="container my-3 border align-self-start p-3 rounded mw-100">
-            <h3 class="mb-5">Datos De la usuario:</h3>
-            <div class="profilecell">
-                <div class="proflabel">
-                    <p class="fs-5">Razón social</p>
-                </div>
-                <div class="proftext">
-                    <p th:text="${usuario.razonSocial}"></p>
-                </div>
-            </div>
-            <div class="profilecell">
-                <div class="proflabel">
-                    <p class="fs-5">C.I.F</p>
-                </div>
-                <div class="proftext">
-                    <p th:text="${usuario.cif}"></p>
+        <h4 class="mt-3">Hoteles</h4>
+        <div th:each="hotel:${hoteles}" class="caja-alt container rounded-3 mw-75">
+            <a th:href="@{/hotel/{id} (id=${hotel.id})}">
+                <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
+            </a>
+            <div class="cajamain container">
+                <a th:href="@{/hotel/{id} (id=${hotel.id})}">
+                    <h4 th:text="${hotel.nombre}"></h4>
+                </a>
+                <div>
+                    <p class="parrafo" th:text="${hotel.municipio.nombre}"></p>
+                    <p class="parrafo" th:text="${hotel.direccion}"></p>
                 </div>
             </div>
-            <div class="profilecell">
-                <div class="proflabel">
-                    <p class="fs-5">Correo</p>
-                </div>
-                <div class="proftext">
-                    <p th:text="${usuario.correo}"></p>
-                </div>
-            </div>
-            <div class="profilecell">
-                <div class="proflabel">
-                    <p class="fs-5">Estado</p>
-                </div>
-                <div class="proftext">
-                    <p th:text="${usuario.estado ? 'Activo' :'Inactivo'}"></p>
-                </div>
+            <div class="minicaja container">
+                <p>Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
             </div>
         </div>
     </main>

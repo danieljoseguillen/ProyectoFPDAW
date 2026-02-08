@@ -8,9 +8,10 @@
 <body>
     <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
-    <main>
-        <h3 class="mb-4">Mis Reservas</h3>
-        <div>
+    <main class="w-75">
+        <h3 class="mb-4">Reservas de <span th:text="${hotel.nombre}"></span></h3>
+        <a th:href="@{/enterprise/hotels/{id} (id=${hotel.id})}" class="btn btn-primary me-auto">Volver</a>
+        <div class="w-100">
             <div th:each="rese:${reservas}" class="item-card d-flex flex-row border rounded-3 my-3">
                 <div class="card-col-primary">
                     <p class="fw-bold">Hotel</p>
@@ -24,8 +25,7 @@
                 <div class="card-col-stat">
                     <!-- <p class="fw-bold hideable-list-header">Personas</p> -->
                     <p class="icon-header-small-screen" title="Personas">
-                        <i class="bi bi-person-standing"></i>
-                    </p>
+                        <i class="bi bi-person-standing"></i></p>
                     <p class="" th:text="${rese.personas}"></p>
                 </div>
                 <div class="card-col-stat">
@@ -42,18 +42,11 @@
                     <p th:text="${rese.estado}"></p>
                 </div>
                 <div class="card-col-options">
-                    <a class="card-col-info" th:href="@{/user/reserves/{id} (id=${rese.id})}">
-                        <i class="bi  bi-info-square-fill"></i>
-                    </a>
-                    <form th:if="${rese.estado.name() != 'CANCELADA' && rese.estado.name() != 'FINALIZADA'}"
-                        th:action="@{/user/reserves/cancel}" method="post"
-                        onsubmit="return confirm('Está seguro que desea cancelar la reserva?')"
-                        class="card-col-action">
-                        <input type="hidden" name="id" th:value="${rese.id}" />
-                        <button type="submit" class="btn btn-link p-0"><i class="bi bi-x-lg"></i></button>
-                    </form>
+                    <div class="card-col-info">
+                        <a th:href="@{/enterprise/hotels/{id}/reserves/{idre} (id=${rese.hotel.id},idre=${rese.id})}">
+                            <i class="bi  bi-info-square-fill"></i></a>
+                    </div>
                 </div>
-
             </div>
         </div>
     </main>

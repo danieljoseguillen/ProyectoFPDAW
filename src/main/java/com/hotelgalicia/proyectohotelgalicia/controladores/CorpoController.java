@@ -61,17 +61,6 @@ public class CorpoController {
     @Autowired
     private ModelMapper modelMapper;
 
-    // Retorna la id del usuario.
-    // private Long retornarId() {
-    // Authentication authentication =
-    // SecurityContextHolder.getContext().getAuthentication();
-    // if (authentication == null || !authentication.isAuthenticated() ||
-    // "anonymousUser".equals(authentication.getName())) {
-    // return null;
-    // }
-    // return eServ.getByCorreo(authentication.getName()).getId();
-    // }
-
     private String formatBindingErrors(BindingResult bindingResult) {
         return bindingResult.getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
@@ -136,11 +125,10 @@ public class CorpoController {
     }
 
     @PostMapping("/password/submit")
-    public String postPasswordChange(@Valid ClaveDTO formulario, BindingResult bindingResult, Model model,
+    public String postPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTO formulario, BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            return "redirect:/enterprise/password";
+            return "empresa/changePasswordView";
         }
         try {
             eServ.cambiarContraseñaPorId(formulario);
@@ -194,22 +182,10 @@ public class CorpoController {
             hoServ.verificarHotel(hotel);
             // model.addAttribute("listaReservas", reServ.listByHotel(id));
             // Crea las reservas como reservalistdto
-            List<ReservaListDTO> reservas = reServ.listByHotel(id)
-                    .stream()
-                    .map(reserva -> {
-                        ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
-                        dto.setHotel(reserva.getHotel());
-                        dto.setHabitacionestotal(reserva.getHabitaciones().stream()
-                                .mapToInt(DetalleReserva::getCantidad)
-                                .sum());
-                        dto.setCostototal(reServ.calcularPrecioTotal(reserva));
-
-                        return dto;
-                    })
-                    .collect(Collectors.toList());
+            List<ReservaListDTO> reservas = reServ.listarReservasHotel(id);
             model.addAttribute("hotel", hotel);
             model.addAttribute("reservas", reservas);
-            return "empresa/hotelReserveView";
+            return "reserve/reserveListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/enterprise/hotels/" + id;
@@ -232,7 +208,7 @@ public class CorpoController {
             model.addAttribute("totalprice", totalprice);
             model.addAttribute("dias", ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()));
             model.addAttribute("estadoReserva", new EstadoReservaDTO());
-            return "empresa/reserveDetailsView";
+            return "reserve/reserveDetailsView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/enterprise/hotels/" + idhotel + "/reserves";
@@ -333,34 +309,25 @@ public class CorpoController {
     }
 
     // editar estado habitacion post
-    @GetMapping("/hotels/{id}/habitacion/status/{habId}")
-    public String postEditHabStatus(@Valid @ModelAttribute("habId") Long habId,
-            BindingResult bindingResult, @PathVariable Long id,
-            Model model, RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-        } else {
-            try {
-                haServ.cambiarEstado(habId);
-            } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
+    @PostMapping("/hotels/{id}/habitacion/status/{habId}")
+    public String postEditHabStatus(@PathVariable Long habId,
+            @PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            haServ.cambiarEstado(habId);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
+
         return "redirect:/enterprise/hotels/" + id;
     }
 
-    @GetMapping("/hotels/{id}/habitacion/delete/{habId}")
-    public String postElimHabStatus(@Valid @ModelAttribute("habId") Long habId,
-            BindingResult bindingResult, @PathVariable Long id,
-            Model model, RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-        } else {
-            try {
-                haServ.DesabilitarPorId(habId);
-            } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
+    @PostMapping("/hotels/{id}/habitacion/delete/{habId}")
+    public String postElimHabStatus(@PathVariable Long habId,
+            @PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            haServ.DesabilitarPorId(habId);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/enterprise/hotels/" + id;
     }

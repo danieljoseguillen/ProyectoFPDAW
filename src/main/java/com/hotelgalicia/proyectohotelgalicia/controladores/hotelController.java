@@ -74,18 +74,18 @@ public class hotelController {
 
     // Lista vacía por defecto
     // private HotelDateDTO defaultDateDTO() {
-    //     return new HotelDateDTO(
-    //             LocalDate.now(), LocalDate.now().plusDays(1), 1);
+    // return new HotelDateDTO(
+    // LocalDate.now(), LocalDate.now().plusDays(1), 1);
     // }
 
     // @ModelAttribute("filtro")
     // public HotelDateDTO filtro() {
-    //     return defaultDateDTO();
+    // return defaultDateDTO();
     // }
 
     // @ModelAttribute("reserva")
     // public ReservaDTO reserva() {
-    //     return new ReservaDTO();
+    // return new ReservaDTO();
     // }
 
     // Valida fechas y da mensajes de error
@@ -122,38 +122,43 @@ public class hotelController {
 
             // Hotel y habitaciones
             Hotel hotel = hoServ.getById(id);
-            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelIdDisponibles(id,
-                    filtro.getFechaInicio(),
-                    filtro.getFechaFin());
-
-            if (filtro.getFechaInicio() == null) {
-                filtro.setFechaInicio(LocalDate.now());
-                filtro.setFechaFin(LocalDate.now().plusDays(1));
-                filtro.setPersonas(1);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (isAdmin) {
+                model.addAttribute("habitaciones", hotel.getHabitaciones());
+            } else {
+                List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelIdDisponibles(id,
+                        filtro.getFechaInicio(),
+                        filtro.getFechaFin());
+                if (filtro.getFechaInicio() == null) {
+                    filtro.setFechaInicio(LocalDate.now());
+                    filtro.setFechaFin(LocalDate.now().plusDays(1));
+                    filtro.setPersonas(1);
+                }
+                model.addAttribute("habitaciones", habitaciones);
+                model.addAttribute("filtro", filtro);
+                // Completa el formulario de estár vacío.
+                if (((ReservaDTO) model.getAttribute("reserva")).getId() == null
+                        || !((ReservaDTO) model.getAttribute("reserva")).getId().equals(hotel.getId())) {
+                    status.setComplete();
+                    ReservaDTO reserva = new ReservaDTO();
+                    reserva.setId(hotel.getId());
+                    reserva.setFechaInicio(filtro.getFechaInicio());
+                    reserva.setFechaFin(filtro.getFechaFin());
+                    reserva.setPersonas(filtro.getPersonas());
+                    List<DetalleReservaDTO> detalles = habitaciones.stream()
+                            .map(h -> new DetalleReservaDTO(h.getId(), 0))
+                            .toList();
+                    reserva.setHabitaciones(detalles);
+                    model.addAttribute("reserva", reserva);
+                }
             }
-            model.addAttribute("filtro", filtro);
-            // Completa el formulario de estár vacío.
-            if (((ReservaDTO) model.getAttribute("reserva")).getId() == null
-                    || !((ReservaDTO) model.getAttribute("reserva")).getId().equals(hotel.getId())) {
-                status.setComplete();
-                ReservaDTO reserva = new ReservaDTO();
-                reserva.setId(hotel.getId());
-                reserva.setFechaInicio(filtro.getFechaInicio());
-                reserva.setFechaFin(filtro.getFechaFin());
-                reserva.setPersonas(filtro.getPersonas());
-                List<DetalleReservaDTO> detalles = habitaciones.stream()
-                        .map(h -> new DetalleReservaDTO(h.getId(), 0))
-                        .toList();
-                reserva.setHabitaciones(detalles);
-                model.addAttribute("reserva", reserva);
-            }
-
             model.addAttribute("hotel", hotel);
-            model.addAttribute("habitaciones", habitaciones);
             model.addAttribute("valoraciones", vaServ.listByHotelId(id));
             model.addAttribute("valoracion", new ValoracionDTO());
             // if (vaServ.getByIds(retornarId(), id) != null) {
-            //     model.addAttribute("myval", vaServ.getByIds(retornarId(), id));
+            // model.addAttribute("myval", vaServ.getByIds(retornarId(), id));
             // }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -194,11 +199,11 @@ public class hotelController {
                         .mapToInt(DetalleReservaDTO::getCantidad)
                         .sum();
                 model.addAttribute("totalHabis", totalHabis);
-                int totalprice =  reServ.calcularPrecioTotal(reserva).intValue();
+                int totalprice = reServ.calcularPrecioTotal(reserva).intValue();
                 model.addAttribute("totalprice", totalprice);
-                model.addAttribute("dias", ChronoUnit.DAYS.between(reserva.getFechaInicio(),reserva.getFechaFin()));
+                model.addAttribute("dias", ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()));
                 model.addAttribute("hotel", hoServ.ConvertHotelToDTO(hoServ.getById(id)));
-                return "cliente/reservaConfirmView";
+                return "reserve/reservaConfirmView";
             } catch (Exception e) {
                 status.setComplete();
                 redirectAttributes.addFlashAttribute("error", e.getMessage());

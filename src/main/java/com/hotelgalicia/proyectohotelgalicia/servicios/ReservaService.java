@@ -5,12 +5,16 @@ import java.util.List;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 
 public interface ReservaService {
 
     List<Reserva> listByCliente(Long id);
 
     List<Reserva> listByHotel(Long id);
+
+    List<ReservaListDTO> listarReservasCliente(Long id);
+    List<ReservaListDTO> listarReservasHotel(Long id);
     
     Reserva getById(Long id);
 
@@ -27,6 +31,7 @@ public interface ReservaService {
     boolean verificarCantidad (ReservaDTO reserva);
 
     Double calcularPrecioTotal(ReservaDTO reserva);
+
     Double calcularPrecioTotal(Reserva reserva);
 
 }

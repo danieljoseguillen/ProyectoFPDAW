@@ -17,9 +17,19 @@
             <h1 th:text="${hotel.nombre}"></h1>
             <p><i class="bi bi-geo-alt-fill"></i> <span th:text="${hotel.direccion}"></span> - <span
                     th:text="${hotel.municipio.provincia.nombre}"></span></p>
+            <div sec:authorize="hasAnyRole('ADMIN')">
+                <p>Opciones:</p>
+                <div class="d-flex flex-row">
+                    <a th:href="@{/admin/hotels/{id}/reserves (id=${hotel.id})}" class="btn btn-dark me-2">Ver
+                        Reservas</a>
+                    <a th:href="@{/admin/hotels/{id}/reviews (id=${hotel.id})}" class="btn btn-dark mx-2">Ver
+                        Reseñas</a>
+                    <a th:href="@{/admin/hotels/{id}/edit (id=${hotel.id})}" class="btn btn-dark mx-2">Modificar
+                        datos</a>
+                </div>
+            </div>
             <div class="container mt-4">
                 <div class="row g-3">
-
                     <!-- Imagen principal del hotel (2x2) -->
                     <div class="col-md-8">
                         <div class="hotel-image-big h-100">
@@ -62,7 +72,7 @@
             <p class="p-descripcion mt-3 container" th:text="${hotel.descripcion}"></p>
 
         </div>
-        <div class="container-sm mb-5 w-100">
+        <div sec:authorize="hasAnyRole('USER', 'CORPORATION')" class="container-sm mb-5 w-100">
             <div class="container-sm">
                 <h4>Disponibilidad</h4>
                 <form class="row g-3" th:action="@{/hotel/{id}(id=${hotel.id})}" method="get" th:object="${filtro}">
@@ -91,8 +101,8 @@
         </div>
         <div class="container w-100">
             <h4>Habitaciones</h4>
-            <form id="reservaForm" th:action="@{/hotel/{id}/reserve (id=${hotel.id})}" method="post"
-                th:object="${reserva}">
+            <form sec:authorize="hasAnyRole('USER', 'CORPORATION')" id="reservaForm"
+                th:action="@{/hotel/{id}/reserve (id=${hotel.id})}" method="post" th:object="${reserva}">
                 <input type="hidden" th:field="*{id}" readonly />
                 <input type="hidden" id="fechaInicioReserva" th:field="*{fechaInicio}" readonly />
                 <input type="hidden" id="fechaFinReserva" th:field="*{fechaFin}" readonly />
@@ -107,11 +117,13 @@
                         </thead>
                         <tbody>
                             <tr th:each="habi, iterHab:${habitaciones}">
-                                <td class="d-flex flex-row">
-                                    <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
-                                    <div>
-                                        <h5 th:text="${habi.nombre}"></h5>
-                                        <p th:text="${habi.descripcion}"></p>
+                                <td>
+                                    <div class="d-flex flex-row">
+                                        <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
+                                        <div>
+                                            <h5 th:text="${habi.nombre}"></h5>
+                                            <p th:text="${habi.descripcion}"></p>
+                                        </div>
                                     </div>
                                 </td>
                                 <td><i th:each="i : ${#numbers.sequence(1, habi.capacidad)}"
@@ -135,6 +147,54 @@
                     </div>
                 </div>
             </form>
+            <table sec:authorize="hasAnyRole('ADMIN')" class="table table-hover table-bordered border-gray">
+                <thead class="bg-dark bg-gradient hotelheader">
+                    <th>Tipo de habitación</th>
+                    <th>Personas</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th sec:authorize="hasAnyRole('ADMIN')">Opciones</th>
+                </thead>
+                <tbody>
+                    <tr th:each="habi, iterHab:${habitaciones}">
+                        <td>
+                            <div class="d-flex flex-row">
+                                <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
+                                <div>
+                                    <h5 th:text="${habi.nombre}"></h5>
+                                    <p th:text="${habi.descripcion}"></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><i th:each="i : ${#numbers.sequence(1, habi.capacidad)}" class="bi bi-person-standing"></i>
+                        </td>
+                        <td><p th:text="${habi.cantidad}"></p></td>
+                        <td>
+                            <p th:text="'€ ' + ${#numbers.formatDecimal(habi.precio,0,0)}"></p>
+                        </td>
+                        <td>
+                            <div th:if="${habi.estado.name() != 'ELIMINADA'}">
+                                <!-- Editar habitación -->
+                                <a th:href="@{/enterprise/hotels/{id}/habitacion/edit/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                    class="btn btn-dark w-100 mb-1 p-1">Modifcar</a>
+                                <!-- Cambiar estado -->
+                                <form
+                                    th:action="@{/enterprise/hotels/{id}/habitacion/status/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                    method="post" class="mb-1"> <button type="submit"
+                                        class="btn btn-dark w-100 p-1">Estado</button>
+                                </form>
+                                <!-- Eliminar habitación -->
+                                <form class="mt-1"
+                                    th:action="@{/enterprise/hotels/{id}/habitacion/delete/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                    method="post"
+                                    onsubmit="return confirm('Está seguro de que desea eliminar la habitación?')">
+                                    <button type="submit" class="btn btn-dark w-100 p-1">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         <br>
         <div sec:authorize="hasAnyRole('USER')"

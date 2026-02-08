@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,7 @@ import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.RoomFullException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
 import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoReserva;
@@ -52,6 +55,9 @@ public class ReservaServiceImpl implements ReservaService {
     @Autowired
     private UsuarioRepository uRep;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Override
     public List<Reserva> listByCliente(Long id) {
         return reRep.findByClienteIdOrderByIdDesc(id);
@@ -60,6 +66,40 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     public List<Reserva> listByHotel(Long id) {
         return reRep.findByHotelId(id);
+    }
+
+    @Override
+    public List<ReservaListDTO> listarReservasCliente(Long id) {
+        List<ReservaListDTO> reservas = listByCliente(id)
+                .stream().map(reserva -> {
+                    ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
+                    dto.setHotel(reserva.getHotel());
+                    dto.setHabitacionestotal(reserva.getHabitaciones().stream()
+                            .mapToInt(DetalleReserva::getCantidad)
+                            .sum());
+                    dto.setCostototal(calcularPrecioTotal(reserva));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return reservas;
+    }
+
+    @Override
+    public List<ReservaListDTO> listarReservasHotel(Long id) {
+        List<ReservaListDTO> reservas = listByHotel(id)
+                .stream()
+                .map(reserva -> {
+                    ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
+                    dto.setHotel(reserva.getHotel());
+                    dto.setHabitacionestotal(reserva.getHabitaciones().stream()
+                            .mapToInt(DetalleReserva::getCantidad)
+                            .sum());
+                    dto.setCostototal(calcularPrecioTotal(reserva));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return reservas;
     }
 
     @Override

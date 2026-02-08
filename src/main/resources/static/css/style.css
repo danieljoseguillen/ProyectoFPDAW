@@ -80,6 +80,7 @@ main {
 
 /* Ajuste del flex para el panel de inicio */
 #inicio {
+    display: flex;
     flex-direction: row;
 }
 
@@ -365,7 +366,8 @@ footer>p {
 }
 
 
-.card-col-action a, .card-col-action button,
+.card-col-action a,
+.card-col-action button,
 .card-col-info a {
     height: 100%;
     color: inherit;
@@ -503,10 +505,12 @@ footer>p {
 }
 
 /* Controla tamaños del panel de opciones de perfil */
-.panelops{
+.panelops {
     gap: 075rem;
 }
-.panelops a, .panelops button {
+
+.panelops a,
+.panelops button {
     width: 100%;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -575,14 +579,19 @@ footer>p {
     .panelops {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: 0.75rem;
         justify-content: center;
     }
 
-    .panelops a, .panelops button {
+    .panelops a,
+    .panelops button {
         width: auto;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
-/*
+
+    /*
     .panelops a:first-child {
         margin-left: 0px !important;
         margin-right: 10px;

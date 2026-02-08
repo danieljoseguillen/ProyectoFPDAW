@@ -14,7 +14,7 @@
             <form method="post" action="#" th:action="@{/admin/users/sort}" th:object="${sortform}">
                 <div class="form-group d-flex flex-row">
                     <input class="btn btn-primary" type="submit" value="Buscar">
-                    <input type="text" th:field="*{sortname}" class="form-control-sm    ">
+                    <input type="text" th:field="*{sortname}" class="form-control-sm">
                     <div class="mx-3 align-self-center">
                         <input type="radio" class="form-check-input" name="sorttype" value="NOMBRE" checked>
                         <label class="form-check-label" for="sorttype">Nombre</label>

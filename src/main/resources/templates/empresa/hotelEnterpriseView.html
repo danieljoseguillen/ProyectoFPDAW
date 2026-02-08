@@ -75,11 +75,13 @@
                     </thead>
                     <tbody>
                         <tr th:each="habi, iterHab:${habitaciones}">
-                            <td class="d-flex flex-row py-3"> 
-                                <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
-                                <div>
-                                    <h5 th:text="${habi.nombre}"></h5>
-                                    <p th:text="${habi.descripcion}"></p>
+                            <td>
+                                <div class="d-flex flex-row">
+                                    <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.imagen}">
+                                    <div>
+                                        <h5 th:text="${habi.nombre}"></h5>
+                                        <p th:text="${habi.descripcion}"></p>
+                                    </div>
                                 </div>
                             </td>
                             <td><i th:each="i : ${#numbers.sequence(1, habi.capacidad)}"
@@ -95,13 +97,22 @@
                             </td>
                             <td>
                                 <div th:if="${habi.estado.name() != 'ELIMINADA'}">
+                                    <!-- Editar habitación -->
                                     <a th:href="@{/enterprise/hotels/{id}/habitacion/edit/{habId} (id=${hotel.id}, habId=${habi.id})}"
                                         class="btn btn-dark w-100 mb-1 p-1">Modifcar</a>
-                                    <a th:href="@{/enterprise/hotels/{id}/habitacion/status/{habId} (id=${hotel.id}, habId=${habi.id})}"
-                                        class="btn btn-dark w-100 mb-1 p-1">Estado</a>
-                                    <a th:href="@{/enterprise/hotels/{id}/habitacion/delete/{habId} (id=${hotel.id}, habId=${habi.id})}"
-                                        class="btn btn-dark w-100 mb-1 p-1"
-                                        onclick="return confirm('Está seguro de que desea eliminar la habitación?')">Eliminar</a>
+                                    <!-- Cambiar estado -->
+                                    <form
+                                        th:action="@{/enterprise/hotels/{id}/habitacion/status/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                        method="post" class="mb-1"> <button type="submit"
+                                            class="btn btn-dark w-100 p-1">Estado</button>
+                                    </form>
+                                    <!-- Eliminar habitación -->
+                                    <form
+                                        th:action="@{/enterprise/hotels/{id}/habitacion/delete/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                        method="post"
+                                        onsubmit="return confirm('Está seguro de que desea eliminar la habitación?')">
+                                        <button type="submit" class="btn btn-dark w-100 mb-1 p-1">Eliminar</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

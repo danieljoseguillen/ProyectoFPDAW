@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main id="resconfmain" class="d-flex flex-row container">
+        <div class="container h-100 d-flex flex-column justify-content-top resconfdiv1">
+            <div class="container border rounded-3 px-0 mb-3">
+                <img th:src="@{'/files/' + ${reserva.hotel.imagen}}" class="thumbimage rounded-3 mx-0 mt-0">
+                <div class="container">
+
+                    <h3><a th:href="@{/hotel/{id} (id=${reserva.hotel.id})}" th:text="${reserva.hotel.nombre}"></a></h3>
+                    <p th:text="${reserva.hotel.direccion}"></p>
+                    <div class="d-flex flex-row textomenor">
+                        <p class="me-3">Puntaje <span class="blueIcon rounded"
+                                th:text="${reserva.hotel.puntaje}"></span></p>
+                        <p class=""><span th:text="${reserva.hotel.valoracion.size}"></span> Reseñas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class=" border rounded-3 mb-3">
+                <h5 class="reservheaderl">Precio</h4>
+                    <div class="d-flex flex-row mx-2">
+                        <h4>Total: </h4>
+                        <h4 class="ms-auto">€ <span th:text="${totalprice}"></span></h4>
+                    </div>
+            </div>
+            <div class="border rounded-3 mb-3">
+                <h5 class="reservheaderl">Estado</h4>
+                    <div class="d-flex flex-row mx-2">
+                        <h5 th:text="${reserva.estado}"></h5>
+                    </div>
+            </div>
+        </div>
+        <div class="container h-100 d-flex flex-column justify-content-top">
+            <div sec:authorize="hasAnyRole('ADMIN','CORPORATION')">
+                <h4>Datos del cliente</h4>
+                <div class="d-flex flex-row justify-content-center border rounded-3 mb-3">
+                    <div class="w-50 text-center border">
+                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Nombre</p>
+                        <p class="mb-1" th:text="${reserva.cliente.nombre} + ' '+ ${reserva.cliente.apellido}"></p>
+                    </div>
+                    <div class="w-25 text-center border">
+                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Telefono</p>
+                        <p class="mb-1" th:text="${reserva.cliente.telefono}"></p>
+                    </div>
+                    <div class="w-25 text-center border">
+                        <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Correo</p>
+                        <p class="mb-1" th:text="${reserva.cliente.correo}"></p>
+                    </div>
+                </div>
+            </div>
+            <h4>Datos de la reserva</h4>
+            <div class="d-flex flex-row justify-content-center border rounded-3 mb-3">
+                <div class="w-25 text-center border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Entrada</p>
+                    <p class="mb-1" th:text="${#temporals.format(reserva.fechaInicio, 'EE, dd/MM/yyyy')}"></p>
+
+                </div>
+                <div class="w-25 text-center  border">
+                    <p class="mb-2 p-2 hotelheader bg-dark bg-gradient">Salida</p>
+                    <p class="mb-1" th:text="${#temporals.format(reserva.fechaFin, 'EE, dd/MM/yyyy')}"></p>
+                </div>
+                <div class="w-25 text-center  border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Duración</p>
+                    <p><span class="mb-1" th:text="${dias}"></span><span th:if="${dias==1}"> Noche</span> <span
+                            th:unless="${dias==1}">Noches</span></p>
+                </div>
+                <div class="w-25 text-center border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Personas</p>
+                    <p class="mb-1" th:text="${reserva.personas}"></p>
+                </div>
+                <div class="w-25 text-center border">
+                    <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Habitaciones</p>
+                    <p class="mb-1" th:text="${totalHabis}"></p>
+                </div>
+            </div>
+            <table class="table table-hover table-bordered border-gray">
+                <thead class="hotelheader bg-dark bg-gradient">
+                    <th>habitación</th>
+                    <th>Capacidad</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                </thead>
+                <tbody>
+                    <tr th:each="habi, iterHab:${reserva.habitaciones}">
+                        <td class="d-flex flex-row">
+                            <img class="rounded-3 imagenminihotel" th:src="'/files/'+${habi.habitacion.imagen}">
+                            <div>
+                                <h5 th:text="${habi.nombre}"></h5>
+                                <!-- <p th:text="${habi.habitacion.descripcion}"></p>     -->
+                            </div>
+                        </td>
+                        <td><i th:each="i : ${#numbers.sequence(1, habi.habitacion.capacidad)}"
+                                class="bi bi-person-standing"></i></td>
+                        <td>
+                            <p th:text="'€ ' + ${#numbers.formatDecimal(habi.habitacion.precio*dias,0,0)}"></p>
+                        </td>
+                        <td width="30px">
+                            <p th:text="${habi.cantidad}"></p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+             <div class="d-flex flex-row" sec:authorize="hasAnyRole('ADMIN')">
+                <a class="btn btn-primary me-2 p-3"
+                    th:href="@{/admin/{type}/{typeid}/reserves (type=${type},typeid=${typeid})}">Volver</a>
+             <form method="post" action="#" class="d-flex flex-row ms-5"
+                    th:action="@{/admin/{type}/{typeid}/reserves/status (type=${type},typeid=${typeid})}"
+                    th:object="${estadoReserva}">
+                    <input type="number" hidden name="id" th:value="${reserva.id}">
+                    <div class="form-floating">
+                    <select th:field="*{estado}" class="form-select" id="estadoReserva">
+                        <option th:each="est:${T(com.hotelgalicia.proyectohotelgalicia.modelos.EstadoReserva).values()}"
+                        th:value="${est}" th:text="${est}"></option>
+                    </select>
+                    <label for="estadoReserva" class="form-label">Estado: </label>
+                    </div>
+                    <input class="btn btn-primary py-3" type="submit" value="Confirmar"
+                        onclick="return confirm('Está seguro que desea Cambiar el estado de la reserva?')">
+                </form>
+                </div>
+            <div class="d-flex flex-row" sec:authorize="hasAnyRole('CORPORATION')">
+                <a class="btn btn-primary me-2"
+                    th:href="@{/enterprise/hotels/{id}/reserves (id=${reserva.hotel.id})}">Volver</a>
+                <form th:if="${reserva.estado.name() == 'REALIZADA'}" method="post" action="#"
+                    th:action="@{/enterprise/hotels/{id}/reserves/status (id=${reserva.id})}"
+                    th:object="${estadoReserva}">
+                    <input type="number" hidden name="id" th:value="${reserva.id}">
+                    <input type="hidden" name="estado" value="CONFIRMADA">
+                    <input class="btn btn-primary" type="submit" value="Confirmar"
+                        onclick="return confirm('Está seguro que desea confirmar la reserva?')">
+                </form>
+                <form th:if="${reserva.estado.name() == 'CONFIRMADA'}" method="post" action="#"
+                    th:action="@{/enterprise/hotels/{id}/reserves/status (id=${reserva.id})}"
+                    th:object="${estadoReserva}">
+                    <input type="number" hidden name="id" th:value="${reserva.id}">
+                    <input type="hidden" name="estado" value="FINALIZADA">
+                    <input class="btn btn-primary" type="submit" value="Finalizar"
+                        onclick="return confirm('Está seguro que desea finalizar la reserva?')">
+                </form>
+            </div>
+            <div sec:authorize="hasAnyRole('USER')">
+                <a class="btn btn-primary me-2" th:href="@{/user/reserves}">Volver</a>
+                <form th:if="${reserva.estado.name() != 'CANCELADA' && reserva.estado.name() != 'FINALIZADA'}"
+                    th:action="@{/user/reserves/cancel}" method="post"
+                    onsubmit="return confirm('Está seguro que desea cancelar la reserva?')" class="d-inline">
+                    <input type="hidden" name="id" th:value="${reserva.id}" />
+                    <button type="submit" class="btn btn-danger">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

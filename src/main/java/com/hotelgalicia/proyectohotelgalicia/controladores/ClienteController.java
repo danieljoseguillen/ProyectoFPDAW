@@ -222,21 +222,9 @@ public class ClienteController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             // Crea las reservas como reservalistdto
-            List<ReservaListDTO> reservas = reServ.listByCliente(cServ.getByCorreo(authentication.getName()).getId())
-                    .stream()
-                    .map(reserva -> {
-                        ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
-                        dto.setHotel(reserva.getHotel());
-                        dto.setHabitacionestotal(reserva.getHabitaciones().stream()
-                                .mapToInt(DetalleReserva::getCantidad)
-                                .sum());
-                        dto.setCostototal(reServ.calcularPrecioTotal(reserva));
-
-                        return dto;
-                    })
-                    .collect(Collectors.toList());
+            List<ReservaListDTO> reservas = reServ.listarReservasCliente(cServ.getByCorreo(authentication.getName()).getId());
             model.addAttribute("reservas", reservas);
-            return "cliente/reservasView";
+            return "reserve/reserveListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -261,7 +249,7 @@ public class ClienteController {
             return "cliente/reserveDetailsView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/user/reserves";
+            return "redirect:/reserve/reserves";
         }
     }
 
@@ -278,6 +266,7 @@ public class ClienteController {
         return "redirect:/user/reserves";
     }
 
+    //Zona en desuso
     @GetMapping("/reserves/{id}/edit")
     public String getEditReserve(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
             Principal principal, SessionStatus status) {
