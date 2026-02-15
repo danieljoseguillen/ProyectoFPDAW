@@ -50,26 +50,4 @@ public class HotelSearchDTO {
     private int presupuestoMax;
 
     private FiltroBusqueda filtro;
-
-    // @PrePersist
-    // public void prePersist() {
-    //     if (nombre == null) {
-    //         this.nombre = "";
-    //     }
-    //     if (personas == null) {
-    //         this.personas = 1;
-    //     }
-    //     if (cantHabi == null) {
-    //         this.cantHabi = 1;
-    //     }
-    //     if (fechaInicio == null) {
-    //         this.fechaInicio = LocalDate.now();
-    //     }
-    //     if (fechaFin == null) {
-    //         this.fechaFin = LocalDate.now().plusDays(1);
-    //     }
-    //     if () {
-            
-    //     }
-    // }
 }

@@ -20,6 +20,8 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
+import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
+import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.FileStorageService;
@@ -43,58 +45,34 @@ public class MainController {
     private HotelService hoServ;
 
     // Valida fechas y da mensajes de error
-    private void validarfechasalert(HotelSearchDTO filtro) {
+    private void validarfechasalert(HotelSearchDTO filtro, Model model) {
         if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())
                 || filtro.getFechaFin().isEqual(filtro.getFechaInicio())) {
             filtro.setFechaFin(filtro.getFechaInicio().plusDays(1));
-            throw new RuntimeException("La fecha de fin debe ser posterior a la fecha de inicio.");
+            model.addAttribute("error", "La fecha de fin debe ser posterior a la fecha de inicio.");
         }
 
         if (filtro.getFechaInicio().isBefore(LocalDate.now())) {
             filtro.setFechaInicio(LocalDate.now());
-            throw new RuntimeException("La fecha de inicio no puede ser anterior a la fecha actual.");
+            model.addAttribute("error", "La fecha de inicio no puede ser anterior a la fecha actual.");
         }
 
         if (filtro.getFechaFin().isBefore(LocalDate.now())) {
             filtro.setFechaFin(LocalDate.now().plusDays(1));
-            throw new RuntimeException("La fecha de fin no puede ser anterior a la fecha actual.");
+            model.addAttribute("error", "La fecha de fin no puede ser anterior a la fecha actual.");
         }
     }
-        private void validarfechas(HotelSearchDTO filtro) {
-        if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())
-                || filtro.getFechaFin().isEqual(filtro.getFechaInicio())) {
-            filtro.setFechaFin(filtro.getFechaInicio().plusDays(1));
-        }
-
-        if (filtro.getFechaInicio().isBefore(LocalDate.now())) {
-            filtro.setFechaInicio(LocalDate.now());
-        }
-
-        if (filtro.getFechaFin().isBefore(LocalDate.now())) {
-            filtro.setFechaFin(LocalDate.now().plusDays(1));
-        }
-    }
-
-    // Lista vacía por defecto
-    // COMENTADO: SessionAttributeAdvice proporciona searchform automáticamente
-    // private HotelSearchDTO defaultSearchDTO() {
-    //     return new HotelSearchDTO(
-    //             "", Municipios.TODOS, "", 1, 1,
-    //             LocalDate.now(), LocalDate.now().plusDays(1),
-    //             5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
-    // }
 
     // Controlador principal, verifica listas vacías
     @GetMapping({ "/", "/home", "/index" })
     public String showHome(Model model,
             @ModelAttribute("searchform") HotelSearchDTO dto) {
         try {
-            validarfechasalert(dto);
+            validarfechasalert(dto, model);
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
-        // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
-        // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
+
         model.addAttribute("listado", hoServ.listSortedHotel(dto));
         return "indexView";
     }
@@ -104,30 +82,27 @@ public class MainController {
     public String postSearchResults(@Valid @ModelAttribute("searchform") HotelSearchDTO dto,
             BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
+        HotelSearchDTO defecto = new HotelSearchDTO(
+                "", Municipios.TODOS, "", 1, 1,
+                LocalDate.now(), LocalDate.now().plusDays(1),
+                5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
         if (bindingResult.hasErrors()) {
-            // redirectAttributes.addFlashAttribute("error",
-            // formatBindingErrors(bindingResult));
-            validarfechas(dto);
             model.addAttribute("searchform", dto);
-            // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
-            // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
-            model.addAttribute("listado", hoServ.listSortedHotel(dto));
-            return "indexView";
-        } else {
-            try {
-                validarfechasalert(dto);
-                model.addAttribute("listado", hoServ.listSortedHotel(dto));
-            } catch (EmptyListException e) {
-                model.addAttribute("warning", e.getMessage());
-                // COMENTADO: defaultSearchDTO() movido a SessionAttributeAdvice
-                // model.addAttribute("listado", hoServ.listSortedHotel(defaultSearchDTO()));
-                model.addAttribute("listado", hoServ.listSortedHotel(dto));
-            } catch (Exception e) {
-                model.addAttribute("error", e.getMessage());
-            }
-            model.addAttribute("searchform", dto);
+            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
             return "indexView";
         }
+        try {
+            validarfechasalert(dto, model);
+            model.addAttribute("listado", hoServ.listSortedHotel(dto));
+        } catch (EmptyListException e) {
+            model.addAttribute("warning", e.getMessage());
+            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+        }
+        return "indexView";
+
     }
 
     // Envía a la pagina de error
@@ -175,7 +150,6 @@ public class MainController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            // model.addAttribute("error", formatBindingErrors(bindingResult));
             model.addAttribute("tipo", "usuario");
             model.addAttribute("fusuario", formulario);
             return "registerView";
@@ -198,7 +172,6 @@ public class MainController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            // model.addAttribute("error", formatBindingErrors(bindingResult));
             model.addAttribute("tipo", "empresa");
             model.addAttribute("fempresa", formulario);
             return "registerView";

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main id="inicio">
+        <div class="busqueda rounded-3 container-sm">
+            <form method="post" id="searchform" action="#" th:action="@{/admin/hotels/search}" th:object="${searchformadm}">
+
+                <h3>Filtros de busqueda:</h3>
+
+                <div class="form-floating mb-2">
+                    <input type="text" th:field="*{nombre}" class="form-control" id="nombre"
+                        placeholder="Nombre del hotel">
+                    <label for="nombre" class="form-label">Nombre del hotel</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="text" th:field="*{direccion}" class="form-control" id="direccion"
+                        placeholder="Dirección">
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}">
+                    </div>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <select th:field="*{municipio}" class="form-select" id="municipio">
+                        <option th:each="m : ${T(com.hotelgalicia.proyectohotelgalicia.modelos.Municipios).values()}"
+                            th:value="${m}" th:text="${m.nombre}"></option>
+                    </select>
+                    <label for="municipio" class="form-label">Municipio</label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('municipio')}" th:errors="*{municipio}">
+                    </div>
+                </div>
+
+                <div class="form-floating md-2">
+                    <select th:field="*{filtro}" class="form-select" id="filtro">
+                        <option
+                            th:each="f : ${T(com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusquedaAdmin).values()}"
+                            th:value="${f}" th:text="${f.nombre}"></option>
+                    </select>
+                    <label for="filtro" class="form-label">Ordenar por</label>
+                </div>
+                <br>
+                <div>
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <button type="reset"  class="float-end btn btn-info">Reestablecer</button>
+                </div>
+            </form>
+        </div>
+        <div class="w-100 mainlist">
+            <div th:each="hotel:${listado}" class="caja container rounded-3">
+                <a th:href="@{/hotel/{id} (id=${hotel.id})}">
+                    <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
+                </a>
+                <div class="cajamain container">
+                    <a th:href="@{/hotel/{id} (id=${hotel.id})}">
+                        <h4 th:text="${hotel.nombre}"></h4>
+                    </a>
+                    <div>
+                        <p class="parrafo" th:text="${hotel.municipio.nombre}"></p>
+                        <p class="parrafo" th:text="${hotel.direccion}"></p>
+                    </div>
+
+                </div>
+                <div class="minicaja container">
+                    <p>Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
+                    <p><span th:text="${hotel.valoraciones}"></span> Reseñas</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+    <script th:src="@{/js/resetIndexAdmin.js}"></script>
+</body>
+
+</html>

@@ -1,9 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
-import java.security.Principal;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
+
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -36,17 +34,18 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTOAdmin;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTOAdmin;
-import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTOAdmin;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.SimpleHotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.SortDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.UsuarioDTO;
+import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
+import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusquedaAdmin;
+import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 import com.hotelgalicia.proyectohotelgalicia.servicios.AdminService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.EmpresaService;
@@ -59,7 +58,7 @@ import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/admin")
-@SessionAttributes({ "userid", "reservaId", "hotelId" })
+@SessionAttributes({ "userid", "reservaId", "hotelId", "habitacionId" })
 public class AdminController {
 
     @Autowired
@@ -417,6 +416,44 @@ public class AdminController {
 
     // Zona hotel
 
+    @GetMapping({ "/hotels" })
+    public String showHome(Model model,
+            @ModelAttribute("searchformadm") SimpleHotelSearchDTO dto) {
+        try {
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+
+        model.addAttribute("listado", hoServ.listSortedHotel(dto));
+        return "admin/hotelListView";
+    }
+
+    // Filtro de busqueda
+    @PostMapping("/hotels/search")
+    public String postSearchResults(@Valid @ModelAttribute("searchformadm") SimpleHotelSearchDTO dto,
+            BindingResult bindingResult, Model model,
+            RedirectAttributes redirectAttributes) {
+                SimpleHotelSearchDTO defecto= new SimpleHotelSearchDTO(
+                "", Municipios.TODOS, "", FiltroBusquedaAdmin.NOMBRE_ASCENDENTE);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("searchformadm", dto);
+            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+            return "admin/hotelListView";
+        } else {
+            try {
+                model.addAttribute("listado", hoServ.listSortedHotel(dto));
+            } catch (EmptyListException e) {
+                model.addAttribute("warning", e.getMessage());
+                model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+            } catch (Exception e) {
+                model.addAttribute("error", e.getMessage());
+                model.addAttribute("listado", hoServ.listSortedHotel(dto));
+            }
+
+            return "admin/hotelListView";
+        }
+    }
+
     // Muestra reseñas de hotel o usuario
     @GetMapping("/{type}/{id}/reviews")
     public String getUserReviewListUser(@PathVariable String type, @PathVariable Long id, Model model,
@@ -428,8 +465,9 @@ public class AdminController {
                 model.addAttribute("valoraciones", vaServ.listByUserId(id));
                 model.addAttribute("nombre", cliente.getNombre() + " " + cliente.getApellido());
             } else if (type.equals("hotels")) {
+                Hotel hotel = hoServ.getById(id);
                 model.addAttribute("valoraciones", vaServ.listByHotelId(id));
-                model.addAttribute("nombre", hoServ.getById(id).getNombre());
+                model.addAttribute("nombre",hotel.getNombre());
             } else {
                 throw new RuntimeException("Tipo de recurso no válido.");
             }
@@ -549,67 +587,6 @@ public class AdminController {
         return "redirect:/admin/" + type + "/" + typeid + "/reserves/" + dto.getId();
     }
 
-    @GetMapping("/{type}/{typeid}/reserves/{idres}/edit")
-    public String getEditReserve(@PathVariable String type, @PathVariable Long typeid, @PathVariable Long idres,
-            Model model, RedirectAttributes redirectAttributes,
-            Principal principal, SessionStatus status) {
-        try {
-            // Reserva, Hotel y habitaciones
-            Reserva reserva = reServ.getById(idres);
-            Hotel hotel = reserva.getHotel();
-            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelId(hotel.getId());
-            // Valida reserva
-            reServ.verificarReserva(reserva);
-
-            // Crea el DTO
-            // ReservaDTO reservaDTO = modelMapper.map(reserva, ReservaDTO.class);
-            ReservaDTO reservaDTO = new ReservaDTO(reserva.getHotel().getId(), reserva.getFechaInicio(),
-                    reserva.getFechaFin(),
-                    reserva.getPersonas(), null);
-            List<DetalleReservaDTO> detalles = habitaciones.stream()
-                    .map(h -> new DetalleReservaDTO(h.getId(),
-                            reserva.getHabitaciones().stream()
-                                    .filter(r -> Objects.equals(r.getHabitacion().getId(), h.getId()))
-                                    .map(n -> n.getCantidad()).findFirst().orElse(0)))
-                    .toList();
-            reservaDTO.setHabitaciones(detalles);
-            model.addAttribute("reservaId", reserva.getId());
-            model.addAttribute("reserva", reservaDTO);
-
-            // agrega hotel y habitaciones
-            model.addAttribute("hotel", hotel);
-            model.addAttribute("habitaciones", habitaciones);
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/admin/" + type + "/" + typeid + "/reserves/" + idres;
-        }
-        return "admin/reservaEditView";
-    }
-
-    @PostMapping("/{type}/{typeid}/reserves/{idres}/edit/submit")
-    public String postEditReserve(@Valid @ModelAttribute("reserva") ReservaDTO reserva,
-            BindingResult bindingResult, @ModelAttribute("reservaId") Long reId,
-            Model model, @PathVariable String type, @PathVariable Long typeid, @PathVariable Long idres,
-            RedirectAttributes redirectAttributes, SessionStatus status) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("reserva", reserva);
-        } else {
-            try {
-                reServ.verificarCantidad(reserva);
-                reServ.modificar(reserva, reId);
-                status.setComplete();
-                redirectAttributes.addFlashAttribute("message", "Reserva modificada con exito.");
-                return "redirect:/admin/" + type + "/" + typeid + "/reserves/" + idres;
-            } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
-        }
-
-        return "redirect:/admin/" + type + "/" + typeid + "/reserves/" + idres + "/edit";
-    }
-
     // editar hotel get
     @GetMapping("/hotels/{id}/edit")
     public String getEditHotel(Model model,
@@ -652,20 +629,29 @@ public class AdminController {
         }
     }
 
-    // editar estado habitacion post
-    @GetMapping("/hotels/{id}/status")
-    public String getEditHotStatus(EstadoHabitacionDTO dto,
-            BindingResult bindingResult, @PathVariable Long id,
+    // editar estado hotel post
+    @PostMapping("/hotels/{id}/status")
+    public String getEditHotStatus(@PathVariable Long id,
             Model model, RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-        } else {
-            try {
-                hoServ.cambiarEstadoPorId(id);
-            } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
+        try {
+            hoServ.cambiarEstadoPorId(id);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
+        return "redirect:/hotel/" + id;
+    }
+
+    // editar estado habitacion post
+    @PostMapping("/hotels/{id}/habitacion/status/{habId}")
+    public String postEditHabStatus(@Valid EstadoHabitacionDTO dto, @PathVariable Long habId,
+            @PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            dto.setId(habId);
+            haServ.cambiarEstado(dto);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
         return "redirect:/hotel/" + id;
     }
 
@@ -676,11 +662,11 @@ public class AdminController {
         try {
             Habitacion habi = haServ.getById(habId);
             hoServ.verificarHotel(habi.getHotel());
-            status.setComplete();
             HabitacionDTO dto = modelMapper.map(habi, HabitacionDTO.class);
             model.addAttribute("formulario", dto);
+            model.addAttribute("hotelId", id);
             model.addAttribute("habitacionId", habId);
-            return "empresa/habitacionEditView";
+            return "admin/habitacionEditView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/hotel/" + id;
@@ -713,12 +699,15 @@ public class AdminController {
 
     /*
      * Por hacer:
+     *   LISTO
      * reservas GET Y POST LISTO CLIENTES
      * Lista de empresas con hoteles LISTO
      * PANEL DE HOTELES
      * HOTELES RESERVAS Y RESEÑAS
+     * hoteles editar desactivar GET Y POST
      * 
-     * hoteles editar desactivar GET Y POST (Revisar)
+     *  POR HACER
+     * Acomodar filtro de busqueda de inicio para que muestre todo y sea mas simple
      * Habitaciones GET Y POST (revisar)
      */
 

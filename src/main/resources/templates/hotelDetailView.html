@@ -18,7 +18,8 @@
             <p><i class="bi bi-geo-alt-fill"></i> <span th:text="${hotel.direccion}"></span> - <span
                     th:text="${hotel.municipio.provincia.nombre}"></span></p>
             <div sec:authorize="hasAnyRole('ADMIN')">
-                <p>Opciones:</p>
+                <p>Propietario: <a th:href="@{/admin/enterprises/{id} (id=${hotel.empresa.id})}" th:text="${hotel.empresa.razonSocial}"></a></p>
+                <h5>Opciones:</h5>
                 <div class="d-flex flex-row">
                     <a th:href="@{/admin/hotels/{id}/reserves (id=${hotel.id})}" class="btn btn-dark me-2">Ver
                         Reservas</a>
@@ -26,6 +27,11 @@
                         Reseñas</a>
                     <a th:href="@{/admin/hotels/{id}/edit (id=${hotel.id})}" class="btn btn-dark mx-2">Modificar
                         datos</a>
+                    <form method="post" action="#" th:action="@{/admin/hotels/{id}/status (id=${hotel.id})}">
+                        <input class="btn btn-dark mx-2" type="submit"
+                            th:value="${hotel.estado ? 'Desactivar' : 'Activar'}"
+                            onclick="return confirm('Está seguro que desea Cambiar el estado del hotel?')">
+                    </form>
                 </div>
             </div>
             <div class="container mt-4">
@@ -72,7 +78,7 @@
             <p class="p-descripcion mt-3 container" th:text="${hotel.descripcion}"></p>
 
         </div>
-        <div sec:authorize="hasAnyRole('USER', 'CORPORATION')" class="container-sm mb-5 w-100">
+        <div sec:authorize="!hasAnyRole('ADMIN')" class="container-sm mb-5 w-100">
             <div class="container-sm">
                 <h4>Disponibilidad</h4>
                 <form class="row g-3" th:action="@{/hotel/{id}(id=${hotel.id})}" method="get" th:object="${filtro}">
@@ -101,7 +107,7 @@
         </div>
         <div class="container w-100">
             <h4>Habitaciones</h4>
-            <form sec:authorize="hasAnyRole('USER', 'CORPORATION')" id="reservaForm"
+            <form sec:authorize="!hasAnyRole('ADMIN')" id="reservaForm"
                 th:action="@{/hotel/{id}/reserve (id=${hotel.id})}" method="post" th:object="${reserva}">
                 <input type="hidden" th:field="*{id}" readonly />
                 <input type="hidden" id="fechaInicioReserva" th:field="*{fechaInicio}" readonly />
@@ -153,6 +159,7 @@
                     <th>Personas</th>
                     <th>Cantidad</th>
                     <th>Precio</th>
+                    <th>Estado</th>
                     <th sec:authorize="hasAnyRole('ADMIN')">Opciones</th>
                 </thead>
                 <tbody>
@@ -168,27 +175,31 @@
                         </td>
                         <td><i th:each="i : ${#numbers.sequence(1, habi.capacidad)}" class="bi bi-person-standing"></i>
                         </td>
-                        <td><p th:text="${habi.cantidad}"></p></td>
+                        <td>
+                            <p th:text="${habi.cantidad}"></p>
+                        </td>
                         <td>
                             <p th:text="'€ ' + ${#numbers.formatDecimal(habi.precio,0,0)}"></p>
                         </td>
+                         <td>
+                            <p th:text="${habi.estado}"></p>
+                        </td>
                         <td>
-                            <div th:if="${habi.estado.name() != 'ELIMINADA'}">
+                            <div>
                                 <!-- Editar habitación -->
-                                <a th:href="@{/enterprise/hotels/{id}/habitacion/edit/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                <a th:href="@{/admin/hotels/{id}/habitacion/edit/{habId} (id=${hotel.id}, habId=${habi.id})}"
                                     class="btn btn-dark w-100 mb-1 p-1">Modifcar</a>
-                                <!-- Cambiar estado -->
-                                <form
-                                    th:action="@{/enterprise/hotels/{id}/habitacion/status/{habId} (id=${hotel.id}, habId=${habi.id})}"
-                                    method="post" class="mb-1"> <button type="submit"
-                                        class="btn btn-dark w-100 p-1">Estado</button>
-                                </form>
-                                <!-- Eliminar habitación -->
+                                <!-- Cambiar estado habitación -->
                                 <form class="mt-1"
-                                    th:action="@{/enterprise/hotels/{id}/habitacion/delete/{habId} (id=${hotel.id}, habId=${habi.id})}"
+                                    th:action="@{/admin/hotels/{id}/habitacion/status/{habId} (id=${hotel.id}, habId=${habi.id})}"
                                     method="post"
-                                    onsubmit="return confirm('Está seguro de que desea eliminar la habitación?')">
-                                    <button type="submit" class="btn btn-dark w-100 p-1">Eliminar</button>
+                                    onsubmit="return confirm('Está seguro de que desea cambiar el estado de la habitación?')">
+                                    <select name="estado" class="form-select" id="filtro">
+                                        <option
+                                            th:each="est : ${T(com.hotelgalicia.proyectohotelgalicia.modelos.EstadoHabitacion).values()}"
+                                            th:value="${est}" th:text="${est}" th:selected="${habi.estado != null and est == habi.estado}"></option>
+                                    </select>
+                                    <button type="submit" class="btn btn-dark w-100 p-1">Cambiar</button>
                                 </form>
                             </div>
                         </td>

@@ -9,8 +9,13 @@
     <header th:replace="~{/fragments.html::logo}"></header>
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <main class="w-75">
-        <h3 sec:authorize="hasAnyRole('ADMIN')" class="mb-4">Reservas de <span th:text="${nombre}"></span>
-        </h3>
+        <div>
+            <h3 sec:authorize="hasAnyRole('ADMIN')" class="mb-4">Reservas de <span th:text="${nombre}"></span>
+            </h3>
+             <a th:if="${type == 'hotels'}" th:href="@{/hotel/{id} (id=${typeid})}" class="btn btn-primary me-auto">Volver</a>
+        <a th:if="${type == 'users'}" th:href="@{/admin/users/{id} (id=${typeid})}" class="btn btn-primary me-auto">Volver</a>
+        </div>
+
         <h3 sec:authorize="hasAnyRole('CORPORATION')" class="mb-4">Reservas de <span th:text="${hotel.nombre}"></span>
         </h3>
         <a sec:authorize="hasAnyRole('CORPORATION')" th:href="@{/enterprise/hotels/{id} (id=${hotel.id})}"
@@ -48,7 +53,8 @@
                 </div>
                 <div sec:authorize="hasAnyRole('ADMIN')" class="card-col-options">
                     <div class="card-col-info">
-                        <a th:href="@{/admin/{type}/{typeid}/reserves/{idre} (type=${type},typeid=${typeid},idre=${rese.id})}">
+                        <a
+                            th:href="@{/admin/{type}/{typeid}/reserves/{idre} (type=${type},typeid=${typeid},idre=${rese.id})}">
                             <i class="bi  bi-info-square-fill"></i></a>
                     </div>
                 </div>

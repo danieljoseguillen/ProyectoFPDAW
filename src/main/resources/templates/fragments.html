@@ -21,11 +21,13 @@
         <div class="container-fluid">
             <div class="navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" aria-current="page" th:href="@{/}">Hoteles</a></li>
+                    <li class="nav-item"><a class="nav-link" aria-current="page" th:href="@{/}">Inicio</a></li>
                     <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')"><a class="nav-link" aria-current="page"
                             th:href="@{/admin/users}">Usuarios</a></li>
                     <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')"><a class="nav-link" aria-current="page"
                             th:href="@{/admin/enterprises}">Empresas</a></li>
+                    <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')"><a class="nav-link" aria-current="page"
+                            th:href="@{/admin/hotels}">Hoteles</a></li>
                     <li sec:authorize="hasAnyRole('USER')" class="nav-item"><a class="nav-link" aria-current="page"
                             th:href="@{/user/reserves}">Mis Reservas</a></li>
                     <li sec:authorize="hasAnyRole('USER')" class="nav-item"><a class="nav-link" aria-current="page"

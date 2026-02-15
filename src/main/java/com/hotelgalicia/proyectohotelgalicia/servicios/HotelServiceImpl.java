@@ -1,11 +1,12 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,6 +24,7 @@ import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.SimpleHotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.PermissionDeniedException;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
@@ -58,6 +60,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto) {
         if (dto.getNombre().isBlank())
             dto.setNombre("");
@@ -82,13 +85,33 @@ public class HotelServiceImpl implements HotelService {
             throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio.");
         }
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
+        // 1. Extraer todos los IDs de habitaciones de los hoteles encontrados
+        List<Long> idsHabitaciones = hoteles.stream()
+                .flatMap(h -> h.getHabitaciones().stream())
+                .map(Habitacion::getId)
+                .toList();
 
+        // 2. Consultar disponibilidad de TODAS de una vez y guardarlo en un Mapa
+        // Retorna: Map<IdHabitacion, CantidadReservada>
+        Map<Long, Integer> mapaReservas = drRep.sumAllByHabitacionIds(
+                idsHabitaciones,
+                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA),
+                dto.getFechaInicio(),
+                dto.getFechaFin()).stream().collect(Collectors.toMap(
+                        obj -> (Long) obj[0],
+                        obj -> ((Long) obj[1]).intValue()));
+                        
         for (Hotel hotel : hoteles) {
             Habitacion habit = hotel.getHabitaciones().stream()
-                    .filter(h -> h.getPrecio() * dias >= dto.getPresupuestoMin()
-                            && h.getPrecio() * dias <= dto.getPresupuestoMax()
-                            && h.getCapacidad() >= dto.getPersonas()
-                            && verificarDisponibilidad(h, dto.getCantHabi(), dto.getFechaInicio(), dto.getFechaFin()))
+                    .filter(h -> {
+                    int reservadas = mapaReservas.getOrDefault(h.getId(), 0);
+                    int disponible = h.getCantidad() - reservadas;
+                    
+                    return h.getPrecio() * dias >= dto.getPresupuestoMin()
+                        && h.getPrecio() * dias <= dto.getPresupuestoMax()
+                        && h.getCapacidad() >= dto.getPersonas()
+                        && disponible >= dto.getCantHabi(); 
+                })
                     .findFirst().orElse(null);
 
             if (habit != null) {
@@ -100,6 +123,7 @@ public class HotelServiceImpl implements HotelService {
         if (hotelesdto.isEmpty()) {
             throw new EmptyListException("No se encontraron hoteles que coincidieran con los filtros de busqueda.");
         }
+
         switch (dto.getFiltro()) {
             case PRECIO_DESCENDENTE ->
                 Collections.sort(hotelesdto, new ComparaPrecio().reversed());
@@ -111,6 +135,53 @@ public class HotelServiceImpl implements HotelService {
                 Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje));
             case VALORACION_PRECIO_ASCENDENTE ->
                 Collections.sort(hotelesdto, new ComparaPrecioValo());
+            case MAS_VALORADOS ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getValoraciones).reversed());
+
+            default -> {
+            }
+
+        }
+        return hotelesdto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HotelMiniDTO> listSortedHotel(SimpleHotelSearchDTO dto) {
+        if (dto.getNombre().isBlank())
+            dto.setNombre("");
+        if (dto.getDireccion().isBlank())
+            dto.setDireccion("");
+
+        List<Hotel> hoteles;
+        if (dto.getMunicipio() != null && dto.getMunicipio() != Municipios.TODOS) {
+            hoteles = hoRep
+                    .findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCase(
+                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion());
+        } else {
+            hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCase(
+                    dto.getNombre(), dto.getDireccion());
+        }
+
+        List<HotelMiniDTO> hotelesdto = new ArrayList<>();
+
+        for (Hotel hotel : hoteles) {
+            HotelMiniDTO hoteldto = ConvertHotelToDTO(hotel);
+            hoteldto.setHabitacion(null);
+            hotelesdto.add(hoteldto);
+        }
+        if (hotelesdto.isEmpty()) {
+            throw new EmptyListException("No se encontraron hoteles que coincidieran con los filtros de busqueda.");
+        }
+        switch (dto.getFiltro()) {
+            case NOMBRE_ASCENDENTE ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getNombre));
+            case NOMBRE_DESCENDENTE ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getNombre).reversed());
+            case VALORACION_DESCENDENTE ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje).reversed());
+            case VALORACION_ASCENDENTE ->
+                Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje));
             case MAS_VALORADOS ->
                 Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getValoraciones).reversed());
 
@@ -228,10 +299,10 @@ public class HotelServiceImpl implements HotelService {
         }
     }
 
-    @Transactional(readOnly = true)
     public HotelMiniDTO ConvertHotelToDTO(Hotel hotel) {
         HotelMiniDTO hotelfinal = new HotelMiniDTO(hotel.getId(), hotel.getNombre(), hotel.getMunicipio(),
                 hotel.getDireccion(), hotel.getImagen(), hotel.getPuntaje(), hotel.getValoracion().size(), null);
+
         return hotelfinal;
     }
 
@@ -240,19 +311,4 @@ public class HotelServiceImpl implements HotelService {
                 habitacion.getCapacidad(), habitacion.getPrecio() * dias);
         return habitacionfinal;
     }
-
-    private boolean verificarDisponibilidad(Habitacion habitacion, int cantSoli, LocalDate inicioSolicitud,
-            LocalDate finSolicitud) {
-        Integer cantReserv = drRep.sumByHabitacionId(habitacion.getId(),
-                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA), inicioSolicitud, finSolicitud);
-        if (cantReserv == null) {
-            cantReserv = 0;
-        }
-        int disponible = habitacion.getCantidad() - cantReserv;
-        if (disponible >= cantSoli) {
-            return true;
-        }
-        return false;
-    }
-
 }

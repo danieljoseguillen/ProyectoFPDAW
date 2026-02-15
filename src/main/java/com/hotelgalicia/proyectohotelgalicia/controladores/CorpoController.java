@@ -291,9 +291,8 @@ public class CorpoController {
             Model model, @RequestParam MultipartFile file, @ModelAttribute("hotelId") Long id,
             RedirectAttributes redirectAttributes, SessionStatus status) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("formulario", dto);
-            return "redirect:/enterprise/hotels/edit/" + id;
+            model.addAttribute("formulario", dto);
+            return "empresa/hotelEditView";
         } else {
             try {
                 hoServ.modificar(dto, id, file);
@@ -303,7 +302,7 @@ public class CorpoController {
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
                 redirectAttributes.addFlashAttribute("formulario", dto);
-                return "redirect:/enterprise/hotels/edit/" + id;
+                return "redirect:/enterprise/hotels/" + id+"/edit";
             }
         }
     }

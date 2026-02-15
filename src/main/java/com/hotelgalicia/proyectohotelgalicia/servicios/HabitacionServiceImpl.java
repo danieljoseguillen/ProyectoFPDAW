@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
+import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.SaveFailedException;
@@ -38,43 +39,43 @@ public class HabitacionServiceImpl implements HabitacionService {
     @Autowired
     public FileStorageService fileserv;
 
-
     @Override
     public List<HabitacionListDTO> listHabitacionByHotelId(Long id) {
-            return haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE)
-            .stream()
-            .map(hab -> {
-                HabitacionListDTO dto = new HabitacionListDTO();
-                dto.setId(hab.getId());
-                dto.setNombre(hab.getNombre());
-                dto.setDescripcion(hab.getDescripcion());
-                dto.setCapacidad(hab.getCapacidad());
-                dto.setPrecio(hab.getPrecio());
-                dto.setImagen(hab.getImagen());
-                return dto;
-            })
-            .toList();
-        // List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE);
+        return haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE)
+                .stream()
+                .map(hab -> {
+                    HabitacionListDTO dto = new HabitacionListDTO();
+                    dto.setId(hab.getId());
+                    dto.setNombre(hab.getNombre());
+                    dto.setDescripcion(hab.getDescripcion());
+                    dto.setCapacidad(hab.getCapacidad());
+                    dto.setPrecio(hab.getPrecio());
+                    dto.setImagen(hab.getImagen());
+                    return dto;
+                })
+                .toList();
+        // List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id,
+        // EstadoHabitacion.DISPONIBLE);
         // List<HabitacionListDTO> listado = habitaciones.stream().map(hab -> {
-        //     HabitacionListDTO dto = new HabitacionListDTO();
-        //     dto.setId(hab.getId());
-        //     dto.setNombre(hab.getNombre());
-        //     dto.setDescripcion(hab.getDescripcion());
-        //     dto.setCapacidad(hab.getCapacidad());
-        //     dto.setPrecio(hab.getPrecio());
-        //     dto.setImagen(hab.getImagen());
-        //     Integer cantReserv = drRep.sumByHabitacionId(hab.getId(),
-        //             List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
-        //     if (cantReserv == null) {
-        //         cantReserv = 0;
-        //     }
-        //     if (cantReserv < hab.getCantidad()) {
-        //         dto.setDisponibles(hab.getCantidad() - cantReserv);
-        //         return dto;
-        //     }
+        // HabitacionListDTO dto = new HabitacionListDTO();
+        // dto.setId(hab.getId());
+        // dto.setNombre(hab.getNombre());
+        // dto.setDescripcion(hab.getDescripcion());
+        // dto.setCapacidad(hab.getCapacidad());
+        // dto.setPrecio(hab.getPrecio());
+        // dto.setImagen(hab.getImagen());
+        // Integer cantReserv = drRep.sumByHabitacionId(hab.getId(),
+        // List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
+        // if (cantReserv == null) {
+        // cantReserv = 0;
+        // }
+        // if (cantReserv < hab.getCantidad()) {
+        // dto.setDisponibles(hab.getCantidad() - cantReserv);
+        // return dto;
+        // }
         // })
-        //         .filter(Objects::nonNull)
-        //         .toList();
+        // .filter(Objects::nonNull)
+        // .toList();
         // return listado;
     }
 
@@ -180,8 +181,23 @@ public class HabitacionServiceImpl implements HabitacionService {
             habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
         }
         if (habitacion.getEstado() == EstadoHabitacion.ELIMINADA) {
-            throw new RuntimeException("Error: La habitación está desactivada(Eliminada para futuras busquedas).");    
+            throw new RuntimeException("Error: La habitación está desactivada(Eliminada para futuras busquedas).");
         }
+        try {
+            return haRep.save(habitacion);
+        } catch (DataIntegrityViolationException e) {
+            throw new SaveFailedException("Error al guardar los cambios: " + e.getMostSpecificCause().getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al guardar los cambios: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Habitacion cambiarEstado(EstadoHabitacionDTO estado) {
+        Habitacion habitacion = haRep.findById(estado.getId())
+                .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
+        hoServ.verificarHotel(habitacion.getHotel());
+        habitacion.setEstado(estado.getEstado());
         try {
             return haRep.save(habitacion);
         } catch (DataIntegrityViolationException e) {

@@ -95,7 +95,7 @@
                 </div>
             </form>
         </div>
-        <div class="w-100">
+        <div class="w-100 mainlist">
             <div th:each="hotel:${listado}" class="caja container rounded-3">
                 <a th:href="@{/hotel/{id} (id=${hotel.id},
                             fechaInicio=${searchform.fechaInicio},

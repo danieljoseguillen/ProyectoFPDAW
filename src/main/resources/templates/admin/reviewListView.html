@@ -10,12 +10,20 @@
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <main>
         <h3 class="mb-4">Reseñas de <span th:text="${nombre}"></span></h3>
+        <a th:if="${type == 'hotels'}" th:href="@{/hotel/{id} (id=${id})}" class="btn btn-primary me-auto">Volver</a>
+        <a th:if="${type == 'users'}" th:href="@{/admin/users/{id} (id=${id})}" class="btn btn-primary me-auto">Volver</a>
         <div class="w-100">
             <div th:each="valo:${valoraciones}" class="item-card d-flex flex-row border rounded-3 my-3">
                 <div class="card-col-primary">
-                    <h5>Hotel</h5>
-                    <p><a th:href="@{/hotel/{id} (id=${valo.hotel.id})}" th:text="${valo.hotel.nombre}"></a></p>
+                    <h5 th:if="${type == 'users'}">Hotel</h5>
+                    <h5 th:if="${type == 'hotels'}">Cliente</h5>
+                    <p>
+                        <a th:if="${type == 'users'}" th:href="@{/hotel/{id} (id=${valo.hotel.id})}" th:text="${valo.hotel.nombre}"></a>
+                        <a th:if="${type == 'hotels'}" th:href="@{/admin/users/{id} (id=${valo.cliente.id})}" th:text="${valo.cliente.nombre + ' ' + valo.cliente.apellido}"></a>
+                    </p>
+
                 </div>
+
                 <div class="card-col-content w-auto">
                     <h5>Comentario</h5>
                     <p th:text="${valo.comentario}"></p>

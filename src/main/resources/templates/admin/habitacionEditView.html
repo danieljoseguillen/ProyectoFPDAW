@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <nav th:replace="~{/fragments.html::navbar}"></nav>
+    <main>
+        <div>
+            <h2 class="my-4">Modificación de datos de habitación:</h2>
+            <form class="row g-3 formregistro" method="post" enctype="multipart/form-data" action="#"
+                th:action="@{/admin/hotels/{id}/habitacion/edit/submit (id=${hotelId})}" th:object="${formulario}">
+                <div class="col-md-12">
+                    <label for="nombre" class="form-label"><b>Nombre</b> </label>
+                    <input type="text" class="form-control" th:field="*{nombre}" id="nombre">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label for="descripcion" class="form-label"><b>Descripcion de la habitación</b> </label>
+                    <textarea class="form-control" th:field="*{descripcion}" id="descripcion"></textarea>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}"
+                        th:errors="*{descripcion}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="cantidad" class="form-label"><b>Cantidad de habitaciones</b> </label>
+                    <input type="number" class="form-control" th:field="*{cantidad}" id="cantidad">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('cantidad')}"
+                        th:errors="*{cantidad}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="capacidad" class="form-label"><b>Capacidad de la habitación</b> </label>
+                    <input type="number" class="form-control" th:field="*{capacidad}" id="capacidad">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('capacidad')}"
+                        th:errors="*{capacidad}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="precio" class="form-label"><b>Precio por noche</b> </label>
+                    <input type="number" class="form-control" th:field="*{precio}" id="precio">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('precio')}"
+                        th:errors="*{precio}">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="file" class="form-label"><b>Foto de portada del hotel</b> </label><br>
+                    <input type="file" name="file" />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="reset" class="btn btn-info float-right">Reestablecer</button>
+                    <a th:href="@{/hotel/{id} (id=${hotelId})}" class="btn btn-primary">Volver</a>
+                </div>
+
+            </form>
+        </div>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

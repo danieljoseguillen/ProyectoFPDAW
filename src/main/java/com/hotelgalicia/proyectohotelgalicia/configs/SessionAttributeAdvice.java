@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDateDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.SimpleHotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
+import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusquedaAdmin;
 import com.hotelgalicia.proyectohotelgalicia.modelos.Municipios;
 
 @ControllerAdvice
@@ -28,6 +30,11 @@ public class SessionAttributeAdvice {
                 5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
     }
 
+    @ModelAttribute("searchformadm")
+    public SimpleHotelSearchDTO searchFormAdmin() {
+        return new SimpleHotelSearchDTO(
+                "", Municipios.TODOS, "", FiltroBusquedaAdmin.NOMBRE_ASCENDENTE);
+    }
     /**
      * Valor por defecto para reserva.
      * Se usa en hotelController.

@@ -118,6 +118,11 @@ footer>p {
     position: relative;
 }
 
+/*Contenedor de cajas de hoteles*/
+.mainlist {
+    align-self: flex-start;
+}
+
 /* Barra de busqueda */
 .busqueda {
     max-width: 20%;
@@ -147,7 +152,7 @@ footer>p {
 }
 
 .caja-alt {
-    height: 250px;
+    max-height: 250px;
     min-width: 600px;
     margin: 10px 20px 20px;
     padding: 10px;

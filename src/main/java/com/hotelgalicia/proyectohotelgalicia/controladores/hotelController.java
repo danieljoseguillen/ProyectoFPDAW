@@ -26,7 +26,6 @@ import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDateDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ValoracionDTO;
-import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.FileStorageService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
@@ -42,9 +41,6 @@ public class hotelController {
     public FileStorageService fileserv;
 
     @Autowired
-    private ClienteService cServ;
-
-    @Autowired
     private HotelService hoServ;
 
     @Autowired
@@ -55,16 +51,6 @@ public class hotelController {
 
     @Autowired
     private ReservaService reServ;
-
-    // Retorna la id del usuario.
-    private Long retornarId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getName())) {
-            return null;
-        }
-        return cServ.getByCorreo(authentication.getName()).getId();
-    }
 
     private String formatBindingErrors(BindingResult bindingResult) {
         return bindingResult.getFieldErrors().stream()

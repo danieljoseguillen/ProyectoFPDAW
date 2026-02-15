@@ -246,7 +246,7 @@ public class ClienteController {
             int totalprice = reServ.calcularPrecioTotal(reserva).intValue();
             model.addAttribute("totalprice", totalprice);
             model.addAttribute("dias", ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()));
-            return "cliente/reserveDetailsView";
+            return "reserve/reserveDetailsView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/reserve/reserves";

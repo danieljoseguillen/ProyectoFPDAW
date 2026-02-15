@@ -86,7 +86,8 @@
                     </tbody>
                 </table>
                 <div class="">
-                    <button type="submit" class="btn btn-primary mx-2">Realizar reserva</button>
+                    <button type="submit" onclick="return confirm('Desea Realizar la reserva?')"
+                    class="btn btn-primary mx-2">Realizar reserva</button>
                     <a class="btn btn-primary me-2" th:href="@{/hotel/{id} (id=${hotel.id})}">Volver</a>
                 </div>
             </form>
