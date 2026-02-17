@@ -1,6 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
@@ -9,26 +10,23 @@ import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 
 public interface ReservaService {
 
-    List<Reserva> listByCliente(Long id);
+    Page<ReservaListDTO> listarReservasCliente(Long id, Pageable pageable);
 
-    List<Reserva> listByHotel(Long id);
+    Page<ReservaListDTO> listarReservasHotel(Long id, Pageable pageable);
 
-    List<ReservaListDTO> listarReservasCliente(Long id);
-    List<ReservaListDTO> listarReservasHotel(Long id);
-    
     Reserva getById(Long id);
 
-    Reserva agregar (ReservaDTO reserv, Long id);
-    
-    Reserva modificar (ReservaDTO reserv, Long id);
+    Reserva agregar(ReservaDTO reserv, Long id);
+
+    Reserva modificar(ReservaDTO reserv, Long id);
 
     Reserva cambiarEstado(EstadoReservaDTO estado);
 
-    Boolean cancelarPorId (Long id);
+    Boolean cancelarPorId(Long id);
 
     void verificarReserva(Reserva reserva);
 
-    boolean verificarCantidad (ReservaDTO reserva);
+    boolean verificarCantidad(ReservaDTO reserva);
 
     Double calcularPrecioTotal(ReservaDTO reserva);
 

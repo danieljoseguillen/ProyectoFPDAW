@@ -1,9 +1,14 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,12 +17,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EmpresaDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.excepciones.EmptyListException;
 import com.hotelgalicia.proyectohotelgalicia.modelos.FiltroBusqueda;
@@ -30,7 +36,7 @@ import com.hotelgalicia.proyectohotelgalicia.servicios.HotelService;
 import jakarta.validation.Valid;
 
 @Controller
-@SessionAttributes({ "searchform" })
+// @SessionAttributes({ "searchform" })
 public class MainController {
     @Autowired
     public FileStorageService fileserv;
@@ -66,44 +72,61 @@ public class MainController {
     // Controlador principal, verifica listas vacías
     @GetMapping({ "/", "/home", "/index" })
     public String showHome(Model model,
-            @ModelAttribute("searchform") HotelSearchDTO dto) {
+            @ModelAttribute("searchform") HotelSearchDTO dto, @RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, 8);
+        Page<HotelMiniDTO> hotelPage = Page.empty();
         try {
             validarfechasalert(dto, model);
-        } catch (Exception e) {
+            hotelPage = hoServ.listSortedHotel(dto, pageable);
+        } catch (EmptyListException e){
+            hotelPage = new PageImpl<>(new ArrayList<>());
+        }catch (Exception e) {
             model.addAttribute("error", e.getMessage());
+            HotelSearchDTO defecto = new HotelSearchDTO(
+                    "", Municipios.TODOS, "", 1, 1,
+                    LocalDate.now(), LocalDate.now().plusDays(1),
+                    5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
+            hotelPage = hoServ.listSortedHotel(defecto, pageable);
+            
+        } finally {
+            model.addAttribute("listado", hotelPage.getContent());
+            model.addAttribute("currentPage", hotelPage.getNumber());
+            model.addAttribute("totalPages", hotelPage.getTotalPages());
+            model.addAttribute("totalItems", hotelPage.getTotalElements());
         }
 
-        model.addAttribute("listado", hoServ.listSortedHotel(dto));
+        // model.addAttribute("listado", hoServ.listSortedHotel(dto));
         return "indexView";
     }
 
-    // Filtro de busqueda
-    @PostMapping("/search")
-    public String postSearchResults(@Valid @ModelAttribute("searchform") HotelSearchDTO dto,
-            BindingResult bindingResult, Model model,
-            RedirectAttributes redirectAttributes) {
-        HotelSearchDTO defecto = new HotelSearchDTO(
-                "", Municipios.TODOS, "", 1, 1,
-                LocalDate.now(), LocalDate.now().plusDays(1),
-                5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("searchform", dto);
-            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
-            return "indexView";
-        }
-        try {
-            validarfechasalert(dto, model);
-            model.addAttribute("listado", hoServ.listSortedHotel(dto));
-        } catch (EmptyListException e) {
-            model.addAttribute("warning", e.getMessage());
-            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
-        }
-        return "indexView";
+    // // Filtro de busqueda
+    // @PostMapping("/search")
+    // public String postSearchResults(@Valid @ModelAttribute("searchform")
+    // HotelSearchDTO dto,
+    // BindingResult bindingResult, Model model,
+    // RedirectAttributes redirectAttributes) {
+    // HotelSearchDTO defecto = new HotelSearchDTO(
+    // "", Municipios.TODOS, "", 1, 1,
+    // LocalDate.now(), LocalDate.now().plusDays(1),
+    // 5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
+    // if (bindingResult.hasErrors()) {
+    // model.addAttribute("searchform", dto);
+    // model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+    // return "indexView";
+    // }
+    // try {
+    // validarfechasalert(dto, model);
+    // model.addAttribute("listado", hoServ.listSortedHotel(dto));
+    // } catch (EmptyListException e) {
+    // model.addAttribute("warning", e.getMessage());
+    // model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+    // } catch (Exception e) {
+    // model.addAttribute("error", e.getMessage());
+    // model.addAttribute("listado", hoServ.listSortedHotel(defecto));
+    // }
+    // return "indexView";
 
-    }
+    // }
 
     // Envía a la pagina de error
     @GetMapping("/accessError")

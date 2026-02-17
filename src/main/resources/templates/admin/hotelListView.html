@@ -10,7 +10,7 @@
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <main id="inicio">
         <div class="busqueda rounded-3 container-sm">
-            <form method="post" id="searchform" action="#" th:action="@{/admin/hotels/search}" th:object="${searchformadm}">
+            <form method="get" id="searchform" action="#" th:action="@{/admin/hotels}" th:object="${searchformadm}">
 
                 <h3>Filtros de busqueda:</h3>
 
@@ -50,11 +50,14 @@
                 <br>
                 <div>
                     <button type="submit" class="btn btn-primary">Buscar</button>
-                    <button type="reset"  class="float-end btn btn-info">Reestablecer</button>
+                    <button type="reset" class="float-end btn btn-info">Reestablecer</button>
                 </div>
             </form>
         </div>
-        <div class="w-100 mainlist">
+        <div th:if="${listado.size() == 0}" class="w-100 h-100 mainlist d-flex flex-column">
+            <h2 class="my-auto text-center p-5">No se encontraron resultados.</h2>
+        </div>
+        <div th:if="${listado.size() > 0}" class="w-100 mainlist">
             <div th:each="hotel:${listado}" class="caja container rounded-3">
                 <a th:href="@{/hotel/{id} (id=${hotel.id})}">
                     <img class="imgcaja rounded-3" th:src="'/files/'+${hotel.imagen}">
@@ -74,7 +77,34 @@
                     <p><span th:text="${hotel.valoraciones}"></span> Reseñas</p>
                 </div>
             </div>
+            <div th:if="${totalPages > 1}" class="container d-flex justify-content-center mt-4 mb-5">
+                <nav aria-label="Navegación" class="paginador">
+                    <ul class="pagination">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/admin/hotels(page=${currentPage - 1}, nombre=${searchformadm.nombre}, municipio=${searchformadm.municipio}, direccion=${searchformadm.direccion}, filtro=${searchformadm.filtro})}">
+                                &laquo; Anterior
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${currentPage == i} ? 'active'">
+                            <a class="page-link"
+                                th:href="@{/admin/hotels(page=${i}, nombre=${searchformadm.nombre}, municipio=${searchformadm.municipio}, direccion=${searchformadm.direccion}, filtro=${searchformadm.filtro})}"
+                                th:text="${i + 1}"></a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/admin/hotels(page=${currentPage + 1}, nombre=${searchformadm.nombre}, municipio=${searchformadm.municipio}, direccion=${searchformadm.direccion}, filtro=${searchformadm.filtro})}">
+                                Siguiente &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
+
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>
     <div th:replace="~{/fragments.html::alertas}"></div>

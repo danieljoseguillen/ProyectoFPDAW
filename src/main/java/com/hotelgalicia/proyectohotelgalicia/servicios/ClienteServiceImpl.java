@@ -5,6 +5,8 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,12 +52,15 @@ public class ClienteServiceImpl implements ClienteService {
         return cRep.listByNameOrSurname(val);
     }
 
-    @Override
-    public List<Cliente> listByCorreo(String val) {
-        if (val == null)
-            val = "";
-        return cRep.findByCorreoContainingIgnoreCase(val);
+@Override
+public Page<Cliente> listByCorreo(String val, Pageable pageable) {
+    // Normalización del valor de búsqueda
+    if (val == null) {
+        val = "";
     }
+    // Pasamos el pageable al repositorio para que Spring Data haga la magia
+    return cRep.findByCorreoContainingIgnoreCase(val, pageable);
+}
 
     @Override
     public Cliente getById(Long id) {

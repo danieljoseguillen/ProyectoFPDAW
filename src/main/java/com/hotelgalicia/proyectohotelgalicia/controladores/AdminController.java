@@ -1,11 +1,15 @@
 package com.hotelgalicia.proyectohotelgalicia.controladores;
 
 import java.time.temporal.ChronoUnit;
-
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,10 +30,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.DetalleReserva;
+import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.domain.Habitacion;
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
 import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
+import com.hotelgalicia.proyectohotelgalicia.domain.Valoracion;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTOAdmin;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
@@ -40,6 +46,8 @@ import com.hotelgalicia.proyectohotelgalicia.dto.EstadoHabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.EstadoReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.HotelDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.HotelMiniDTO;
+import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.SimpleHotelSearchDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.SortDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.UsuarioDTO;
@@ -186,10 +194,17 @@ public class AdminController {
     // zona lista de usuario
 
     @GetMapping("/users")
-    public String getClientList(Model model, RedirectAttributes redirectAttributes) {
+    public String getClientList(@ModelAttribute("sortform") SortDTO sortform,
+            @RequestParam(defaultValue = "0") int page,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         try {
-            model.addAttribute("listado", cServ.listAll());
-            model.addAttribute("sortform", new SortDTO());
+            Pageable pageable = PageRequest.of(page, 5);
+            Page<Cliente> clientePage = aServ.getSortedClientes(sortform, pageable);
+            model.addAttribute("currentPage", clientePage.getNumber());
+            model.addAttribute("totalPages", clientePage.getTotalPages());
+            model.addAttribute("totalItems", clientePage.getTotalElements());
+            model.addAttribute("listado", clientePage.getContent());
             return "admin/usuariolistView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -199,12 +214,12 @@ public class AdminController {
         }
     }
 
-    @PostMapping("users/sort")
-    public String postIClientSorted(SortDTO sortform, Model model) {
-        model.addAttribute("listado", aServ.getSortedClientes(sortform));
-        model.addAttribute("sortform", sortform);
-        return "admin/usuariolistView";
-    }
+    // @PostMapping("users/sort")
+    // public String postIClientSorted(SortDTO sortform, Model model) {
+    // model.addAttribute("listado", aServ.getSortedClientes(sortform));
+    // model.addAttribute("sortform", sortform);
+    // return "admin/usuariolistView";
+    // }
 
     /**
      * Cambia el estado de un usuario o empresa segun su id.
@@ -316,10 +331,15 @@ public class AdminController {
 
     // Zona compañias
     @GetMapping("/enterprises")
-    public String getCorpoList(Model model, RedirectAttributes redirectAttributes) {
+    public String getCorpoList(@ModelAttribute("sortform") SortDTO sortform,
+            @RequestParam(defaultValue = "0") int page, Model model, RedirectAttributes redirectAttributes) {
         try {
-            model.addAttribute("listado", eServ.listAll());
-            model.addAttribute("sortform", new SortDTO());
+            Pageable pageable = PageRequest.of(page, 5);
+            Page<Empresa> empresaPage = aServ.getSortedEmpresa(sortform, pageable);
+            model.addAttribute("currentPage", empresaPage.getNumber());
+            model.addAttribute("totalPages", empresaPage.getTotalPages());
+            model.addAttribute("totalItems", empresaPage.getTotalElements());
+            model.addAttribute("listado", empresaPage.getContent());
             return "admin/corpolistView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -327,12 +347,12 @@ public class AdminController {
         }
     }
 
-    @PostMapping("enterprises/sort")
-    public String postCorpoSorted(SortDTO sortform, Model model) {
-        model.addAttribute("listado", aServ.getSortedEmpresa(sortform));
-        model.addAttribute("sortform", sortform);
-        return "admin/corpolistView";
-    }
+    // @PostMapping("enterprises/sort")
+    // public String postCorpoSorted(SortDTO sortform, Model model) {
+    // model.addAttribute("listado", aServ.getSortedEmpresa(sortform));
+    // model.addAttribute("sortform", sortform);
+    // return "admin/corpolistView";
+    // }
 
     @GetMapping("/enterprises/{id}")
     public String getCorpoData(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
@@ -417,60 +437,57 @@ public class AdminController {
     // Zona hotel
 
     @GetMapping({ "/hotels" })
-    public String showHome(Model model,
-            @ModelAttribute("searchformadm") SimpleHotelSearchDTO dto) {
+    public String showHotels(Model model,
+            @ModelAttribute("searchformadm") SimpleHotelSearchDTO dto,
+            @RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, 8);
+        Page<HotelMiniDTO> hotelPage = Page.empty();
         try {
+            hotelPage = hoServ.listSortedHotel(dto, pageable);
+
+        } catch (EmptyListException e) {
+            hotelPage = new PageImpl<>(new ArrayList<>());
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
+            SimpleHotelSearchDTO defecto = new SimpleHotelSearchDTO(
+                    "", Municipios.TODOS, "",
+                    FiltroBusquedaAdmin.NOMBRE_ASCENDENTE);
+            hotelPage = hoServ.listSortedHotel(defecto, pageable);
+        } finally {
+            model.addAttribute("listado", hotelPage.getContent());
+            model.addAttribute("currentPage", hotelPage.getNumber());
+            model.addAttribute("totalPages", hotelPage.getTotalPages());
+            model.addAttribute("totalItems", hotelPage.getTotalElements());
         }
 
-        model.addAttribute("listado", hoServ.listSortedHotel(dto));
         return "admin/hotelListView";
-    }
-
-    // Filtro de busqueda
-    @PostMapping("/hotels/search")
-    public String postSearchResults(@Valid @ModelAttribute("searchformadm") SimpleHotelSearchDTO dto,
-            BindingResult bindingResult, Model model,
-            RedirectAttributes redirectAttributes) {
-                SimpleHotelSearchDTO defecto= new SimpleHotelSearchDTO(
-                "", Municipios.TODOS, "", FiltroBusquedaAdmin.NOMBRE_ASCENDENTE);
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("searchformadm", dto);
-            model.addAttribute("listado", hoServ.listSortedHotel(defecto));
-            return "admin/hotelListView";
-        } else {
-            try {
-                model.addAttribute("listado", hoServ.listSortedHotel(dto));
-            } catch (EmptyListException e) {
-                model.addAttribute("warning", e.getMessage());
-                model.addAttribute("listado", hoServ.listSortedHotel(defecto));
-            } catch (Exception e) {
-                model.addAttribute("error", e.getMessage());
-                model.addAttribute("listado", hoServ.listSortedHotel(dto));
-            }
-
-            return "admin/hotelListView";
-        }
     }
 
     // Muestra reseñas de hotel o usuario
     @GetMapping("/{type}/{id}/reviews")
     public String getUserReviewListUser(@PathVariable String type, @PathVariable Long id, Model model,
+            @RequestParam(defaultValue = "0") int page,
             RedirectAttributes redirectAttributes) {
+        Pageable pageable = PageRequest.of(page, 10);
         try {
             verificarTipo(type);
+            Page<Valoracion> valoraciones;
             if (type.equals("users")) {
                 Cliente cliente = cServ.getById(id);
-                model.addAttribute("valoraciones", vaServ.listByUserId(id));
+                valoraciones = vaServ.listByUserId(id, pageable);
                 model.addAttribute("nombre", cliente.getNombre() + " " + cliente.getApellido());
             } else if (type.equals("hotels")) {
                 Hotel hotel = hoServ.getById(id);
-                model.addAttribute("valoraciones", vaServ.listByHotelId(id));
-                model.addAttribute("nombre",hotel.getNombre());
+                valoraciones = vaServ.listByHotelId(id, pageable);
+                model.addAttribute("nombre", hotel.getNombre());
             } else {
                 throw new RuntimeException("Tipo de recurso no válido.");
             }
+            model.addAttribute("valoraciones", valoraciones);
+            model.addAttribute("listado", valoraciones.getContent());
+            model.addAttribute("currentPage", valoraciones.getNumber());
+            model.addAttribute("totalPages", valoraciones.getTotalPages());
+            model.addAttribute("totalItems", valoraciones.getTotalElements());
             model.addAttribute("id", id);
             model.addAttribute("type", type);
             return "admin/reviewListView";
@@ -508,19 +525,28 @@ public class AdminController {
     // Reservas de usuario y hotel
     @GetMapping("/{type}/{typeid}/reserves")
     public String getReserveList(@PathVariable String type, @PathVariable Long typeid, Model model,
+            @RequestParam(defaultValue = "0") int page,
             RedirectAttributes redirectAttributes) {
+        Pageable pageable = PageRequest.of(page, 6);
         try {
             verificarTipo(type);
+            Page<ReservaListDTO> reservas;
             if (type.equals("users")) {
                 Cliente cliente = cServ.getById(typeid);
-                model.addAttribute("reservas", reServ.listarReservasCliente(typeid));
+                reservas = reServ.listarReservasCliente(typeid, pageable);
                 model.addAttribute("nombre", cliente.getNombre() + " " + cliente.getApellido());
             } else if (type.equals("hotels")) {
-                model.addAttribute("reservas", reServ.listarReservasHotel(typeid));
+                reservas = reServ.listarReservasHotel(typeid, pageable);
                 model.addAttribute("nombre", hoServ.getById(typeid).getNombre());
+            } else {
+                throw new RuntimeException("Tipo de recurso no válido.");
             }
             model.addAttribute("type", type);
             model.addAttribute("typeid", typeid);
+            model.addAttribute("reservas", reservas);
+            model.addAttribute("currentPage", reservas.getNumber());
+            model.addAttribute("totalPages", reservas.getTotalPages());
+            model.addAttribute("totalItems", reservas.getTotalElements());
             return "reserve/reserveListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -699,14 +725,14 @@ public class AdminController {
 
     /*
      * Por hacer:
-     *   LISTO
+     * LISTO
      * reservas GET Y POST LISTO CLIENTES
      * Lista de empresas con hoteles LISTO
      * PANEL DE HOTELES
      * HOTELES RESERVAS Y RESEÑAS
      * hoteles editar desactivar GET Y POST
      * 
-     *  POR HACER
+     * POR HACER
      * Acomodar filtro de busqueda de inicio para que muestre todo y sea mas simple
      * Habitaciones GET Y POST (revisar)
      */

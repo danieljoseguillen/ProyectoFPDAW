@@ -2,12 +2,12 @@ package com.hotelgalicia.proyectohotelgalicia.controladores;
 
 import java.security.Principal;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -25,17 +25,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.DetalleReserva;
-import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Reserva;
+import com.hotelgalicia.proyectohotelgalicia.domain.Valoracion;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClienteDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.DetalleReservaDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.HabitacionListDTO;
-import com.hotelgalicia.proyectohotelgalicia.dto.ReservaDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.ReservaListDTO;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ClienteService;
-import com.hotelgalicia.proyectohotelgalicia.servicios.HabitacionService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ReservaService;
 import com.hotelgalicia.proyectohotelgalicia.servicios.ValoracionService;
 
@@ -50,9 +46,6 @@ public class ClienteController {
     private ClienteService cServ;
 
     @Autowired
-    private HabitacionService haServ;
-
-    @Autowired
     private ReservaService reServ;
 
     @Autowired
@@ -60,12 +53,6 @@ public class ClienteController {
 
     @Autowired
     private ModelMapper modelMapper;
-
-    private String formatBindingErrors(BindingResult bindingResult) {
-        return bindingResult.getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(" | "));
-    }
 
     // Retorna la id del usuario.
     private Long retornarId() {
@@ -85,8 +72,6 @@ public class ClienteController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Cliente cli = cServ.getByCorreo(authentication.getName());
             model.addAttribute("cliente", cli);
-            List<Reserva> reservas = reServ.listByCliente(cli.getId());
-            model.addAttribute("reservas", reservas);
             return "cliente/userProfileView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -146,7 +131,8 @@ public class ClienteController {
 
     // edit profile post
     @PostMapping("/editmail/submit")
-    public String posteditmail(@Valid @ModelAttribute("correo")  CorreoDTO correo, BindingResult bindingResult, Model model,
+    public String posteditmail(@Valid @ModelAttribute("correo") CorreoDTO correo, BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "cliente/changeMailView";
@@ -191,9 +177,15 @@ public class ClienteController {
     }
 
     @GetMapping("/valorations")
-    public String getValorationUser(Model model, Principal principal, RedirectAttributes redirectAttributes) {
+    public String getValorationUser(Model model, Principal principal, @RequestParam(defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes) {
+        Pageable pageable = PageRequest.of(page, 10);
         try {
-            model.addAttribute("valoraciones", vaServ.listByUserMail(principal.getName()));
+            Page<Valoracion> listado = vaServ.listByUserMail(principal.getName(), pageable);
+            model.addAttribute("valoraciones", listado);
+            model.addAttribute("currentPage", listado.getNumber());
+            model.addAttribute("totalPages", listado.getTotalPages());
+            model.addAttribute("totalItems", listado.getTotalElements());
             return "cliente/valoraView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -218,12 +210,18 @@ public class ClienteController {
     }
 
     @GetMapping("/reserves")
-    public String getReserves(Model model, RedirectAttributes redirectAttributes) {
+    public String getReserves(Model model, @RequestParam(defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes) {
+        Pageable pageable = PageRequest.of(page, 6);
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             // Crea las reservas como reservalistdto
-            List<ReservaListDTO> reservas = reServ.listarReservasCliente(cServ.getByCorreo(authentication.getName()).getId());
+            Page<ReservaListDTO> reservas = reServ
+                    .listarReservasCliente(cServ.getByCorreo(authentication.getName()).getId(), pageable);
             model.addAttribute("reservas", reservas);
+            model.addAttribute("currentPage", reservas.getNumber());
+            model.addAttribute("totalPages", reservas.getTotalPages());
+            model.addAttribute("totalItems", reservas.getTotalElements());
             return "reserve/reserveListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -265,68 +263,4 @@ public class ClienteController {
         }
         return "redirect:/user/reserves";
     }
-
-    //Zona en desuso
-    @GetMapping("/reserves/{id}/edit")
-    public String getEditReserve(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes,
-            Principal principal, SessionStatus status) {
-        try {
-            // Reserva, Hotel y habitaciones
-            Reserva reserva = reServ.getById(id);
-            Hotel hotel = reserva.getHotel();
-            List<HabitacionListDTO> habitaciones = haServ.listHabitacionByHotelId(hotel.getId());
-            // Valida reserva
-            reServ.verificarReserva(reserva);
-
-            // Limpia sesión previa
-            status.setComplete();
-
-            // Crea el DTO
-            // ReservaDTO reservaDTO = modelMapper.map(reserva, ReservaDTO.class);
-            ReservaDTO reservaDTO = new ReservaDTO(reserva.getHotel().getId(), reserva.getFechaInicio(),
-                    reserva.getFechaFin(),
-                    reserva.getPersonas(), null);
-            List<DetalleReservaDTO> detalles = habitaciones.stream()
-                    .map(h -> new DetalleReservaDTO(h.getId(),
-                            reserva.getHabitaciones().stream()
-                                    .filter(r -> Objects.equals(r.getHabitacion().getId(), h.getId()))
-                                    .map(n -> n.getCantidad()).findFirst().orElse(0)))
-                    .toList();
-            reservaDTO.setHabitaciones(detalles);
-            model.addAttribute("reservaId", reserva.getId());
-            model.addAttribute("reserva", reservaDTO);
-
-            // agrega hotel y habitaciones
-            model.addAttribute("hotel", hotel);
-            model.addAttribute("habitaciones", habitaciones);
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/user/reserves";
-        }
-        return "cliente/reservaEditView";
-    }
-
-    @PostMapping("/reserves/{hoid}/edit/submit")
-    public String postEditReserve(@Valid @ModelAttribute("reserva") ReservaDTO reserva,
-            BindingResult bindingResult, @ModelAttribute("reservaId") Long reId,
-            Model model, RedirectAttributes redirectAttributes, SessionStatus status) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", formatBindingErrors(bindingResult));
-            redirectAttributes.addFlashAttribute("reserva", reserva);
-        } else {
-            try {
-                reServ.verificarCantidad(reserva);
-                reServ.modificar(reserva, reId);
-                status.setComplete();
-                redirectAttributes.addFlashAttribute("message", "Reserva modificada con exito.");
-                return "redirect:/user/reserves";
-            } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
-        }
-
-        return "redirect:/user/reserves/" + reId + "/edit";
-    }
-
 }

@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -125,7 +128,8 @@ public class CorpoController {
     }
 
     @PostMapping("/password/submit")
-    public String postPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTO formulario, BindingResult bindingResult, Model model,
+    public String postPasswordChange(@Valid @ModelAttribute("formulario") ClaveDTO formulario,
+            BindingResult bindingResult, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "empresa/changePasswordView";
@@ -166,6 +170,7 @@ public class CorpoController {
             model.addAttribute("habitaciones", hotel.getHabitaciones().stream()
                     .filter(hab -> hab.getEstado().name() != "ELIMINADA")
                     .toList());
+            model.addAttribute("valoracionestotales", hotel.getValoracion().size());
             model.addAttribute("valoraciones", hotel.getValoracion());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -176,15 +181,18 @@ public class CorpoController {
 
     // Ver reservas de hotel
     @GetMapping("/hotels/{id}/reserves")
-    public String getHotelReserves(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String getHotelReserves(@PathVariable Long id, Model model,@RequestParam(defaultValue = "0") int page, RedirectAttributes redirectAttributes) {
+        Pageable pageable = PageRequest.of(page, 6);
         try {
             Hotel hotel = hoServ.getById(id);
             hoServ.verificarHotel(hotel);
-            // model.addAttribute("listaReservas", reServ.listByHotel(id));
             // Crea las reservas como reservalistdto
-            List<ReservaListDTO> reservas = reServ.listarReservasHotel(id);
+            Page<ReservaListDTO> reservas = reServ.listarReservasHotel(id, pageable);
             model.addAttribute("hotel", hotel);
             model.addAttribute("reservas", reservas);
+            model.addAttribute("currentPage", reservas.getNumber());
+            model.addAttribute("totalPages", reservas.getTotalPages());
+            model.addAttribute("totalItems", reservas.getTotalElements());
             return "reserve/reserveListView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -302,7 +310,7 @@ public class CorpoController {
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
                 redirectAttributes.addFlashAttribute("formulario", dto);
-                return "redirect:/enterprise/hotels/" + id+"/edit";
+                return "redirect:/enterprise/hotels/" + id + "/edit";
             }
         }
     }

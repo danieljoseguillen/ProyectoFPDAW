@@ -2,6 +2,9 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
 import com.hotelgalicia.proyectohotelgalicia.dto.ClaveDTO;
 import com.hotelgalicia.proyectohotelgalicia.dto.CorreoDTO;
@@ -11,9 +14,9 @@ public interface EmpresaService {
 
     List<Empresa> listAll();
 
-    List<Empresa> listByRazon(String val);
+    Page<Empresa> listByRazon(String val, Pageable pageable);
 
-    List<Empresa> listByCorreo(String val);
+    Page<Empresa> listByCorreo(String val, Pageable pageable);
 
     Empresa getById(Long id);
 

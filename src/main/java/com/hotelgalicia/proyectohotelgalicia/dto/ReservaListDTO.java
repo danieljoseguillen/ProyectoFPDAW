@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.modelos.EstadoReserva;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +29,9 @@ public class ReservaListDTO {
 
     private EstadoReserva estado;
 
-    private Hotel hotel;
+    private String nombre;
+
+    private Long nombreId;
 
     private Integer habitacionestotal;
 

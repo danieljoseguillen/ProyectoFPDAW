@@ -2,6 +2,8 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
@@ -14,9 +16,9 @@ public interface HotelService {
 
     List<Hotel> listAllHotel();
 
-    List<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto);
+    Page<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto, Pageable pageable);
 
-    List<HotelMiniDTO> listSortedHotel(SimpleHotelSearchDTO dto);
+    Page<HotelMiniDTO> listSortedHotel(SimpleHotelSearchDTO dto, Pageable pageable);
 
     List<Hotel> listHotelByCorpo(Long id);
 

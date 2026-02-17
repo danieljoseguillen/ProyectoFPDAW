@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,47 +60,35 @@ public class ReservaServiceImpl implements ReservaService {
     private ModelMapper modelMapper;
 
     @Override
-    public List<Reserva> listByCliente(Long id) {
-        return reRep.findByClienteIdOrderByIdDesc(id);
+    public Page<ReservaListDTO> listarReservasCliente(Long id, Pageable pageable) {
+        Page<Reserva> reservas = reRep.findByClienteId(id, pageable);
+
+        return reservas.map(reserva -> {
+            ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
+            dto.setNombre(reserva.getHotel().getNombre());
+            dto.setNombreId(reserva.getHotel().getId());
+            dto.setHabitacionestotal(reserva.getHabitaciones().stream()
+                    .mapToInt(DetalleReserva::getCantidad)
+                    .sum());
+            dto.setCostototal(calcularPrecioTotal(reserva));
+            return dto;
+        });
     }
 
     @Override
-    public List<Reserva> listByHotel(Long id) {
-        return reRep.findByHotelId(id);
-    }
-
-    @Override
-    public List<ReservaListDTO> listarReservasCliente(Long id) {
-        List<ReservaListDTO> reservas = listByCliente(id)
-                .stream().map(reserva -> {
-                    ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
-                    dto.setHotel(reserva.getHotel());
-                    dto.setHabitacionestotal(reserva.getHabitaciones().stream()
-                            .mapToInt(DetalleReserva::getCantidad)
-                            .sum());
-                    dto.setCostototal(calcularPrecioTotal(reserva));
-                    return dto;
-                })
-                .collect(Collectors.toList());
-        return reservas;
-    }
-
-    @Override
-    public List<ReservaListDTO> listarReservasHotel(Long id) {
-        List<ReservaListDTO> reservas = listByHotel(id)
-                .stream()
-                .map(reserva -> {
-                    ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
-                    dto.setHotel(reserva.getHotel());
+    public Page<ReservaListDTO> listarReservasHotel(Long id , Pageable pageable) {
+        Page<Reserva> reservas = reRep.findByHotelId(id, pageable);
+        return reservas.map(reserva -> {
+            ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
+            dto.setNombre(reserva.getCliente().getNombre() + " " + reserva.getCliente().getApellido());
+                    dto.setNombreId(reserva.getCliente().getId());
                     dto.setHabitacionestotal(reserva.getHabitaciones().stream()
                             .mapToInt(DetalleReserva::getCantidad)
                             .sum());
                     dto.setCostototal(calcularPrecioTotal(reserva));
 
                     return dto;
-                })
-                .collect(Collectors.toList());
-        return reservas;
+                });
     }
 
     @Override
@@ -258,12 +247,13 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public boolean verificarCantidad(ReservaDTO reserva){
+    public boolean verificarCantidad(ReservaDTO reserva) {
         return reserva.getHabitaciones().stream()
-        .anyMatch(h -> h.getCantidad() != null && h.getCantidad() > 0);
+                .anyMatch(h -> h.getCantidad() != null && h.getCantidad() > 0);
     }
 
-    private void verificarDisponibilidad(Habitacion habitacion, int cantSoli, LocalDate inicioSolicitud, LocalDate finSolicitud) {
+    private void verificarDisponibilidad(Habitacion habitacion, int cantSoli, LocalDate inicioSolicitud,
+            LocalDate finSolicitud) {
         Integer cantReserv = drRep.sumByHabitacionId(habitacion.getId(),
                 List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA), inicioSolicitud, finSolicitud);
         if (cantReserv == null) {
@@ -274,12 +264,13 @@ public class ReservaServiceImpl implements ReservaService {
             throw new RoomFullException(habitacion.getNombre(), disponible, cantSoli);
         }
     }
+
     @Override
-    public Double calcularPrecioTotal(ReservaDTO reserva){
+    public Double calcularPrecioTotal(ReservaDTO reserva) {
         double total = 0.0;
-        for(DetalleReservaDTO detalle : reserva.getHabitaciones()){
+        for (DetalleReservaDTO detalle : reserva.getHabitaciones()) {
             Habitacion habi = haRep.findById(detalle.getHabitacion())
-            .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Error: Habitacion no encontrada"));
             long dias = reserva.getFechaFin().toEpochDay() - reserva.getFechaInicio().toEpochDay();
             total += habi.getPrecio() * detalle.getCantidad() * dias;
         }
@@ -287,9 +278,9 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public Double calcularPrecioTotal(Reserva reserva){
+    public Double calcularPrecioTotal(Reserva reserva) {
         double total = 0.0;
-        for(DetalleReserva detalle : reserva.getHabitaciones()){
+        for (DetalleReserva detalle : reserva.getHabitaciones()) {
             long dias = reserva.getFechaFin().toEpochDay() - reserva.getFechaInicio().toEpochDay();
             total += detalle.getPrecio() * detalle.getCantidad() * dias;
         }

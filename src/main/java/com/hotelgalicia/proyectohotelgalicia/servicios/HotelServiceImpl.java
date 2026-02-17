@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -61,7 +64,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto) {
+    public Page<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto,Pageable pageable) {
         if (dto.getNombre().isBlank())
             dto.setNombre("");
         if (dto.getDireccion().isBlank())
@@ -70,14 +73,14 @@ public class HotelServiceImpl implements HotelService {
         if (dto.getPresupuestoMin() > dto.getPresupuestoMax()) {
             throw new IllegalArgumentException("El presupuesto minimo no puede ser superior al maximo.");
         }
-        List<Hotel> hoteles;
+        Page<Hotel> hoteles;
         if (dto.getMunicipio() != null && dto.getMunicipio() != Municipios.TODOS) {
             hoteles = hoRep
                     .findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCaseAndEstado(
-                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), true);
+                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), true, pageable);
         } else {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(
-                    dto.getNombre(), dto.getDireccion(), true);
+                    dto.getNombre(), dto.getDireccion(), true,pageable);
         }
 
         Long dias = ChronoUnit.DAYS.between(dto.getFechaInicio(), dto.getFechaFin());
@@ -142,25 +145,25 @@ public class HotelServiceImpl implements HotelService {
             }
 
         }
-        return hotelesdto;
+        return new PageImpl<>(hotelesdto, pageable, hoteles.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<HotelMiniDTO> listSortedHotel(SimpleHotelSearchDTO dto) {
+    public Page<HotelMiniDTO> listSortedHotel(SimpleHotelSearchDTO dto, Pageable pageable) {
         if (dto.getNombre().isBlank())
             dto.setNombre("");
         if (dto.getDireccion().isBlank())
             dto.setDireccion("");
 
-        List<Hotel> hoteles;
+        Page<Hotel> hoteles;
         if (dto.getMunicipio() != null && dto.getMunicipio() != Municipios.TODOS) {
             hoteles = hoRep
                     .findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCase(
-                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion());
+                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), pageable);
         } else {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCase(
-                    dto.getNombre(), dto.getDireccion());
+                    dto.getNombre(), dto.getDireccion(),pageable);
         }
 
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
@@ -189,7 +192,7 @@ public class HotelServiceImpl implements HotelService {
             }
 
         }
-        return hotelesdto;
+        return new PageImpl<>(hotelesdto, pageable, hoteles.getTotalElements());
     }
 
     @Override
@@ -200,7 +203,7 @@ public class HotelServiceImpl implements HotelService {
     @Override
     @Transactional(readOnly = true) // para cargar las habitaciones.
     public Hotel getById(Long id) {
-        return hoRep.findById(id).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
+        return hoRep.findByIdPage(id).orElseThrow(() -> new RuntimeException("Error: Hotel no encontrado"));
     }
 
     @Override

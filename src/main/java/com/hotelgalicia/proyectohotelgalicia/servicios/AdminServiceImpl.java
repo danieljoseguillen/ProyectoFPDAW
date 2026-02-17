@@ -1,9 +1,10 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -132,7 +133,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public List<Cliente> getSortedClientes(SortDTO formulario) {
+    public Page<Cliente> getSortedClientes(SortDTO formulario, Pageable pageable) {
         if (formulario.getSortname() == null)
             formulario.setSortname("");
         if (formulario.getSorttype() == null)
@@ -140,30 +141,32 @@ public class AdminServiceImpl implements AdminService {
 
         switch (formulario.getSorttype()) {
             case "NOMBRE" -> {
-                return cRep.findByNombreContainingIgnoreCase(formulario.getSortname());
+                return cRep.findByNombreContainingIgnoreCase(formulario.getSortname(), pageable);
             }
             case "CORREO" -> {
-                return cRep.findByCorreoContainingIgnoreCase(formulario.getSortname());
+                return cRep.findByCorreoContainingIgnoreCase(formulario.getSortname(), pageable);
             }
             default -> {
-                return cRep.findAll();
+                return cRep.findAll(pageable);
             }
         }
     }
 
     @Override
-    public List<Empresa> getSortedEmpresa(SortDTO formulario) {
+    public Page<Empresa> getSortedEmpresa(SortDTO formulario, Pageable pageable) {
         if (formulario.getSortname() == null)
             formulario.setSortname("");
+        if (formulario.getSorttype() == null)
+            formulario.setSorttype("RAZON");
         switch (formulario.getSorttype()) {
             case "RAZON" -> {
-                return eRep.findByRazonSocialContainingIgnoreCase(formulario.getSortname());
+                return eRep.findByRazonSocialContainingIgnoreCase(formulario.getSortname(), pageable);
             }
             case "CORREO" -> {
-                return eRep.findByCorreoContainingIgnoreCase(formulario.getSortname());
+                return eRep.findByCorreoContainingIgnoreCase(formulario.getSortname(), pageable);
             }
             default -> {
-                return eRep.findAll();
+                return eRep.findAll(pageable);
             }
         }
     }

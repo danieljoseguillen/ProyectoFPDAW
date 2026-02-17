@@ -28,6 +28,10 @@ header {
     padding: 10px 20px 0px 20px;
 }
 
+.paginador {
+    background-color: inherit;
+}
+
 nav {
     width: 100%;
     min-height: fit-content;
@@ -82,6 +86,7 @@ main {
 #inicio {
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
 footer {
@@ -125,7 +130,7 @@ footer>p {
 
 /* Barra de busqueda */
 .busqueda {
-    max-width: 20%;
+    flex: 0 1 450px;
     min-width: 250px;
     margin: 10px;
     max-height: fit-content;
@@ -288,7 +293,6 @@ footer>p {
     flex-direction: row;
     gap: 12px;
     align-items: stretch;
-    /* children fill height */
     width: 100%;
 }
 
@@ -302,7 +306,7 @@ footer>p {
 .card-col-primary {
     /* max-width: 220px; */
     width: 40%;
-    min-width: 200px;
+    /* min-width: 200px; */
     padding: 10px;
 }
 
@@ -326,7 +330,6 @@ footer>p {
     flex-direction: row;
     border-top-right-radius: .25rem;
     border-bottom-right-radius: .25rem;
-    float: right;
     margin-left: auto;
 }
 
@@ -339,6 +342,7 @@ footer>p {
     background-color: #dc3545;
     /* danger red */
     color: white !important;
+    margin-left: auto;
 }
 
 .card-col-info {
@@ -349,19 +353,9 @@ footer>p {
     justify-content: center;
     background-color: deepskyblue;
     color: white !important;
+    margin-left: auto;
 }
 
-/* .card-col-action-lone {
-    width: 40px;
-    min-width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #dc3545;
-    color: white;
-    border-top-right-radius: .25rem;
-    border-bottom-right-radius: .25rem;
-} */
 
 .card-col-lone {
     width: 40px !important;
@@ -667,15 +661,22 @@ footer>p {
     .resconfdiv1 {
         min-width: 80%;
     }
+    .item-card{
+        gap: 8px;
+    }
 
-    /* .item-card>div,
-    .card-col-primary,
-    .card-col-content,
-    .card-col-stat,
-    .card-col-action {
-        padding: 6px 8px;
+    
+.card-col-action,
+.card-col-info,
+.card-col-lone{
+    width: 40px;
+}
 
-    } */
+    .reserveView {
+        padding: 0px 8px;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
 
     .card-col-primary,
     .card-col-user,

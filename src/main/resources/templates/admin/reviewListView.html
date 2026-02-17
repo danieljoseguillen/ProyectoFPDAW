@@ -11,15 +11,18 @@
     <main>
         <h3 class="mb-4">Reseñas de <span th:text="${nombre}"></span></h3>
         <a th:if="${type == 'hotels'}" th:href="@{/hotel/{id} (id=${id})}" class="btn btn-primary me-auto">Volver</a>
-        <a th:if="${type == 'users'}" th:href="@{/admin/users/{id} (id=${id})}" class="btn btn-primary me-auto">Volver</a>
+        <a th:if="${type == 'users'}" th:href="@{/admin/users/{id} (id=${id})}"
+            class="btn btn-primary me-auto">Volver</a>
         <div class="w-100">
             <div th:each="valo:${valoraciones}" class="item-card d-flex flex-row border rounded-3 my-3">
                 <div class="card-col-primary">
                     <h5 th:if="${type == 'users'}">Hotel</h5>
                     <h5 th:if="${type == 'hotels'}">Cliente</h5>
                     <p>
-                        <a th:if="${type == 'users'}" th:href="@{/hotel/{id} (id=${valo.hotel.id})}" th:text="${valo.hotel.nombre}"></a>
-                        <a th:if="${type == 'hotels'}" th:href="@{/admin/users/{id} (id=${valo.cliente.id})}" th:text="${valo.cliente.nombre + ' ' + valo.cliente.apellido}"></a>
+                        <a th:if="${type == 'users'}" th:href="@{/hotel/{id} (id=${valo.hotel.id})}"
+                            th:text="${valo.hotel.nombre}"></a>
+                        <a th:if="${type == 'hotels'}" th:href="@{/admin/users/{id} (id=${valo.cliente.id})}"
+                            th:text="${valo.cliente.nombre + ' ' + valo.cliente.apellido}"></a>
                     </p>
 
                 </div>
@@ -45,6 +48,47 @@
                     </button>
                 </form>
             </div>
+        </div>
+        <div th:if="${totalPages > 1}" class="container d-flex justify-content-center mt-4 mb-5">
+            <nav aria-label="Navegación de reseñas" class="paginador">
+                <ul class="pagination justify-content-center">
+
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/{type}/{id}/reviews(type=${type}, id=${id}, page=0)}">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                            th:href="@{/admin/{type}/{id}/reviews(type=${type}, id=${id}, page=${currentPage - 1})}">
+                            Anterior
+                        </a>
+                    </li>
+
+                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:if="${i >= currentPage - 2 and i <= currentPage + 2}" class="page-item"
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/{type}/{id}/reviews(type=${type}, id=${id}, page=${i})}"
+                            th:text="${i + 1}">1</a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                            th:href="@{/admin/{type}/{id}/reviews(type=${type}, id=${id}, page=${currentPage + 1})}">
+                            Siguiente
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                            th:href="@{/admin/{type}/{id}/reviews(type=${type}, id=${id}, page=${totalPages - 1})}">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>

@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,17 +42,17 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public List<Empresa> listByRazon(String val) {
+    public Page<Empresa> listByRazon(String val, Pageable pageable) {
         if (val == null)
             val = "";
-        return eRep.findByRazonSocialContainingIgnoreCase(val);
+        return eRep.findByRazonSocialContainingIgnoreCase(val, pageable);
     }
-
+    
     @Override
-    public List<Empresa> listByCorreo(String val) {
+    public Page<Empresa> listByCorreo(String val, Pageable pageable) {
         if (val == null)
             val = "";
-        return eRep.findByCorreoContainingIgnoreCase(val);
+        return eRep.findByCorreoContainingIgnoreCase(val, pageable);
     }
 
     @Override

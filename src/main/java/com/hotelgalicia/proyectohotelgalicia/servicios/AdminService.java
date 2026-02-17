@@ -1,6 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.hotelgalicia.proyectohotelgalicia.domain.Cliente;
 import com.hotelgalicia.proyectohotelgalicia.domain.Empresa;
@@ -23,9 +24,9 @@ public interface AdminService {
 
     //Parte administrativa
 
-    List<Cliente> getSortedClientes (SortDTO formulario);
+    Page<Cliente> getSortedClientes (SortDTO formulario, Pageable pageable);
 
-    List<Empresa> getSortedEmpresa (SortDTO formulario);
+    Page<Empresa> getSortedEmpresa (SortDTO formulario, Pageable pageable);
 
     Boolean cambiarEstadoPorId(Long id);
 

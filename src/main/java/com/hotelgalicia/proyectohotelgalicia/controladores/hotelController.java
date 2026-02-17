@@ -141,7 +141,8 @@ public class hotelController {
                 }
             }
             model.addAttribute("hotel", hotel);
-            model.addAttribute("valoraciones", vaServ.listByHotelId(id));
+            model.addAttribute("valoracionestotales", hotel.getValoracion().size());
+            model.addAttribute("valoraciones", hotel.getValoracion());
             model.addAttribute("valoracion", new ValoracionDTO());
             // if (vaServ.getByIds(retornarId(), id) != null) {
             // model.addAttribute("myval", vaServ.getByIds(retornarId(), id));

@@ -2,17 +2,20 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.hotelgalicia.proyectohotelgalicia.domain.Valoracion;
 import com.hotelgalicia.proyectohotelgalicia.dto.ValoracionDTO;
 
 public interface ValoracionService {
     List<Valoracion> listAll();
 
-    List<Valoracion> listByHotelId(Long id);
+    Page<Valoracion> listByHotelId(Long id, Pageable pageable);
 
-    List<Valoracion> listByUserMail(String correo);
+    Page<Valoracion> listByUserMail(String correo, Pageable pageable);
 
-    List<Valoracion> listByUserId(Long id);
+    Page<Valoracion> listByUserId(Long id, Pageable pageable);
 
     Valoracion getByIds(Long iduser, Long idhotel);
 

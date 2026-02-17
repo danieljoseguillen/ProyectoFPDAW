@@ -10,7 +10,7 @@
     <nav th:replace="~{/fragments.html::navbar}"></nav>
     <main id="inicio">
         <div class="busqueda rounded-3 container-sm">
-            <form method="post" id="searchform" action="#" th:action="@{/search}" th:object="${searchform}">
+            <form method="get" id="searchform" action="#" th:action="@{/}" th:object="${searchform}">
 
                 <h3>Filtros de busqueda:</h3>
 
@@ -91,11 +91,14 @@
                 <br>
                 <div>
                     <button type="submit" class="btn btn-primary">Buscar</button>
-                    <button type="reset"  class="float-end btn btn-info">Reestablecer</button>
+                    <button type="reset" class="float-end btn btn-info">Reestablecer</button>
                 </div>
             </form>
         </div>
-        <div class="w-100 mainlist">
+            <div th:if="${listado.size() == 0}" class="w-100 h-100 mainlist d-flex flex-column">
+                <h2 class="my-auto text-center p-5">No se encontraron resultados.</h2>
+            </div>
+        <div th:if="${listado.size() > 0}" class="w-100  mainlist">
             <div th:each="hotel:${listado}" class="caja container rounded-3">
                 <a th:href="@{/hotel/{id} (id=${hotel.id},
                             fechaInicio=${searchform.fechaInicio},
@@ -125,6 +128,48 @@
                     <p>Puntaje <span class="blueIcon rounded" th:text="${hotel.puntaje}"></span></p>
                     <p><span th:text="${hotel.valoraciones}"></span> Reseñas</p>
                 </div>
+            </div>
+            <div th:if="${totalPages > 1}" class="container d-flex justify-content-center mt-4 mb-5">
+                <nav aria-label="Navegación" class="paginador">
+                    <ul class="pagination">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/index(page=${currentPage - 1}, 
+         nombre=${searchform.nombre}, 
+         municipio=${searchform.municipio},
+         personas=${searchform.personas},
+         cantHabi=${searchform.cantHabi},
+         fechaInicio=${searchform.fechaInicio},
+         fechaFin=${searchform.fechaFin},
+         presupuestoMin=${searchform.presupuestoMin},
+         presupuestoMax=${searchform.presupuestoMax})}">Anterior</a>
+                        </li>
+
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/index(page=${i}, 
+         nombre=${searchform.nombre}, 
+         municipio=${searchform.municipio},
+         personas=${searchform.personas},
+         cantHabi=${searchform.cantHabi},
+         fechaInicio=${searchform.fechaInicio},
+         fechaFin=${searchform.fechaFin},
+         presupuestoMin=${searchform.presupuestoMin},
+         presupuestoMax=${searchform.presupuestoMax})}" th:text="${i + 1}">1</a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/index(page=${currentPage + 1}, 
+         nombre=${searchform.nombre}, 
+         municipio=${searchform.municipio},
+         personas=${searchform.personas},
+         cantHabi=${searchform.cantHabi},
+         fechaInicio=${searchform.fechaInicio},
+         fechaFin=${searchform.fechaFin},
+         presupuestoMin=${searchform.presupuestoMin},
+         presupuestoMax=${searchform.presupuestoMax})}">Siguiente</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </main>

@@ -2,7 +2,11 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,59 +58,45 @@ public class HabitacionServiceImpl implements HabitacionService {
                     return dto;
                 })
                 .toList();
-        // List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id,
-        // EstadoHabitacion.DISPONIBLE);
-        // List<HabitacionListDTO> listado = habitaciones.stream().map(hab -> {
-        // HabitacionListDTO dto = new HabitacionListDTO();
-        // dto.setId(hab.getId());
-        // dto.setNombre(hab.getNombre());
-        // dto.setDescripcion(hab.getDescripcion());
-        // dto.setCapacidad(hab.getCapacidad());
-        // dto.setPrecio(hab.getPrecio());
-        // dto.setImagen(hab.getImagen());
-        // Integer cantReserv = drRep.sumByHabitacionId(hab.getId(),
-        // List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA));
-        // if (cantReserv == null) {
-        // cantReserv = 0;
-        // }
-        // if (cantReserv < hab.getCantidad()) {
-        // dto.setDisponibles(hab.getCantidad() - cantReserv);
-        // return dto;
-        // }
-        // })
-        // .filter(Objects::nonNull)
-        // .toList();
-        // return listado;
     }
 
     @Override
     public List<HabitacionListDTO> listHabitacionByHotelIdDisponibles(Long id, LocalDate entrada, LocalDate salida) {
         Long dias = ChronoUnit.DAYS.between(entrada, salida);
-        return haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE)
-                .stream()
-                .map(hab -> {
-                    int ocupadas = drRep.sumByHabitacionId(
-                            hab.getId(),
-                            List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA),
-                            entrada,
-                            salida);
 
-                    int libres = hab.getCantidad() - ocupadas;
+        List<Habitacion> habitaciones = haRep.findByHotelIdAndEstado(id, EstadoHabitacion.DISPONIBLE);
 
-                    if (libres <= 0)
-                        return null;
+        if (habitaciones.isEmpty())
+            return new ArrayList<>();
 
-                    return new HabitacionListDTO(
-                            hab.getId(),
-                            hab.getNombre(),
-                            hab.getDescripcion(),
-                            hab.getCapacidad(),
-                            hab.getPrecio() * dias,
-                            hab.getImagen(),
-                            libres);
-                })
-                .filter(dto -> dto != null)
-                .toList();
+        List<Long> idsHabitaciones = habitaciones.stream().map(Habitacion::getId).toList();
+
+        Map<Long, Integer> mapaReservas = drRep.sumAllByHabitacionIds(
+                idsHabitaciones,
+                List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA),
+                entrada,
+                salida).stream().collect(Collectors.toMap(
+                        obj -> (Long) obj[0], 
+                        obj -> ((Long) obj[1]).intValue()
+        ));
+        return habitaciones.stream()
+            .map(hab -> {
+                int ocupadas = mapaReservas.getOrDefault(hab.getId(), 0);
+                int libres = hab.getCantidad() - ocupadas;
+
+                if (libres <= 0) return null;
+
+                return new HabitacionListDTO(
+                        hab.getId(),
+                        hab.getNombre(),
+                        hab.getDescripcion(),
+                        hab.getCapacidad(),
+                        hab.getPrecio() * dias,
+                        hab.getImagen(),
+                        libres);
+            })
+            .filter(Objects::nonNull)
+            .toList();
     }
 
     @Override

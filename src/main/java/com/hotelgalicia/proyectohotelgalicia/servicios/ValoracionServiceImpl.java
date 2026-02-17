@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -39,18 +41,18 @@ public class ValoracionServiceImpl implements ValoracionService {
     }
 
     @Override
-    public List<Valoracion> listByHotelId(Long id) {
-        return vaRep.findByHotelId(id);
+    public Page<Valoracion> listByHotelId(Long id, Pageable pageable) {
+        return vaRep.findByHotelId(id, pageable);
     }
 
     @Override
-    public List<Valoracion> listByUserMail(String correo) {
-        return vaRep.findByClienteCorreo(correo);
+    public Page<Valoracion> listByUserMail(String correo, Pageable pageable) {
+        return vaRep.findByClienteCorreo(correo, pageable);
     }
 
     @Override
-    public List<Valoracion> listByUserId(Long id) {
-        return vaRep.findByClienteId(id);
+    public Page<Valoracion> listByUserId(Long id, Pageable pageable) {
+        return vaRep.findByClienteId(id, pageable);
     }
 
     @Override
@@ -83,6 +85,7 @@ public class ValoracionServiceImpl implements ValoracionService {
         verificarpropiedad(iduser);
         ValoracionID id = new ValoracionID(idhotel, iduser);
         if (vaRep.existsById(id)) {
+            
             vaRep.deleteById(id);
             return true;
         }
