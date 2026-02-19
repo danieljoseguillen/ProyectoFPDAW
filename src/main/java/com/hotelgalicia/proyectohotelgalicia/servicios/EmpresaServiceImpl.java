@@ -69,9 +69,20 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public Empresa agregar(EmpresaDTO user) {
+        // Validar CIF
+        if (user.getCif() == null || user.getCif().trim().isEmpty()) {
+            throw new SaveFailedException("El CIF es requerido y no puede estar vacío.");
+        }
+        
+        // Validar que CIF no exista ya
+        if (eRep.findByCifIgnoreCase(user.getCif().trim()).isPresent()) {
+            throw new SaveFailedException("El CIF ingresado ya está registrado.");
+        }
+        
         if (uRep.findByCorreoIgnoreCase(user.getCorreo()).isPresent()) {
             throw new RuntimeException("El correo ingresado ya está en uso.");
         }
+
         Empresa empresafinal = Empresa.builder()
                 .correo(user.getCorreo().trim().toLowerCase())
                 .contraseña(encoder.encode(user.getContraseña().trim()))
@@ -83,9 +94,9 @@ public class EmpresaServiceImpl implements EmpresaService {
         try {
             return eRep.save(empresafinal);
         } catch (DataIntegrityViolationException e) {
-            throw new SaveFailedException("Error al agregar al usuario: " + e.getMostSpecificCause().getMessage());
+            throw new SaveFailedException("No se pudo registrar el usuario.");
         } catch (Exception e) {
-            throw new RuntimeException("Error inesperado al agregar al usuario: " + e.getMessage());
+            throw new RuntimeException("Ocurrió un error inesperado al agregar al usuario.");
         }
     }
 

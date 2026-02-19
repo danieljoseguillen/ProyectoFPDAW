@@ -18,4 +18,6 @@ public interface EmpresaRepository extends JpaRepository<Empresa, Long> {
     Optional<Empresa> findByCorreo(String correo);
 
     Optional<Empresa> findByCorreoIgnoreCase(String correo);
+
+    Optional<Empresa> findByCifIgnoreCase(String cif);
 }

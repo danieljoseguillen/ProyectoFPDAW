@@ -78,16 +78,16 @@ public class MainController {
         try {
             validarfechasalert(dto, model);
             hotelPage = hoServ.listSortedHotel(dto, pageable);
-        } catch (EmptyListException e){
+        } catch (EmptyListException e) {
             hotelPage = new PageImpl<>(new ArrayList<>());
-        }catch (Exception e) {
+        } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             HotelSearchDTO defecto = new HotelSearchDTO(
                     "", Municipios.TODOS, "", 1, 1,
                     LocalDate.now(), LocalDate.now().plusDays(1),
                     5, 10000, FiltroBusqueda.VALORACION_DESCENDENTE);
             hotelPage = hoServ.listSortedHotel(defecto, pageable);
-            
+
         } finally {
             model.addAttribute("listado", hotelPage.getContent());
             model.addAttribute("currentPage", hotelPage.getNumber());
@@ -209,5 +209,10 @@ public class MainController {
         }
         redirectAttributes.addFlashAttribute("message", "Usuario registrado con éxito.");
         return "redirect:/";
+    }
+
+    @GetMapping("/signin")
+    public String showLogin() {
+        return "signInView";
     }
 }

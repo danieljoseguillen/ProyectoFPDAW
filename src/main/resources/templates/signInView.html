@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:insert="~{/fragments.html::cabecera}">
+    <title>Hoteles Galicia: Registro</title>
+</head>
+
+<body>
+    <header th:replace="~{/fragments.html::logo}"></header>
+    <main class="justify-content-center">
+        <div class="container formlogin">
+            <h2 class="mb-4">Inicio de sesión:</h2>
+            <div th:if="${param.error}">Credenciales incorrectas</div>
+            <div th:if="${param.logout}">Te has desconectado</div>
+            <form class="row g-3" th:action="@{/login}" method="post">
+                <div class="col-md-12">
+                    <label for="username" class="form-label"><b>Correo</b> </label>
+                    <input type="text" class="form-control" name="username" placeholder="Username" id="username" />
+
+                </div>
+                <div class="col-md-12">
+                    <label for="Contraseña" class="form-label"><b>Contraseña</b> </label>
+                    <input type="password" class="form-control" name="password" placeholder="Password" />
+
+                </div>
+                <div class="col-12">
+                    <input type="submit" class="btn btn-primary" value="Conectarse" />
+                    <a th:href="@{/}" class="btn btn-primary me-auto">Volver</a>
+                </div>
+            </form>
+        </div>
+    </main>
+    <footer th:replace="~{/fragments.html::pie}"></footer>
+    <div th:replace="~{/fragments.html::alertas}"></div>
+</body>
+
+</html>

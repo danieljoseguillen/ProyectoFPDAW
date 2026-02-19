@@ -2,7 +2,6 @@ package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.util.List;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -36,9 +35,6 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
     private UsuarioRepository uRep;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     @Override
     public List<Cliente> listAll() {
@@ -91,9 +87,9 @@ public Page<Cliente> listByCorreo(String val, Pageable pageable) {
         try {
             return cRep.save(clientfinal);
         } catch (DataIntegrityViolationException e) {
-            throw new SaveFailedException("Error al agregar al usuario: " + e.getMostSpecificCause().getMessage());
+            throw new SaveFailedException("No se pudo registrar el usuario ().");
         } catch (Exception e) {
-            throw new RuntimeException("Error inesperado al agregar al usuario: " + e.getMessage());
+            throw new RuntimeException("Ocurrió un error inesperado al agregar al usuario.");
         }
     }
 

@@ -49,21 +49,28 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer
-                                                .defaultSuccessUrl("/", true)
-                                                .permitAll())
-                                .logout((logout) -> logout
+                                                .loginPage("/signin")
+                                                .loginProcessingUrl("/login")
+                                                .failureUrl("/signin?error")
+                                                .defaultSuccessUrl("/", true).permitAll())
+                                .logout(logout -> logout
+                                                .logoutRequestMatcher(
+                                                                request -> request.getRequestURI().equals("/logout") &&
+                                                                                "GET".equalsIgnoreCase(
+                                                                                                request.getMethod()))
                                                 .logoutSuccessUrl("/")
+                                                .invalidateHttpSession(true)
+                                                .deleteCookies("JSESSIONID")
                                                 .permitAll())
                                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
-                http.exceptionHandling(exceptions ->
-                exceptions.accessDeniedPage("/accessError"));
+                http.exceptionHandling(exceptions -> exceptions.accessDeniedPage("/accessError"));
                 // .exceptionHandling(ex -> ex
-                //                 .accessDeniedHandler((request, response, exception) -> {
-                //                         request.getSession().setAttribute(
-                //                                         "error",
-                //                                         "No tienes permisos para acceder a esa sección");
-                //                         response.sendRedirect("/index");
-                //                 }));
+                // .accessDeniedHandler((request, response, exception) -> {
+                // request.getSession().setAttribute(
+                // "error",
+                // "No tienes permisos para acceder a esa sección");
+                // response.sendRedirect("/index");
+                // }));
                 return http.build();
         }
 

@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.hotelgalicia.proyectohotelgalicia.domain.Hotel;
 import com.hotelgalicia.proyectohotelgalicia.domain.Usuario;
 import com.hotelgalicia.proyectohotelgalicia.domain.Valoracion;
 import com.hotelgalicia.proyectohotelgalicia.domain.ValoracionID;
@@ -19,6 +20,8 @@ import com.hotelgalicia.proyectohotelgalicia.repositorios.ClienteRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.HotelRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.UsuarioRepository;
 import com.hotelgalicia.proyectohotelgalicia.repositorios.ValoracionRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ValoracionServiceImpl implements ValoracionService {
@@ -68,6 +71,7 @@ public class ValoracionServiceImpl implements ValoracionService {
             valor.setComentario(val.getComentario());
             valor.setFecha(LocalDate.now());
             vaRep.save(valor);
+            recalcularPuntajeById(val.getHotel());
             return true;
         } catch (Exception e) {
             throw new RuntimeException("Error al guardar la valoración: " + e.getMessage());
@@ -81,12 +85,13 @@ public class ValoracionServiceImpl implements ValoracionService {
     }
 
     @Override
+    @Transactional
     public boolean borrarPorId(Long iduser, Long idhotel) {
         verificarpropiedad(iduser);
         ValoracionID id = new ValoracionID(idhotel, iduser);
         if (vaRep.existsById(id)) {
-            
             vaRep.deleteById(id);
+            recalcularPuntajeById(idhotel);
             return true;
         }
         return false;
@@ -107,5 +112,22 @@ public class ValoracionServiceImpl implements ValoracionService {
             }
             default -> throw new PermissionDeniedException("No está autorizado para realizar esta acción.");
         }
+    }
+
+        public void recalcularPuntajeById(Long id) {
+            Hotel hotel = hoRep.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Fallo al recalcular puntaje: Hotel no encontrado."));
+        int largo = hotel.getValoracion().size();
+        double monto = 0.0;
+        for (Valoracion val : hotel.getValoracion()) {
+            monto += val.getPuntaje();
+        }
+        if (largo == 0) {
+            hotel.setPuntaje(0.0);
+        } else {
+            double puntaje = Math.round((monto / largo) * 100.0) / 100.0;
+            hotel.setPuntaje(puntaje);
+        }
+        hoRep.save(hotel);
     }
 }
