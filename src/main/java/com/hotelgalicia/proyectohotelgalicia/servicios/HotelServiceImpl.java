@@ -64,7 +64,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto,Pageable pageable) {
+    public Page<HotelMiniDTO> listSortedHotel(HotelSearchDTO dto, Pageable pageable) {
         if (dto.getNombre().isBlank())
             dto.setNombre("");
         if (dto.getDireccion().isBlank())
@@ -80,7 +80,7 @@ public class HotelServiceImpl implements HotelService {
                             dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), true, pageable);
         } else {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(
-                    dto.getNombre(), dto.getDireccion(), true,pageable);
+                    dto.getNombre(), dto.getDireccion(), true, pageable);
         }
 
         Long dias = ChronoUnit.DAYS.between(dto.getFechaInicio(), dto.getFechaFin());
@@ -103,18 +103,18 @@ public class HotelServiceImpl implements HotelService {
                 dto.getFechaFin()).stream().collect(Collectors.toMap(
                         obj -> (Long) obj[0],
                         obj -> ((Long) obj[1]).intValue()));
-                        
+
         for (Hotel hotel : hoteles) {
             Habitacion habit = hotel.getHabitaciones().stream()
                     .filter(h -> {
-                    int reservadas = mapaReservas.getOrDefault(h.getId(), 0);
-                    int disponible = h.getCantidad() - reservadas;
-                    
-                    return h.getPrecio() * dias >= dto.getPresupuestoMin()
-                        && h.getPrecio() * dias <= dto.getPresupuestoMax()
-                        && h.getCapacidad() >= dto.getPersonas()
-                        && disponible >= dto.getCantHabi(); 
-                })
+                        int reservadas = mapaReservas.getOrDefault(h.getId(), 0);
+                        int disponible = h.getCantidad() - reservadas;
+
+                        return h.getPrecio() * dias >= dto.getPresupuestoMin()
+                                && h.getPrecio() * dias <= dto.getPresupuestoMax()
+                                && h.getCapacidad() >= dto.getPersonas()
+                                && disponible >= dto.getCantHabi();
+                    })
                     .findFirst().orElse(null);
 
             if (habit != null) {
@@ -163,7 +163,7 @@ public class HotelServiceImpl implements HotelService {
                             dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), pageable);
         } else {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCase(
-                    dto.getNombre(), dto.getDireccion(),pageable);
+                    dto.getNombre(), dto.getDireccion(), pageable);
         }
 
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
@@ -244,10 +244,10 @@ public class HotelServiceImpl implements HotelService {
         base.setTelefono(hotel.getTelefono());
         if (file != null && !file.isEmpty()) {
             try {
+                String nombreImagen = fileserv.store(file, base.getNombre());
                 if (base.getImagen() != null) {
                     fileserv.delete(base.getImagen());
                 }
-                String nombreImagen = fileserv.store(file, base.getNombre());
                 base.setImagen(nombreImagen);
             } catch (Exception e) {
                 throw new RuntimeException("Error al guardar la imagen: " + e.getMessage());

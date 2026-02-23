@@ -10,7 +10,7 @@
     <main class="justify-content-center">
         <div class="container formlogin">
             <h2 class="mb-4">Inicio de sesión:</h2>
-            <div th:if="${param.error}">Credenciales incorrectas</div>
+            <div th:if="${param.error}" class="alert alert-danger rounded-3 mb-3">Credenciales incorrectas</div>
             <div th:if="${param.logout}">Te has desconectado</div>
             <form class="row g-3" th:action="@{/login}" method="post">
                 <div class="col-md-12">
@@ -31,7 +31,7 @@
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>
-    <div th:replace="~{/fragments.html::alertas}"></div>
+
 </body>
 
 </html>

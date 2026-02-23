@@ -674,6 +674,7 @@ public class AdminController {
         try {
             dto.setId(habId);
             haServ.cambiarEstado(dto);
+            redirectAttributes.addFlashAttribute("message", "Estado de habitación modificado con éxito.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -724,16 +725,7 @@ public class AdminController {
     }
 
     /*
-     * Por hacer:
-     * LISTO
-     * reservas GET Y POST LISTO CLIENTES
-     * Lista de empresas con hoteles LISTO
-     * PANEL DE HOTELES
-     * HOTELES RESERVAS Y RESEÑAS
-     * hoteles editar desactivar GET Y POST
-     * 
      * POR HACER
-     * Acomodar filtro de busqueda de inicio para que muestre todo y sea mas simple
      * Habitaciones GET Y POST (revisar)
      */
 

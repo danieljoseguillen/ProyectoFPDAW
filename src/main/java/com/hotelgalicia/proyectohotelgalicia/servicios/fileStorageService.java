@@ -23,27 +23,27 @@ public class FileStorageService {
     public String store(MultipartFile file, String name) throws RuntimeException {
         // Validaciones
         if (file.isEmpty())
-            throw new RuntimeException("Error al leer la imagen: Fichero vacío");
+            throw new RuntimeException("Fichero vacío");
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
         if (filename.contains("..")) {
-            throw new RuntimeException("Error al leer la imagen: Fichero incorrecto");
+            throw new RuntimeException("Fichero incorrecto");
         }
         // Valida si el formato es de imagen
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/"))
-            throw new RuntimeException("Error al leer la imagen: Formato incorrecto");
+            throw new RuntimeException("Formato incorrecto");
         // Valida si se puede leer como imagen
         try {
             if (ImageIO.read(file.getInputStream()) == null) {
                 throw new RuntimeException("El fichero no es una imagen válida.");
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error al leer la imagen: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         // Codigo. Obtiene y valida la extension
         String extension = StringUtils.getFilenameExtension(filename);
         if (extension == null || extension.isBlank()) {
-            throw new RuntimeException("Error al leer la imagen: El fichero no tiene extensión.");
+            throw new RuntimeException("El fichero no tiene extensión.");
         }
         // Cambia los espacios en blanco
         String storedFilename = name.replaceAll("\\s+", "_") +UUID.randomUUID()+ "." + extension.toLowerCase();
@@ -53,7 +53,7 @@ public class FileStorageService {
                     StandardCopyOption.REPLACE_EXISTING);
             return storedFilename;
         } catch (IOException ioe) {
-            throw new RuntimeException("Error al guardar el fichero: " + ioe.getMessage());
+            throw new RuntimeException(ioe.getMessage());
         }
     }
 

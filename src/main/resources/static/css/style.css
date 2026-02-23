@@ -176,6 +176,7 @@ footer>p {
 
 /* Imagen miniaturas */
 .imgcaja {
+    object-fit: cover;
     grid-area: left;
     width: 200px;
     height: 200px;
@@ -248,7 +249,8 @@ footer>p {
 }
 
 .hotel-image-big img {
-    width: 100%;
+    object-fit: cover;
+    /* width: 100%; */
     margin-bottom: 0px;
     height: 100%;
 }

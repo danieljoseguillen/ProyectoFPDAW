@@ -76,27 +76,27 @@ public class HabitacionServiceImpl implements HabitacionService {
                 List.of(EstadoReserva.REALIZADA, EstadoReserva.CONFIRMADA),
                 entrada,
                 salida).stream().collect(Collectors.toMap(
-                        obj -> (Long) obj[0], 
-                        obj -> ((Long) obj[1]).intValue()
-        ));
+                        obj -> (Long) obj[0],
+                        obj -> ((Long) obj[1]).intValue()));
         return habitaciones.stream()
-            .map(hab -> {
-                int ocupadas = mapaReservas.getOrDefault(hab.getId(), 0);
-                int libres = hab.getCantidad() - ocupadas;
+                .map(hab -> {
+                    int ocupadas = mapaReservas.getOrDefault(hab.getId(), 0);
+                    int libres = hab.getCantidad() - ocupadas;
 
-                if (libres <= 0) return null;
+                    if (libres <= 0)
+                        return null;
 
-                return new HabitacionListDTO(
-                        hab.getId(),
-                        hab.getNombre(),
-                        hab.getDescripcion(),
-                        hab.getCapacidad(),
-                        hab.getPrecio() * dias,
-                        hab.getImagen(),
-                        libres);
-            })
-            .filter(Objects::nonNull)
-            .toList();
+                    return new HabitacionListDTO(
+                            hab.getId(),
+                            hab.getNombre(),
+                            hab.getDescripcion(),
+                            hab.getCapacidad(),
+                            hab.getPrecio() * dias,
+                            hab.getImagen(),
+                            libres);
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @Override
@@ -142,10 +142,10 @@ public class HabitacionServiceImpl implements HabitacionService {
         habFinal.setPrecio(habi.getPrecio());
         if (file != null && !file.isEmpty()) {
             try {
+                String nombreImagen = fileserv.store(file, habFinal.getHotel().getNombre() + "_hab");
                 if (habFinal.getImagen() != null) {
                     fileserv.delete(habFinal.getImagen());
                 }
-                String nombreImagen = fileserv.store(file, habFinal.getHotel().getNombre() + "_hab");
                 habFinal.setImagen(nombreImagen);
             } catch (Exception e) {
                 throw new RuntimeException("Error al guardar la imagen: " + e.getMessage());

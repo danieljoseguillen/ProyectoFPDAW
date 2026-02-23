@@ -16,8 +16,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -39,11 +37,9 @@ public class Reserva {
     private Long id;
 
     @NotNull(message = "Debe ingresar una fecha de inicio.")
-    @FutureOrPresent(message = "La fecha de inicio de la reserva debe ser la fecha actual o posterior.")
     private LocalDate fechaInicio;
 
     @NotNull(message = "Debe ingresar una fecha de fin.")
-    @Future(message = "La fecha de salida debe ser una fecha posterior.")
     private LocalDate fechaFin;
 
     @Min(value = 1, message = "Debe haber al menos una persona en la reserva")
