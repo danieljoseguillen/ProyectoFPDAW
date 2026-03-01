@@ -73,20 +73,22 @@ public class HotelServiceImpl implements HotelService {
         if (dto.getPresupuestoMin() > dto.getPresupuestoMax()) {
             throw new IllegalArgumentException("El presupuesto minimo no puede ser superior al maximo.");
         }
-        Page<Hotel> hoteles;
+
+        // Recuperar lista completa del repositorio (sin paginación en BD)
+        List<Hotel> hoteles;
         if (dto.getMunicipio() != null && dto.getMunicipio() != Municipios.TODOS) {
-            hoteles = hoRep
-                    .findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCaseAndEstado(
-                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), true, pageable);
+            hoteles = hoRep.findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCaseAndEstado(
+                    dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), true);
         } else {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCaseAndEstado(
-                    dto.getNombre(), dto.getDireccion(), true, pageable);
+                    dto.getNombre(), dto.getDireccion(), true);
         }
 
         Long dias = ChronoUnit.DAYS.between(dto.getFechaInicio(), dto.getFechaFin());
         if (dias <= 0) {
             throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio.");
         }
+
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
         // 1. Extraer todos los IDs de habitaciones de los hoteles encontrados
         List<Long> idsHabitaciones = hoteles.stream()
@@ -104,6 +106,7 @@ public class HotelServiceImpl implements HotelService {
                         obj -> (Long) obj[0],
                         obj -> ((Long) obj[1]).intValue()));
 
+        // 3. Procesar hoteles y crear DTOs
         for (Hotel hotel : hoteles) {
             Habitacion habit = hotel.getHabitaciones().stream()
                     .filter(h -> {
@@ -130,6 +133,7 @@ public class HotelServiceImpl implements HotelService {
             throw new EmptyListException("No se encontraron hoteles que coincidieran con los filtros de busqueda.");
         }
 
+        // 4. Aplicar ordenamiento
         switch (dto.getFiltro()) {
             case PRECIO_DESCENDENTE ->
                 Collections.sort(hotelesdto, new ComparaPrecio().reversed());
@@ -143,12 +147,16 @@ public class HotelServiceImpl implements HotelService {
                 Collections.sort(hotelesdto, new ComparaPrecioValo());
             case MAS_VALORADOS ->
                 Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getValoraciones).reversed());
-
             default -> {
             }
-
         }
-        return new PageImpl<>(hotelesdto, pageable, hoteles.getTotalElements());
+
+        // 5. Paginar manualmente en memoria
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), hotelesdto.size());
+        List<HotelMiniDTO> paginatedList = hotelesdto.subList(start, end);
+
+        return new PageImpl<>(paginatedList, pageable, hotelesdto.size());
     }
 
     @Override
@@ -159,14 +167,14 @@ public class HotelServiceImpl implements HotelService {
         if (dto.getDireccion().isBlank())
             dto.setDireccion("");
 
-        Page<Hotel> hoteles;
+        // Recuperar lista completa del repositorio (sin paginación en BD)
+        List<Hotel> hoteles;
         if (dto.getMunicipio() != null && dto.getMunicipio() != Municipios.TODOS) {
-            hoteles = hoRep
-                    .findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCase(
-                            dto.getNombre(), dto.getMunicipio(), dto.getDireccion(), pageable);
+            hoteles = hoRep.findByNombreContainingIgnoreCaseAndMunicipioAndDireccionContainingIgnoreCase(
+                    dto.getNombre(), dto.getMunicipio(), dto.getDireccion());
         } else {
             hoteles = hoRep.findByNombreContainingIgnoreCaseAndDireccionContainingIgnoreCase(
-                    dto.getNombre(), dto.getDireccion(), pageable);
+                    dto.getNombre(), dto.getDireccion());
         }
 
         List<HotelMiniDTO> hotelesdto = new ArrayList<>();
@@ -179,6 +187,8 @@ public class HotelServiceImpl implements HotelService {
         if (hotelesdto.isEmpty()) {
             throw new EmptyListException("No se encontraron hoteles que coincidieran con los filtros de busqueda.");
         }
+
+        // Aplicar ordenamiento
         switch (dto.getFiltro()) {
             case NOMBRE_ASCENDENTE ->
                 Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getNombre));
@@ -190,12 +200,16 @@ public class HotelServiceImpl implements HotelService {
                 Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getPuntaje));
             case MAS_VALORADOS ->
                 Collections.sort(hotelesdto, Comparator.comparing(HotelMiniDTO::getValoraciones).reversed());
-
             default -> {
             }
-
         }
-        return new PageImpl<>(hotelesdto, pageable, hoteles.getTotalElements());
+
+        // Paginar manualmente en memoria
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), hotelesdto.size());
+        List<HotelMiniDTO> paginatedList = hotelesdto.subList(start, end);
+
+        return new PageImpl<>(paginatedList, pageable, hotelesdto.size());
     }
 
     @Override
