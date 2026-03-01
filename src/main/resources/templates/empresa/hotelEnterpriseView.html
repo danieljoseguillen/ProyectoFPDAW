@@ -122,10 +122,17 @@
                     <div class="fakeheader td w-100"></div>
                 </div>
             </div>
+            <div th:if="${habitaciones.size() == 0}" class="w-100 justify-content-center">
+                <h3 class="text-center">No hay habitaciones disponibles</h3>
+            </div>
+
         </div>
         <br>
         <div class="d-flex flex-column align-items-center container-sm">
             <h4>Reseñas de usuarios:</h4>
+            <div th:if="${valoraciones.size() == 0}" class="w-100 justify-content-center">
+                <h3 class="text-center">El hotel no posee reseñas.</h3>
+            </div>
             <div class="cajavaloramain">
                 <div class="container cajavalora" th:each="valora:${valoraciones}">
                     <p class="blueIcon float-end rounded" th:text="${valora.puntaje}"></p>

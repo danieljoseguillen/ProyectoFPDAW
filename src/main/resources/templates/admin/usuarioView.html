@@ -12,7 +12,7 @@
         <div class="opciones border mt-3 container-sm p-3 rounded">
             <h4>Opciones</h4>
             <div class="panelops">
-                <a th:href="@{/admin/users/{id}/edit (id=${userid})}" class="btn btn-info">Modificar Datos</a>
+                <a th:href="@{/admin/users/{id}/edit (id=${userid})}" class="btn btn-info">Modificar datos</a>
                 <a th:href="@{/admin/users/{id}/password (id=${userid})}" class="btn btn-info">Actualizar contraseña</a>
                 <form th:action="@{/admin/users/{id}/status(id=${userid})}" method="post">
                     <button type="submit" class="btn btn-warning" th:text="${usuario.estado ? 'Desactivar' : 'Activar'}">

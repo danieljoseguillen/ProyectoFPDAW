@@ -187,7 +187,7 @@ public class DatosIniciales {
                                                         .municipio(Municipios.SANTIAGO_DE_COMPOSTELA)
                                                         .direccion("Av. Maestro Mateo 27, Santiago de Compostela")
                                                         .telefono("981654321")
-                                                        .imagen("hotel0.jpg")
+                                                        .imagen("hotel2.png")
                                                         .estado(true)
                                                         .puntaje(8.5)
                                                         .empresa(empresas.get(1))
@@ -271,7 +271,7 @@ public class DatosIniciales {
                                                         .municipio(Municipios.FISTERRA)
                                                         .direccion("Rúa Real 12, Fisterra")
                                                         .telefono("981765432")
-                                                        .imagen("hotel0.jpg")
+                                                        .imagen("hotel6.jpg")
                                                         .estado(true)
                                                         .puntaje(7.0)
                                                         .empresa(empresas.get(0))
@@ -388,7 +388,7 @@ public class DatosIniciales {
                                                         .cantidad(10)
                                                         .capacidad(2)
                                                         .precio(95.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion5.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(0))
                                                         .build(),
@@ -399,7 +399,7 @@ public class DatosIniciales {
                                                         .cantidad(5)
                                                         .capacidad(4)
                                                         .precio(160.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion6.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(0))
                                                         .build(),
@@ -410,7 +410,7 @@ public class DatosIniciales {
                                                         .cantidad(6)
                                                         .capacidad(1)
                                                         .precio(65.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion3.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(0))
                                                         .build(),
@@ -420,7 +420,7 @@ public class DatosIniciales {
                                                         .cantidad(12)
                                                         .capacidad(2)
                                                         .precio(90.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion9.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(1))
                                                         .build(),
@@ -431,7 +431,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(2)
                                                         .precio(150.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion2.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(1))
                                                         .build(),
@@ -442,7 +442,7 @@ public class DatosIniciales {
                                                         .cantidad(6)
                                                         .capacidad(3)
                                                         .precio(120.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion4.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(1))
                                                         .build(),
@@ -453,7 +453,7 @@ public class DatosIniciales {
                                                         .cantidad(2)
                                                         .capacidad(2)
                                                         .precio(280.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion2.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(1))
                                                         .build(),
@@ -474,7 +474,7 @@ public class DatosIniciales {
                                                         .cantidad(8)
                                                         .capacidad(2)
                                                         .precio(130.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion5.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(2))
                                                         .build(),
@@ -485,7 +485,7 @@ public class DatosIniciales {
                                                         .cantidad(3)
                                                         .capacidad(2)
                                                         .precio(190.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion10.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(2))
                                                         .build(),
@@ -496,7 +496,7 @@ public class DatosIniciales {
                                                         .cantidad(5)
                                                         .capacidad(5)
                                                         .precio(240.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion6.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(2))
                                                         .build(),
@@ -506,7 +506,7 @@ public class DatosIniciales {
                                                         .cantidad(6)
                                                         .capacidad(2)
                                                         .precio(75.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion9.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(3))
                                                         .build(),
@@ -517,7 +517,7 @@ public class DatosIniciales {
                                                         .cantidad(3)
                                                         .capacidad(2)
                                                         .precio(150.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion2.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(3))
                                                         .build(),
@@ -528,7 +528,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(4)
                                                         .precio(110.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion7.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(3))
                                                         .build(),
@@ -538,7 +538,7 @@ public class DatosIniciales {
                                                         .cantidad(8)
                                                         .capacidad(2)
                                                         .precio(220.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion14.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(4))
                                                         .build(),
@@ -549,7 +549,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(2)
                                                         .precio(300.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion10.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(4))
                                                         .build(),
@@ -560,7 +560,7 @@ public class DatosIniciales {
                                                         .cantidad(12)
                                                         .capacidad(2)
                                                         .precio(160.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion13.avif")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(4))
                                                         .build(),
@@ -571,7 +571,7 @@ public class DatosIniciales {
                                                         .cantidad(2)
                                                         .capacidad(2)
                                                         .precio(420.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion5.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(4))
                                                         .build(),
@@ -581,7 +581,7 @@ public class DatosIniciales {
                                                         .cantidad(10)
                                                         .capacidad(2)
                                                         .precio(90.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion7.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(5))
                                                         .build(),
@@ -592,7 +592,7 @@ public class DatosIniciales {
                                                         .cantidad(3)
                                                         .capacidad(2)
                                                         .precio(180.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion7.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(5))
                                                         .build(),
@@ -603,7 +603,7 @@ public class DatosIniciales {
                                                         .cantidad(5)
                                                         .capacidad(4)
                                                         .precio(130.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion4.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(5))
                                                         .build(),
@@ -613,7 +613,7 @@ public class DatosIniciales {
                                                         .cantidad(8)
                                                         .capacidad(2)
                                                         .precio(115.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion11.avif")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(6))
                                                         .build(),
@@ -624,7 +624,7 @@ public class DatosIniciales {
                                                         .cantidad(3)
                                                         .capacidad(2)
                                                         .precio(190.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion2.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(6))
                                                         .build(),
@@ -635,7 +635,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(4)
                                                         .precio(140.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion4.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(6))
                                                         .build(),
@@ -645,7 +645,7 @@ public class DatosIniciales {
                                                         .cantidad(6)
                                                         .capacidad(1)
                                                         .precio(70.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion3.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(7))
                                                         .build(),
@@ -656,7 +656,7 @@ public class DatosIniciales {
                                                         .cantidad(10)
                                                         .capacidad(2)
                                                         .precio(95.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion12.jpeg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(7))
                                                         .build(),
@@ -667,7 +667,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(2)
                                                         .precio(135.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion13.avif")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(7))
                                                         .build(),
@@ -677,7 +677,7 @@ public class DatosIniciales {
                                                         .cantidad(6)
                                                         .capacidad(2)
                                                         .precio(85.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion9.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(8))
                                                         .build(),
@@ -688,7 +688,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(2)
                                                         .precio(120.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion7.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(8))
                                                         .build(),
@@ -699,7 +699,7 @@ public class DatosIniciales {
                                                         .cantidad(3)
                                                         .capacidad(4)
                                                         .precio(150.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion15.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(8))
                                                         .build(),
@@ -709,7 +709,7 @@ public class DatosIniciales {
                                                         .cantidad(12)
                                                         .capacidad(2)
                                                         .precio(100.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion10.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(9))
                                                         .build(),
@@ -720,7 +720,7 @@ public class DatosIniciales {
                                                         .cantidad(6)
                                                         .capacidad(3)
                                                         .precio(135.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion4.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(9))
                                                         .build(),
@@ -731,7 +731,7 @@ public class DatosIniciales {
                                                         .cantidad(3)
                                                         .capacidad(2)
                                                         .precio(210.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion7.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(9))
                                                         .build(),
@@ -741,7 +741,7 @@ public class DatosIniciales {
                                                         .cantidad(8)
                                                         .capacidad(1)
                                                         .precio(45.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion3.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(10))
                                                         .build(),
@@ -752,7 +752,7 @@ public class DatosIniciales {
                                                         .cantidad(10)
                                                         .capacidad(2)
                                                         .precio(70.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion8.avif")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(10))
                                                         .build(),
@@ -763,7 +763,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(4)
                                                         .precio(90.0)
-                                                        .imagen("habitacion1.jpg")
+                                                        .imagen("habitacion4.jpg")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(10))
                                                         .build());

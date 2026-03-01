@@ -72,8 +72,9 @@ public class MainController {
     // Controlador principal, verifica listas vacías
     @GetMapping({ "/", "/home", "/index" })
     public String showHome(Model model,
-            @ModelAttribute("searchform") HotelSearchDTO dto, @RequestParam(defaultValue = "0") int page) {
-        Pageable pageable = PageRequest.of(page, 8);
+            @ModelAttribute("searchform") HotelSearchDTO dto, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         Page<HotelMiniDTO> hotelPage = Page.empty();
         try {
             validarfechasalert(dto, model);

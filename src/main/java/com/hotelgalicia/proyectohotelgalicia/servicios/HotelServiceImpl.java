@@ -110,12 +110,15 @@ public class HotelServiceImpl implements HotelService {
                         int reservadas = mapaReservas.getOrDefault(h.getId(), 0);
                         int disponible = h.getCantidad() - reservadas;
 
+                        long capacidadTotal = h.getCapacidad() * dto.getCantHabi();
+
                         return h.getPrecio() * dias >= dto.getPresupuestoMin()
                                 && h.getPrecio() * dias <= dto.getPresupuestoMax()
-                                && h.getCapacidad() >= dto.getPersonas()
+                                && capacidadTotal >= dto.getPersonas()
                                 && disponible >= dto.getCantHabi();
                     })
-                    .findFirst().orElse(null);
+                    .max(Comparator.comparingLong(h -> h.getCapacidad()))
+                    .orElse(null);
 
             if (habit != null) {
                 HotelMiniDTO hoteldto = ConvertHotelToDTO(hotel);

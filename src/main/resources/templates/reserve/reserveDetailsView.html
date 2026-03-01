@@ -38,11 +38,11 @@
                     </div>
             </div>
         </div>
-        <div class="container h-100 d-flex flex-column justify-content-top">
+        <div class="container h-100 d-flex flex-column justify-content-top w-100">
             <div sec:authorize="hasAnyRole('ADMIN','CORPORATION')">
                 <h4>Datos del cliente</h4>
-                <div class="d-flex flex-row justify-content-center border rounded-3 mb-3">
-                    <div class="w-50 text-center border">
+                <div class="d-flex flex-row justify-content-center mb-3 flex-wrap">
+                    <div class="w-25 text-center border">
                         <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Nombre</p>
                         <p class="mb-1" th:text="${reserva.cliente.nombre} + ' '+ ${reserva.cliente.apellido}"></p>
                     </div>
@@ -50,7 +50,7 @@
                         <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Telefono</p>
                         <p class="mb-1" th:text="${reserva.cliente.telefono}"></p>
                     </div>
-                    <div class="w-25 text-center border">
+                    <div class="w-50 text-center border">
                         <p class="mb-2 py-2 hotelheader bg-dark bg-gradient">Correo</p>
                         <p class="mb-1" th:text="${reserva.cliente.correo}"></p>
                     </div>
