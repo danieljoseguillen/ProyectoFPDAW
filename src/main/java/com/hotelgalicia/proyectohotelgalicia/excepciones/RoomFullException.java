@@ -1,7 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.excepciones;
 
 public class RoomFullException extends RuntimeException {
-    public RoomFullException(String name, Integer num, Integer num2) {
-        super("La habitación " + name + "solo posee " + num + " plazas disponibles. No se pueden reservar " + num2 + " plazas.");
+    public RoomFullException(String name, Integer num) {
+        super(name + " no tiene suficientes habitaciones disponibles. No se pueden reservar " + num + " habitaciones.");
     }
 }

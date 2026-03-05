@@ -261,7 +261,7 @@ public class ReservaServiceImpl implements ReservaService {
         }
         int disponible = habitacion.getCantidad() - cantReserv;
         if (!(disponible >= cantSoli)) {
-            throw new RoomFullException(habitacion.getNombre(), disponible, cantSoli);
+            throw new RoomFullException(habitacion.getNombre(), cantSoli);
         }
     }
 

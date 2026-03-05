@@ -138,6 +138,7 @@ public class HabitacionServiceImpl implements HabitacionService {
         hoServ.verificarHotel(habFinal.getHotel());
         habFinal.setNombre(habi.getNombre());
         habFinal.setDescripcion(habi.getDescripcion());
+        habFinal.setCapacidad(habi.getCapacidad() );
         habFinal.setCantidad(habi.getCantidad());
         habFinal.setPrecio(habi.getPrecio());
         if (file != null && !file.isEmpty()) {

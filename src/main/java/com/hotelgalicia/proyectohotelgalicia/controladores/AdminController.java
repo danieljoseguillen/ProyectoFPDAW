@@ -124,7 +124,7 @@ public class AdminController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Usuario usuario = aServ.getByCorreo(authentication.getName());
             model.addAttribute("usuario", usuario);
-            return "admin/ProfileView";
+            return "admin/adminProfileView";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -138,7 +138,7 @@ public class AdminController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             model.addAttribute("usuario",
                     modelMapper.map(aServ.getByCorreo(authentication.getName()), UsuarioDTO.class));
-            return "admin/EditView";
+            return "admin/adminEditView";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/profile";
@@ -152,7 +152,7 @@ public class AdminController {
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("usuario", usuario);
-            return "admin/EditView";
+            return "admin/adminEditView";
         }
         try {
             aServ.modificar(usuario);
