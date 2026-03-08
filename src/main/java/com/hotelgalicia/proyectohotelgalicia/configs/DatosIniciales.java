@@ -163,8 +163,8 @@ public class DatosIniciales {
                                                                                         "El hotel cuenta con un bar donde se puede tomar un café, una bebida o un snack mientras se escucha el murmullo de las olas.\n\n"
                                                                                         +
                                                                                         "La cercanía a puntos de interés costeros y la serenidad del entorno lo convierten en una opción ideal para quienes buscan desconectar en la costa norte de Galicia.")
-                                                        .municipio(Municipios.A_CORUÑA)
-                                                        .direccion("Av. Ernesto Che Guevara 81, Oleiros, A Coruña")
+                                                        .municipio(Municipios.OLEIROS)
+                                                        .direccion("Av. Ernesto Che Guevara 81")
                                                         .telefono("981123456")
                                                         .imagen("hotel1.jpg")
                                                         .estado(true)
@@ -185,7 +185,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Su localización privilegiada permite llegar caminando a los principales puntos turísticos y ofrece una experiencia cómoda tanto para peregrinos como para visitantes culturales.")
                                                         .municipio(Municipios.SANTIAGO_DE_COMPOSTELA)
-                                                        .direccion("Av. Maestro Mateo 27, Santiago de Compostela")
+                                                        .direccion("Av. Maestro Mateo 27")
                                                         .telefono("981654321")
                                                         .imagen("hotel2.png")
                                                         .estado(true)
@@ -206,7 +206,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Gracias a su ubicación, los huéspedes tienen fácil acceso tanto a pueblos costeros tradicionales como a actividades acuáticas, lo que convierte al resort en un destino perfecto para descansar y explorar.")
                                                         .municipio(Municipios.VILAGARCÍA_DE_AROUSA)
-                                                        .direccion("Carretera de Sanxenxo Km 2, Vilagarcía de Arousa")
+                                                        .direccion("Carretera de Sanxenxo Km 2")
                                                         .telefono("986111222")
                                                         .imagen("hotel3.jpg")
                                                         .estado(true)
@@ -227,7 +227,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Para quienes buscan desconectarse, este hotel es ideal: su atmósfera calmada y su proximidad a miradores naturales permiten una escapada auténtica y revitalizadora.")
                                                         .municipio(Municipios.MONFORTE_DE_LEMOS)
-                                                        .direccion("Lugar de Seoane, s/n, Monforte de Lemos")
+                                                        .direccion("Lugar de Seoane, s/n")
                                                         .telefono("982987654")
                                                         .imagen("hotel4.jpg")
                                                         .estado(true)
@@ -248,7 +248,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Con una ubicación privilegiada, es el lugar perfecto tanto para escapadas románticas como para viajes de ocio orientados al relax, todo con un toque sofisticado.")
                                                         .municipio(Municipios.VIGO)
-                                                        .direccion("Rúa de García Barbón 45, Vigo")
+                                                        .direccion("Rúa de García Barbón 45")
                                                         .telefono("986555999")
                                                         .imagen("hotel5.jpg")
                                                         .estado(true)
@@ -269,7 +269,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Por sus vistas privilegiadas y su tranquilidad, este hotel es una opción perfecta para quienes buscan una estancia íntima y conectada con la naturaleza costera.")
                                                         .municipio(Municipios.FISTERRA)
-                                                        .direccion("Rúa Real 12, Fisterra")
+                                                        .direccion("Rúa Real 12")
                                                         .telefono("981765432")
                                                         .imagen("hotel6.jpg")
                                                         .estado(true)
@@ -289,8 +289,8 @@ public class DatosIniciales {
                                                                                         "También hay rutas cercanas por senderos privados que permiten descubrir la belleza natural del entorno, desde bosques hasta pequeños miradores.\n\n"
                                                                                         +
                                                                                         "Ideal para escapadas románticas o para viajeros que desean experimentar la historia de Galicia desde un lugar con carácter y elegancia.")
-                                                        .municipio(Municipios.A_CORUÑA)
-                                                        .direccion("Rúa do Pazo, 3, Oleiros, A Coruña")
+                                                        .municipio(Municipios.OLEIROS)
+                                                        .direccion("Rúa do Pazo, 3")
                                                         .telefono("981998877")
                                                         .imagen("hotel7.jpg")
                                                         .estado(true)
@@ -309,7 +309,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Desde sus ventanas se puede contemplar la ciudad portuaria y sus alrededores, lo que aporta una experiencia genuina de Ferrol con la comodidad de un alojamiento moderno.")
                                                         .municipio(Municipios.FERROL)
-                                                        .direccion("Av. Esteiro 155, Ferrol")
+                                                        .direccion("Av. Esteiro 155")
                                                         .telefono("981445566")
                                                         .imagen("hotel8.jpg")
                                                         .estado(true)
@@ -330,7 +330,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Además, el restaurante ofrece menús con ingredientes locales y de temporada, conectando la gastronomía con la filosofía de sostenibilidad y paz del lugar.")
                                                         .municipio(Municipios.LUGO)
-                                                        .direccion("Lugar de Vilariño, s/n, Lugo")
+                                                        .direccion("Lugar de Vilariño, s/n")
                                                         .telefono("982334455")
                                                         .imagen("hotel9.png")
                                                         .estado(true)
@@ -351,7 +351,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Es un punto de partida perfecto para explorar la ría, hacer excursiones en barco o simplemente descansar con el vaivén del mar como banda sonora.")
                                                         .municipio(Municipios.SANXENXO)
-                                                        .direccion("Rúa do Porto 15, Sanxenxo")
+                                                        .direccion("Rúa do Porto 15")
                                                         .telefono("986222333")
                                                         .imagen("hotel10.png")
                                                         .estado(true)
@@ -372,7 +372,7 @@ public class DatosIniciales {
                                                                                         +
                                                                                         "Su ubicación lo convierte en una parada estratégica: cerca de rutas históricas y puntos de interés, es ideal tanto para caminantes como para visitantes que quieren empaparse de tradición gallega.")
                                                         .municipio(Municipios.ARZUA)
-                                                        .direccion("Rúa do Camiño, 7, Arzúa")
+                                                        .direccion("Rúa do Camiño, 7")
                                                         .telefono("981224466")
                                                         .imagen("hotel11.png")
                                                         .estado(true)

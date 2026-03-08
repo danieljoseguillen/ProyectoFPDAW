@@ -120,7 +120,7 @@ public class HotelServiceImpl implements HotelService {
                                 && capacidadTotal >= dto.getPersonas()
                                 && disponible >= dto.getCantHabi();
                     })
-                    .max(Comparator.comparingLong(h -> h.getCapacidad()))
+                    .min(Comparator.comparingDouble(h -> h.getPrecio()))
                     .orElse(null);
 
             if (habit != null) {
