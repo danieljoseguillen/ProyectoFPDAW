@@ -560,7 +560,7 @@ public class DatosIniciales {
                                                         .cantidad(12)
                                                         .capacidad(2)
                                                         .precio(160.0)
-                                                        .imagen("habitacion13.avif")
+                                                        .imagen("habitacion13.png")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(4))
                                                         .build(),
@@ -613,7 +613,7 @@ public class DatosIniciales {
                                                         .cantidad(8)
                                                         .capacidad(2)
                                                         .precio(115.0)
-                                                        .imagen("habitacion11.avif")
+                                                        .imagen("habitacion11.png")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(6))
                                                         .build(),
@@ -667,7 +667,7 @@ public class DatosIniciales {
                                                         .cantidad(4)
                                                         .capacidad(2)
                                                         .precio(135.0)
-                                                        .imagen("habitacion13.avif")
+                                                        .imagen("habitacion13.png")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(7))
                                                         .build(),
@@ -752,7 +752,7 @@ public class DatosIniciales {
                                                         .cantidad(10)
                                                         .capacidad(2)
                                                         .precio(70.0)
-                                                        .imagen("habitacion8.avif")
+                                                        .imagen("habitacion8.png")
                                                         .estado(EstadoHabitacion.DISPONIBLE)
                                                         .hotel(hoteles.get(10))
                                                         .build(),

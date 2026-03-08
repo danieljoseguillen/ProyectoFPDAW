@@ -1,6 +1,7 @@
 package com.hotelgalicia.proyectohotelgalicia.servicios;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -76,19 +77,19 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public Page<ReservaListDTO> listarReservasHotel(Long id , Pageable pageable) {
+    public Page<ReservaListDTO> listarReservasHotel(Long id, Pageable pageable) {
         Page<Reserva> reservas = reRep.findByHotelId(id, pageable);
         return reservas.map(reserva -> {
             ReservaListDTO dto = modelMapper.map(reserva, ReservaListDTO.class);
             dto.setNombre(reserva.getCliente().getNombre() + " " + reserva.getCliente().getApellido());
-                    dto.setNombreId(reserva.getCliente().getId());
-                    dto.setHabitacionestotal(reserva.getHabitaciones().stream()
-                            .mapToInt(DetalleReserva::getCantidad)
-                            .sum());
-                    dto.setCostototal(calcularPrecioTotal(reserva));
+            dto.setNombreId(reserva.getCliente().getId());
+            dto.setHabitacionestotal(reserva.getHabitaciones().stream()
+                    .mapToInt(DetalleReserva::getCantidad)
+                    .sum());
+            dto.setCostototal(calcularPrecioTotal(reserva));
 
-                    return dto;
-                });
+            return dto;
+        });
     }
 
     @Override
@@ -204,11 +205,21 @@ public class ReservaServiceImpl implements ReservaService {
         Reserva reserva = reRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada."));
         verificarReserva(reserva);
-        if (!reserva.getFechaInicio().isAfter(LocalDate.now().plusDays(1))) {
-            throw new RuntimeException("Solo pueden cancelarse reservas con más de 1 día de antelación.");
-        }
+        // Validar estado actual de la reserva
         if (reserva.getEstado() == EstadoReserva.CANCELADA || reserva.getEstado() == EstadoReserva.FINALIZADA) {
             throw new RuntimeException("La reserva no puede cancelarse en su estado actual.");
+        }
+        // Crea el momento del check-in (fecha de inicio a las 10:00)
+        LocalDateTime checkIn = reserva.getFechaInicio().atTime(10, 0);
+
+        // Calcula el límite (24 horas antes del check-in)
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime limite24h = checkIn.minusHours(24);
+
+        // Valida si el check-in es dentro de las próximas 24 horas
+        if (ahora.isAfter(limite24h) || ahora.isEqual(limite24h)) {
+            throw new RuntimeException(
+                    "Solo pueden cancelarse reservas con más de 24 horas de antelación. Para cancelar reservas con menos de 24 horas, por favor contacte con el hotel.");
         }
         reserva.setEstado(EstadoReserva.CANCELADA);
         try {

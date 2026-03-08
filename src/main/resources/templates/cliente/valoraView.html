@@ -31,7 +31,7 @@
                 <form th:action="@{/user/valoraciones/delete}" method="post"
                     onsubmit="return confirm('¿Desea borrar la reseña?')" class="card-col-action card-col-lone">
                     <input type="hidden" name="id" th:value="${valo.hotel.id}" />
-                    <button type="submit" class="btn btn-link p-0">
+                    <button type="submit" class="btn btn-link p-0" title="Eliminar reseña">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </form>
