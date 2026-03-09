@@ -81,6 +81,7 @@ main {
     min-width: 300px;
     max-width: 800px;
 }
+
 .formlogin {
     min-width: 300px;
     max-width: 400px;
@@ -667,16 +668,17 @@ footer>p {
     .resconfdiv1 {
         min-width: 80%;
     }
-    .item-card{
+
+    .item-card {
         gap: 8px;
     }
 
-    
-.card-col-action,
-.card-col-info,
-.card-col-lone{
-    width: 40px;
-}
+
+    /* .card-col-action,
+    .card-col-info,
+    .card-col-lone {
+        width: 40px;
+    } */
 
     .reserveView {
         padding: 0px 8px;

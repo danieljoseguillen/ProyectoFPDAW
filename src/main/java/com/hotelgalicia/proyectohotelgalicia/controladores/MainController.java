@@ -146,7 +146,7 @@ public class MainController {
     // Zona Registro
     @GetMapping("/register")
     public String getReg(Model model) {
-        return "ChoiceView";
+        return "choiceView";
     }
 
     // Registro por tipo

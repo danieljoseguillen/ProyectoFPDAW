@@ -102,17 +102,32 @@
         <div th:if="${totalPages > 1}" class="container d-flex justify-content-center mt-4 mb-5">
             <nav aria-label="Navegación de reservas" class="paginador">
                 <ul class="pagination justify-content-center">
-
                     <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                        <a class="page-link"
-                            th:href="@{/{type}/{typeid}/reserves(type=${type}, typeid=${typeid}, page=0)}">
+                        <a class="page-link" sec:authorize="hasAnyRole('ADMIN')"
+                            th:href="@{/admin/{type}/{typeid}/reserves(type=${type}, typeid=${typeid}, page=0)}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('CORPORATION')"
+                            th:href="@{/enterprise/hotels/{id}/reserves(id=${hotel.id}, page=0)}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('USER')"
+                            th:href="@{/user/reserves(page=0)}">
                             <i class="bi bi-chevron-double-left"></i>
                         </a>
                     </li>
 
                     <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                        <a class="page-link"
+                        <a class="page-link" sec:authorize="hasAnyRole('ADMIN')"
                             th:href="@{/admin/{type}/{typeid}/reserves(type=${type}, typeid=${typeid}, page=${currentPage - 1})}">
+                            Anterior
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('CORPORATION')"
+                            th:href="@{/enterprise/hotels/{id}/reserves(id=${hotel.id}, page=${currentPage - 1})}">
+                            Anterior
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('USER')"
+                            th:href="@{/user/reserves(page=${currentPage - 1})}">
                             Anterior
                         </a>
                     </li>
@@ -120,27 +135,49 @@
                     <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                         th:if="${i >= currentPage - 2 and i <= currentPage + 2}" class="page-item"
                         th:classappend="${currentPage == i} ? 'active'">
-                        <a class="page-link"
+                        <a class="page-link" sec:authorize="hasAnyRole('ADMIN')"
                             th:href="@{/admin/{type}/{typeid}/reserves(type=${type}, typeid=${typeid}, page=${i})}"
+                            th:text="${i + 1}">1</a>
+                        <a class="page-link" sec:authorize="hasAnyRole('CORPORATION')"
+                            th:href="@{/enterprise/hotels/{id}/reserves(id=${hotel.id}, page=${i})}"
+                            th:text="${i + 1}">1</a>
+                        <a class="page-link" sec:authorize="hasAnyRole('USER')" th:href="@{/user/reserves(page=${i})}"
                             th:text="${i + 1}">1</a>
                     </li>
 
                     <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                        <a class="page-link"
+                        <a class="page-link" sec:authorize="hasAnyRole('ADMIN')"
                             th:href="@{/admin/{type}/{typeid}/reserves(type=${type}, typeid=${typeid}, page=${currentPage + 1})}">
+                            Siguiente
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('CORPORATION')"
+                            th:href="@{/enterprise/hotels/{id}/reserves(id=${hotel.id}, page=${currentPage + 1})}">
+                            Siguiente
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('USER')"
+                            th:href="@{/user/reserves(page=${currentPage + 1})}">
                             Siguiente
                         </a>
                     </li>
 
                     <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                        <a class="page-link"
+                        <a class="page-link" sec:authorize="hasAnyRole('ADMIN')"
                             th:href="@{/admin/{type}/{typeid}/reserves(type=${type}, typeid=${typeid}, page=${totalPages - 1})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('CORPORATION')"
+                            th:href="@{/enterprise/hotels/{id}/reserves(id=${hotel.id}, page=${totalPages - 1})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                        <a class="page-link" sec:authorize="hasAnyRole('USER')"
+                            th:href="@{/user/reserves(page=${totalPages - 1})}">
                             <i class="bi bi-chevron-double-right"></i>
                         </a>
                     </li>
 
                 </ul>
             </nav>
+
         </div>
     </main>
     <footer th:replace="~{/fragments.html::pie}"></footer>
