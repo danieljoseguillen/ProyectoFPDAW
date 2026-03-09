@@ -95,9 +95,9 @@
                 </div>
             </form>
         </div>
-            <div th:if="${listado.size() == 0}" class="w-100 h-100 mainlist d-flex flex-column">
-                <h2 class="my-auto text-center p-5">No se encontraron resultados.</h2>
-            </div>
+        <div th:if="${listado.size() == 0}" class="w-100 h-100 mainlist d-flex flex-column">
+            <h2 class="my-auto text-center p-5">No se encontraron resultados.</h2>
+        </div>
         <div th:if="${listado.size() > 0}" class="w-100  mainlist">
             <div th:each="hotel:${listado}" class="caja container rounded-3">
                 <a th:href="@{/hotel/{id} (id=${hotel.id},
@@ -134,39 +134,45 @@
                     <ul class="pagination">
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <a class="page-link" th:href="@{/index(page=${currentPage - 1}, 
-         nombre=${searchform.nombre}, 
-         municipio=${searchform.municipio},
-         personas=${searchform.personas},
-         cantHabi=${searchform.cantHabi},
-         fechaInicio=${searchform.fechaInicio},
-         fechaFin=${searchform.fechaFin},
-         presupuestoMin=${searchform.presupuestoMin},
-         presupuestoMax=${searchform.presupuestoMax})}">Anterior</a>
+                    nombre=${searchform.nombre}, 
+                    direccion=${searchform.direccion},
+                    municipio=${searchform.municipio},
+                    personas=${searchform.personas},
+                    cantHabi=${searchform.cantHabi},
+                    fechaInicio=${searchform.fechaInicio},
+                    fechaFin=${searchform.fechaFin},
+                    presupuestoMin=${searchform.presupuestoMin},
+                    presupuestoMax=${searchform.presupuestoMax},
+                    filtro=${searchform.filtro})}">Anterior</a>
                         </li>
 
                         <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                             th:classappend="${i == currentPage} ? 'active'">
                             <a class="page-link" th:href="@{/index(page=${i}, 
-         nombre=${searchform.nombre}, 
-         municipio=${searchform.municipio},
-         personas=${searchform.personas},
-         cantHabi=${searchform.cantHabi},
-         fechaInicio=${searchform.fechaInicio},
-         fechaFin=${searchform.fechaFin},
-         presupuestoMin=${searchform.presupuestoMin},
-         presupuestoMax=${searchform.presupuestoMax})}" th:text="${i + 1}">1</a>
+                    nombre=${searchform.nombre}, 
+                    direccion=${searchform.direccion},
+                    municipio=${searchform.municipio},
+                    personas=${searchform.personas},
+                    cantHabi=${searchform.cantHabi},
+                    fechaInicio=${searchform.fechaInicio},
+                    fechaFin=${searchform.fechaFin},
+                    presupuestoMin=${searchform.presupuestoMin},
+                    presupuestoMax=${searchform.presupuestoMax},
+                    filtro=${searchform.filtro})}" th:text="${i + 1}">1</a>
                         </li>
 
                         <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
                             <a class="page-link" th:href="@{/index(page=${currentPage + 1}, 
-         nombre=${searchform.nombre}, 
-         municipio=${searchform.municipio},
-         personas=${searchform.personas},
-         cantHabi=${searchform.cantHabi},
-         fechaInicio=${searchform.fechaInicio},
-         fechaFin=${searchform.fechaFin},
-         presupuestoMin=${searchform.presupuestoMin},
-         presupuestoMax=${searchform.presupuestoMax})}">Siguiente</a>
+                    nombre=${searchform.nombre}, 
+                    direccion=${searchform.direccion},
+                    municipio=${searchform.municipio},
+                    personas=${searchform.personas},
+                    cantHabi=${searchform.cantHabi},
+                    fechaInicio=${searchform.fechaInicio},
+                    fechaFin=${searchform.fechaFin},
+                    presupuestoMin=${searchform.presupuestoMin},
+                    presupuestoMax=${searchform.presupuestoMax},
+                    filtro=${searchform.filtro})}">Siguiente</a>
                         </li>
                     </ul>
                 </nav>
